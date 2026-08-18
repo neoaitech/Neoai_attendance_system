@@ -1,7 +1,7 @@
 # Project Charter — AI Smart Attendance System
 
 **Organization:** Neo AI Tech
-**Prepared by:** Prathiraj (Project/Backend Lead)
+**Prepared by:** Prathiraj (Project/Backend)
 **Date:** 18 August 2026
 **Status:** Draft — Phase 1 (Planning & Research)
 
@@ -33,7 +33,7 @@ deployment, biometric fallback (fingerprint/RFID), production-grade horizontal s
 
 | Name | Role | Primary Responsibility |
 |---|---|---|
-| Prathiraj | Backend / DevOps Lead | Backend APIs, repo & Git workflow, integration, deployment demo |
+| Prathiraj | Backend / DevOps | Backend APIs, repo & Git workflow, integration, deployment demo |
 | Prachi | Frontend / UI Lead | UI/UX, wireframes → mockups, all screens, styling |
 | Priti | AI/ML Lead | Face detection & recognition, model tuning, accuracy validation |
 | Shubhi | Database & Reporting Lead | Data model, DB implementation, attendance logic, reports/export, documentation |
