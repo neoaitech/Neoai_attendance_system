@@ -3,7 +3,7 @@
 An AI-powered classroom attendance system that detects and recognizes student faces from a classroom photo, auto-marks attendance, flags unknown faces for manual review, and generates attendance reports.
 
 Organization: Neo AI Tech  
-Team: Prathiraj (Backend and DevOps Lead), Prachi (Frontend and UI), Priti (AI/ML Detection and Recognition), Shubhi (Database and Reporting)  
+Team: Prathiraj (Backend and API, Prachi (Frontend and UI), Priti (AI/ML Detection and Recognition), Shubhi (Database and Reporting)  
 Timeline: 18 Aug 2026 to 18 Sep 2026
 
 ## Project Structure
