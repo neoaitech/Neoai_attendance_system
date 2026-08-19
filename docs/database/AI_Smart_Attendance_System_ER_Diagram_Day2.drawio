@@ -1,0 +1,57 @@
+<mxfile host="app.diagrams.net" agent="ChatGPT">
+  <diagram id="day2-architecture" name="Day 2 Architecture">
+    <mxGraphModel dx="2307" dy="958" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hohX9S30Xt_5qOfuKeue-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF7EF;strokeColor=#4C9A6A;fontSize=13;spacing=8;" value="&lt;div style=&#39;font-size:16px&#39;&gt;&lt;b&gt;Students&lt;/b&gt;&lt;/div&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; student_id : INTEGER&lt;br/&gt;&lt;b&gt;UQ&lt;/b&gt; roll_no : TEXT&lt;br/&gt;full_name : TEXT&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; class_id : INTEGER&lt;br/&gt;face_encoding : BLOB/TEXT&lt;br/&gt;photo_path : TEXT&lt;br/&gt;email : TEXT&lt;br/&gt;enrollment_date : DATE&lt;br/&gt;is_active : BOOLEAN&lt;br/&gt;" vertex="1">
+          <mxGeometry height="335" width="310" x="1480.5715680803578" y="470.85712541852695" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF2FF;strokeColor=#4472C4;fontSize=13;spacing=8;" value="&lt;div style=&#39;font-size:16px&#39;&gt;&lt;b&gt;Classes&lt;/b&gt;&lt;/div&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; class_id : INTEGER&lt;br/&gt;class_name : TEXT&lt;br/&gt;subject : TEXT&lt;br/&gt;teacher_name : TEXT&lt;br/&gt;academic_year : TEXT&lt;br/&gt;created_at : DATETIME&lt;br/&gt;" vertex="1">
+          <mxGeometry height="260" width="310" x="1120.5715680803578" y="550.857125418527" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF5E8;strokeColor=#D98A2B;fontSize=13;spacing=8;" value="&lt;div style=&#39;font-size:16px&#39;&gt;&lt;b&gt;Sessions&lt;/b&gt;&lt;/div&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; session_id : INTEGER&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; class_id : INTEGER&lt;br/&gt;session_date : DATE&lt;br/&gt;start_time : TIME&lt;br/&gt;photo_uploaded_path : TEXT&lt;br/&gt;total_students_expected : INTEGER&lt;br/&gt;created_by : TEXT&lt;br/&gt;" vertex="1">
+          <mxGeometry height="285" width="310" x="1480.5715680803578" y="820.857125418527" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4EEFF;strokeColor=#8055B5;fontSize=13;spacing=8;" value="&lt;div style=&#39;font-size:16px&#39;&gt;&lt;b&gt;Attendance&lt;/b&gt;&lt;/div&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; attendance_id : INTEGER&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; session_id : INTEGER&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; student_id : INTEGER&lt;br/&gt;status : TEXT (ENUM)&lt;br/&gt;confidence_score : FLOAT&lt;br/&gt;marked_by : TEXT&lt;br/&gt;marked_at : DATETIME&lt;br/&gt;" vertex="1">
+          <mxGeometry height="285" width="310" x="1880.5715680803578" y="630.857125418527" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF0F0;strokeColor=#C94A4A;fontSize=13;spacing=8;" value="&lt;div style=&#39;font-size:16px&#39;&gt;&lt;b&gt;UnknownFaces&lt;/b&gt;&lt;/div&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; unknown_face_id : INTEGER&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; session_id : INTEGER&lt;br/&gt;cropped_face_path : TEXT&lt;br/&gt;detected_at : DATETIME&lt;br/&gt;bounding_box : TEXT&lt;br/&gt;resolved : BOOLEAN&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; tagged_student_id : INTEGER (nullable)&lt;br/&gt;" vertex="1">
+          <mxGeometry height="285" width="310" x="1880.5715680803578" y="940.857125418527" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-6" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=20;" value="&lt;b&gt;AI Smart Attendance System — Formal ER Diagram (Day 2)&lt;/b&gt;&lt;br/&gt;&lt;span style=&#39;font-size:12px&#39;&gt;Shubhi • 19-Aug-2026 • Data Entities &amp; Relationships&lt;/span&gt;" vertex="1">
+          <mxGeometry height="80" width="1080" x="1120.5715680803578" y="405.85712541852695" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-7" edge="1" parent="1" source="hohX9S30Xt_5qOfuKeue-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeWidth=2;" target="hohX9S30Xt_5qOfuKeue-1" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-8" edge="1" parent="1" source="hohX9S30Xt_5qOfuKeue-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeWidth=2;" target="hohX9S30Xt_5qOfuKeue-3" value="1 : N">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1635.55" y="740" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-9" edge="1" parent="1" source="hohX9S30Xt_5qOfuKeue-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeWidth=2;" target="hohX9S30Xt_5qOfuKeue-4" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-10" edge="1" parent="1" source="hohX9S30Xt_5qOfuKeue-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeWidth=2;" target="hohX9S30Xt_5qOfuKeue-4" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-11" edge="1" parent="1" source="hohX9S30Xt_5qOfuKeue-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeWidth=2;" target="hohX9S30Xt_5qOfuKeue-5" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-12" edge="1" parent="1" source="hohX9S30Xt_5qOfuKeue-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeWidth=2;dashed=1;startArrow=ERzeroToOne;" target="hohX9S30Xt_5qOfuKeue-5" value="0 : N (tagged)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2150.09" y="638.36" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hohX9S30Xt_5qOfuKeue-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#98A2B3;fontSize=12;spacing=8;" value="&lt;b&gt;Relationship notes&lt;/b&gt;&lt;br/&gt;• Attendance connects Sessions and Students.&lt;br/&gt;• One Class has many Students and Sessions.&lt;br/&gt;• One Session has many Attendance and UnknownFaces rows.&lt;br/&gt;• tagged_student_id is nullable." vertex="1">
+          <mxGeometry height="190" width="360" x="2220.571568080358" y="530.857125418527" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
