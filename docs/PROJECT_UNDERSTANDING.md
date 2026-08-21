@@ -8,7 +8,7 @@
 ![Team](https://img.shields.io/badge/Team-4_members-orange)
 ![Next](https://img.shields.io/badge/Phase_2_starts-24_Aug_2026-lightgrey)
 
-**Prepared by:** Prathviraj — Backend / Integration / Team Lead
+**Prepared by:** Prathviraj — Backend / Integration / API
 **Document status:** Phase-1 baseline — ready for team review & sign-off
 
 </div>
@@ -218,7 +218,7 @@ Authentication · Classes · Students · Sessions · Photo Upload · Face Proces
 
 | Member | Role | Ownership |
 |---|---|---|
-| **Prathviraj** | Backend / Integration / Team Lead | APIs, Git workflow, integration, deployment/demo coordination |
+| **Prathviraj** | Backend / Integration  | APIs, Git workflow, integration, deployment/demo coordination |
 | **Prachi** | Frontend / UI Lead | UI/UX research, wireframes, mockups, screens, styling |
 | **Priti** | AI/ML Lead | Detection/recognition framework evaluation, model testing, accuracy validation |
 | **Shubhi** | Database & Reporting Lead | Data model, database implementation, attendance logic, reporting |
@@ -320,7 +320,7 @@ ai_models/detection/
 
 *To be completed during the 21 August milestone sync call.*
 
-- [ ] Prathviraj — Team Lead
+- [✅] Prathviraj — Backend/API
 - [ ] Prachi — Frontend / UI Lead
 - [ ] Priti — AI/ML Lead
 - [ ] Shubhi — Database & Reporting Lead
