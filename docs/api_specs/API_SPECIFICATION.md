@@ -141,6 +141,7 @@ Measured recognition evaluation information. This endpoint must not invent accur
 | 409 | Resource conflict |
 | 422 | Validation error |
 | 500 | Internal server error |
+| 501 | Not implemented — development scaffold endpoint |
 
 ## 13. Standard Error Response
 ```json
