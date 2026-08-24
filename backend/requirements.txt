@@ -1,18 +1,5 @@
-# Core backend
-flask>=3.0.0            # or fastapi>=0.110.0 + uvicorn (final choice: 20 Aug)
-flask-sqlalchemy>=3.1.0
-python-dotenv>=1.0.0
+# Phase-2 Day 5 — FastAPI backend skeleton
 
-# AI / Face detection & recognition (final library choice: Priti, 18-20 Aug evaluation)
-opencv-python>=4.9.0
-mediapipe>=0.10.9
-face_recognition>=1.3.0
-deepface>=0.0.90
-
-# Reporting
-pandas>=2.2.0
-openpyxl>=3.1.2
-reportlab>=4.1.0
-
-# Testing
-pytest>=8.0.0
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+python-multipart>=0.0.9,<1.0
