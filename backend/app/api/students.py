@@ -2,13 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.api._utils import not_implemented
 from app.db import get_db
 from app.models.class_model import Class
 from app.models.student_model import Student
 from app.schemas.student import StudentCreate, StudentResponse
 
 router = APIRouter(prefix="/students", tags=["Students"])
+
+
+def not_implemented(message: str):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=message)
 
 
 @router.get("")
