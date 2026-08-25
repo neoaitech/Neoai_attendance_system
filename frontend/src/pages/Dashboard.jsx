@@ -1,33 +1,77 @@
-import React, { useState } from 'react';
-import { Camera, Users, CheckCircle, AlertCircle, LogOut, LayoutDashboard, UserPlus, X, Trash2 } from 'lucide-react';
-import PhotoCapture from './PhotoCapture.jsx';
+import React, { useState, useRef, useEffect } from 'react';
+import { Camera, Users, CheckCircle, AlertCircle, LogOut, LayoutDashboard, UserPlus, X, Trash2, UserCheck, RefreshCw, CameraOff } from 'lucide-react';
+import PhotoCapture from "../components/photocapture.jsx";
 
 export default function Dashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [students, setStudents] = useState([]); // Starts empty for admin uploads
+  const [students, setStudents] = useState([]);
+  const [cameraError, setCameraError] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
     rollId: '',
-    department: 'Computer Science',
+    department: '',
+    customDepartment: '',
     image: null,
   });
 
+  const videoRef = useRef(null);
+
+  // Live Monitoring Camera Initialization
+  useEffect(() => {
+    let streamInstance = null;
+
+    async function startCamera() {
+      if (activeTab !== 'dashboard') return;
+      
+      setCameraError(null);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }
+        });
+        
+        streamInstance = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current.play().catch(err => console.error("Video play error:", err));
+          };
+        }
+      } catch (err) {
+        console.error("Camera access error:", err);
+        setCameraError("Unable to access camera. Check browser permissions.");
+      }
+    }
+
+    startCamera();
+
+    return () => {
+      if (streamInstance) {
+        streamInstance.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [activeTab]);
+
   const handleAddStudent = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.rollId) return;
+    if (!formData.name || !formData.rollId || !formData.department) return;
+
+    const finalDepartment = formData.department === 'Other'
+      ? formData.customDepartment || 'Other'
+      : formData.department;
 
     const newStudent = {
       id: formData.rollId,
       name: formData.name,
-      department: formData.department,
+      department: finalDepartment,
       status: 'Registered',
       image: formData.image,
     };
 
     setStudents([newStudent, ...students]);
-    setFormData({ name: '', rollId: '', department: 'Computer Science', image: null });
+    setFormData({ name: '', rollId: '', department: '', customDepartment: '', image: null });
     setShowAddModal(false);
   };
 
@@ -38,7 +82,7 @@ export default function Dashboard({ onLogout }) {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 p-4 flex flex-col justify-between">
+      <aside className="w-64 bg-slate-900 border-r border-slate-800 p-4 flex flex-col justify-between shrink-0">
         <div>
           <div className="flex items-center gap-3 px-2 py-4 mb-6">
             <Camera className="w-6 h-6 text-blue-500" />
@@ -47,7 +91,7 @@ export default function Dashboard({ onLogout }) {
           <nav className="space-y-1">
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition cursor-pointer ${
                 activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800'
               }`}
             >
@@ -55,7 +99,7 @@ export default function Dashboard({ onLogout }) {
             </button>
             <button
               onClick={() => setActiveTab('students')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition cursor-pointer ${
                 activeTab === 'students' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800'
               }`}
             >
@@ -65,14 +109,14 @@ export default function Dashboard({ onLogout }) {
         </div>
         <button
           onClick={onLogout}
-          className="flex items-center gap-3 px-3 py-2.5 text-rose-400 hover:bg-slate-800 rounded-lg transition w-full"
+          className="flex items-center gap-3 px-3 py-2.5 text-rose-400 hover:bg-slate-800 rounded-lg transition w-full cursor-pointer"
         >
           <LogOut className="w-5 h-5" /> Logout
         </button>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-8 space-y-8 overflow-y-auto">
+      {/* Main Container */}
+      <main className="flex-1 p-8 space-y-6 overflow-y-auto">
         {activeTab === 'dashboard' ? (
           <>
             <header className="flex justify-between items-center">
@@ -80,14 +124,18 @@ export default function Dashboard({ onLogout }) {
                 <h1 className="text-2xl font-bold">Live Monitoring</h1>
                 <p className="text-slate-400 text-sm">Real-time facial recognition tracking</p>
               </div>
-              <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/20 text-sm">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Camera Feed Active
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm ${
+                cameraError 
+                  ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
+                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+              }`}>
+                <span className={`w-2 h-2 rounded-full ${cameraError ? 'bg-rose-500' : 'bg-emerald-500 animate-pulse'}`}></span>
+                {cameraError ? 'Camera Error' : 'Camera Feed Active'}
               </div>
             </header>
 
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-3 gap-6">
+            {/* Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl flex items-center gap-4">
                 <div className="p-3 bg-blue-500/10 text-blue-500 rounded-lg">
                   <Users className="w-6 h-6" />
@@ -117,11 +165,57 @@ export default function Dashboard({ onLogout }) {
               </div>
             </div>
 
-            {/* Recognition Viewfinder */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-              <h2 className="text-lg font-semibold mb-4">Recognition Viewfinder</h2>
-              <div className="relative aspect-video bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-center overflow-hidden">
-                <p className="text-slate-500">Processing RTSP Camera Feed...</p>
+            {/* Viewfinder Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="text-base font-semibold flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-blue-400" /> Recognition Viewfinder
+                  </h2>
+                  {!cameraError && (
+                    <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                      30 FPS
+                    </span>
+                  )}
+                </div>
+
+                <div className="relative w-full aspect-video max-h-[460px] bg-slate-950 rounded-lg border border-slate-800/80 overflow-hidden flex items-center justify-center">
+                  {cameraError ? (
+                    <div className="text-center p-6 text-slate-400 space-y-2">
+                      <CameraOff className="w-10 h-10 mx-auto text-rose-500 mb-2" />
+                      <p className="text-sm font-medium text-slate-300">{cameraError}</p>
+                      <p className="text-xs text-slate-500">Ensure camera permissions are allowed in browser settings.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute border-2 border-emerald-500 bg-emerald-500/10 rounded-md px-3 py-1.5 text-xs text-emerald-400 font-mono top-1/4 left-1/3 shadow-lg backdrop-blur-xs flex items-center gap-2">
+                        <UserCheck className="w-4 h-4 text-emerald-400" />
+                        <span>ID: STU001 | 98.4% Match</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Live Recognition Logs */}
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-base font-semibold">Recent Logs</h3>
+                  <RefreshCw className="w-4 h-4 text-slate-500 cursor-pointer hover:text-slate-300 transition" />
+                </div>
+                <div className="flex-1 bg-slate-950 border border-slate-800/80 rounded-lg p-3 overflow-y-auto space-y-2.5 max-h-[460px]">
+                  <div className="text-xs text-slate-500 text-center py-8">
+                    No detections recorded yet. Recognized students will appear here in real-time.
+                  </div>
+                </div>
               </div>
             </div>
           </>
@@ -134,13 +228,13 @@ export default function Dashboard({ onLogout }) {
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition cursor-pointer"
               >
                 <UserPlus className="w-5 h-5" /> Add Student
               </button>
             </header>
 
-            {/* Student Directory Table */}
+            {/* Directory Table */}
             <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
               {students.length === 0 ? (
                 <div className="p-12 text-center text-slate-500">
@@ -162,7 +256,7 @@ export default function Dashboard({ onLogout }) {
                   </thead>
                   <tbody className="divide-y divide-slate-800">
                     {students.map((student) => (
-                      <tr key={student.id} className="hover:bg-slate-800/50">
+                      <tr key={student.id} className="hover:bg-slate-800/50 transition">
                         <td className="p-4">
                           {student.image ? (
                             <img src={student.image} alt={student.name} className="w-8 h-8 rounded-full object-cover border border-slate-700" />
@@ -183,7 +277,7 @@ export default function Dashboard({ onLogout }) {
                         <td className="p-4 text-right">
                           <button
                             onClick={() => handleDeleteStudent(student.id)}
-                            className="p-1.5 text-slate-500 hover:text-rose-400 transition rounded-lg hover:bg-slate-800"
+                            className="p-1.5 text-slate-500 hover:text-rose-400 transition rounded-lg hover:bg-slate-800 cursor-pointer"
                             title="Delete Student"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -205,7 +299,7 @@ export default function Dashboard({ onLogout }) {
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold text-white">Register New Student</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -238,21 +332,59 @@ export default function Dashboard({ onLogout }) {
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-1">Department</label>
                 <select
+                  required
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                  className={`w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500 transition cursor-pointer ${
+                    formData.department === '' ? 'text-slate-500' : 'text-white'
+                  }`}
                 >
-                  <option>Computer Science</option>
-                  <option>Information Technology</option>
-                  <option>Electronics</option>
-                  <option>Mechanical Engineering</option>
+                  <option value="" disabled hidden>
+                    Select Department
+                  </option>
+                  <option value="BBA" className="text-white bg-slate-900">BBA</option>
+                  <option value="BCA" className="text-white bg-slate-900">BCA</option>
+                  <option value="MBA" className="text-white bg-slate-900">MBA</option>
+                  <option value="MCA" className="text-white bg-slate-900">MCA</option>
+                  <option value="Other" className="text-white bg-slate-900">Other</option>
                 </select>
+
+                {formData.department === 'Other' && (
+                  <input
+                    type="text"
+                    required
+                    value={formData.customDepartment}
+                    onChange={(e) => setFormData({ ...formData, customDepartment: e.target.value })}
+                    placeholder="Enter custom department name..."
+                    className="mt-2 w-full bg-slate-950 border border-blue-500/50 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                  />
+                )}
               </div>
 
+              {/* Single Image Preview Component in Dashboard */}
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-2">
                   Facial Image Reference
                 </label>
+                
+                {formData.image && (
+                  <div className="relative mb-3 rounded-lg overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center p-2">
+                    <img
+                      src={formData.image}
+                      alt="Captured Reference"
+                      className="max-h-36 rounded object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image: null })}
+                      className="absolute top-2 right-2 bg-rose-500/80 hover:bg-rose-600 text-white p-1 rounded-full text-xs transition cursor-pointer"
+                      title="Remove image"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
                 <PhotoCapture
                   onPhotoSelect={(imgData) => setFormData({ ...formData, image: imgData })}
                 />
@@ -262,13 +394,13 @@ export default function Dashboard({ onLogout }) {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-lg text-sm transition"
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-lg text-sm transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg text-sm transition"
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg text-sm transition cursor-pointer"
                 >
                   Save Student
                 </button>

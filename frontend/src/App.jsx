@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
-import Login from './pages/Login.jsx';
-import Dashboard from './pages/Dashboard.jsx';
+import React, { useState } from "react";
+import Auth from "./components/Auth.jsx"; // Ensure casing matches your filename in src/components
+import Dashboard from "./pages/Dashboard.jsx";
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
 
-  return isAuthenticated ? (
-    <Dashboard onLogout={() => setIsAuthenticated(false)} />
-  ) : (
-    <Login onLogin={() => setIsAuthenticated(true)} />
+  const handleAuthSuccess = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
+  return (
+    <div>
+      {user ? (
+        <Dashboard onLogout={handleLogout} user={user} />
+      ) : (
+        <Auth onAuthSuccess={handleAuthSuccess} />
+      )}
+    </div>
   );
 }

@@ -8,7 +8,7 @@ export default function Auth({ onAuthSuccess }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  // Password Validation Rule (Min 6 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)
+  // Password Validation (Min 6 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 
   const handleSubmit = (e) => {
@@ -54,7 +54,7 @@ export default function Auth({ onAuthSuccess }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Full Name Field - Only for Sign Up */}
+          {/* Full Name Field - Sign Up Only */}
           {isSignUp && (
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
@@ -106,7 +106,7 @@ export default function Auth({ onAuthSuccess }) {
               />
             </div>
 
-            {/* Password Error Message Below Field */}
+            {/* Error Message Below Password */}
             {error && (
               <div className="mt-2 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-lg flex items-start gap-2 text-rose-400 text-xs">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -123,12 +123,13 @@ export default function Auth({ onAuthSuccess }) {
           </button>
         </form>
 
-        {/* Toggle between Sign Up and Login */}
+        {/* Toggle Mode */}
         <div className="mt-6 text-center text-xs text-slate-400 border-t border-slate-800/60 pt-4">
           {isSignUp ? (
             <p>
               Already have an account?{' '}
               <button
+                type="button"
                 onClick={toggleMode}
                 className="text-blue-400 hover:text-blue-300 font-medium hover:underline focus:outline-none"
               >
@@ -139,6 +140,7 @@ export default function Auth({ onAuthSuccess }) {
             <p>
               Don't have an account?{' '}
               <button
+                type="button"
                 onClick={toggleMode}
                 className="text-blue-400 hover:text-blue-300 font-medium hover:underline focus:outline-none"
               >
