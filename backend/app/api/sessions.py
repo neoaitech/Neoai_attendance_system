@@ -4,6 +4,8 @@ from uuid import uuid4
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
+from app.services.face_detection import detect_and_save
+
 router = APIRouter(prefix="/sessions", tags=["Sessions"])
 
 # Development-only storage for uploaded classroom/group photos.
@@ -82,15 +84,32 @@ async def upload_photo(session_id: int, photo: UploadFile = File(...)):
     stored_path.write_bytes(data)
 
     relative_path = stored_path.relative_to(UPLOAD_ROOT.parent.parent).as_posix()
+
+    # Day 6: run the existing OpenCV detection module immediately after
+    # successful upload. The face list itself is intentionally not exposed
+    # by this endpoint yet; that is the Day 7 API milestone.
+    detected_name = f"{stored_path.stem}_detected.jpg"
+    detected_path = session_dir / detected_name
+    try:
+        detected_faces = detect_and_save(data, detected_path)
+    except (OSError, ValueError, RuntimeError) as exc:
+        # Keep the original upload available, but make detection failure explicit.
+        raise HTTPException(status_code=422, detail=f"Face detection failed: {exc}") from exc
+
+    detected_relative_path = detected_path.relative_to(UPLOAD_ROOT.parent.parent).as_posix()
     return {
         "session_id": session_id,
-        "message": "Classroom photo uploaded successfully",
+        "message": "Classroom photo uploaded and face detection completed",
         "photo": {
             "original_filename": Path(photo.filename or "uploaded_photo").name,
             "stored_filename": stored_name,
             "content_type": photo.content_type,
             "size_bytes": len(data),
             "path": relative_path,
+        },
+        "detection": {
+            "face_count": len(detected_faces),
+            "annotated_path": detected_relative_path,
         },
     }
 
