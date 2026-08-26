@@ -109,6 +109,7 @@ async def upload_photo(session_id: int, photo: UploadFile = File(...)):
         },
         "detection": {
             "face_count": len(detected_faces),
+            "faces": detected_faces,
             "annotated_path": detected_relative_path,
         },
     }
