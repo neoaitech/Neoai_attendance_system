@@ -2,17 +2,34 @@ from datetime import date
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+import cv2
+import numpy as np
 
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from sqlalchemy.orm import Session
+
+from app.db import get_db
+from app.models.session_model import AttendanceSession
+from app.models.student_model import Student
 from app.services.face_detection import detect_and_save
+from app.services.face_recognition_service import (
+    encode_image,
+    find_best_match,
+)
 
-router = APIRouter(prefix="/sessions", tags=["Sessions"])
+router = APIRouter(
+    prefix="/sessions",
+    tags=["Sessions"],
+)
 
-# Development-only storage for uploaded classroom/group photos.
-# Database persistence is intentionally deferred to the database integration milestone.
-UPLOAD_ROOT = Path(__file__).resolve().parents[2] / "uploads" / "sessions"
+# Development-only local upload storage.
+UPLOAD_ROOT = (
+    Path(__file__).resolve().parents[2]
+    / "uploads"
+    / "sessions"
+)
 
-MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024
 
 ALLOWED_TYPES = {
     "image/jpeg": ".jpg",
@@ -27,7 +44,11 @@ MAGIC_HEADERS = {
 }
 
 
-def _validate_image_header(data: bytes, extension: str) -> bool:
+def _validate_image_header(
+    data: bytes,
+    extension: str,
+) -> bool:
+
     if extension == ".webp":
         return (
             len(data) >= 12
@@ -39,6 +60,27 @@ def _validate_image_header(data: bytes, extension: str) -> bool:
         data.startswith(header)
         for header in MAGIC_HEADERS[extension]
     )
+
+
+def _project_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def _resolve_stored_path(relative_path: str) -> Path:
+    """
+    Convert a database-relative path such as
+    uploads/sessions/1/photo.jpg
+    into an absolute project path.
+    """
+
+    project_root = _project_root()
+
+    path = Path(relative_path)
+
+    if path.is_absolute():
+        return path
+
+    return project_root / path
 
 
 @router.post("")
@@ -71,19 +113,19 @@ def get_session(session_id: int):
     )
 
 
-@router.post("/{session_id}/photo", status_code=201)
+@router.post(
+    "/{session_id}/photo",
+    status_code=201,
+)
 async def upload_photo(
     session_id: int,
     photo: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ):
-    """Store and validate a classroom/group photo.
-
-    The uploaded photo is stored locally first. Face detection is then
-    attempted using the existing OpenCV detection service.
-
-    If the uploaded file passes the endpoint's image-header validation but
-    cannot be decoded by the detection service, the original upload is still
-    considered successful and an empty face list is returned.
+    """
+    Upload a classroom photo, save it locally,
+    run OpenCV face detection, and persist the
+    uploaded path when the session exists.
     """
 
     if session_id <= 0:
@@ -92,15 +134,22 @@ async def upload_photo(
             detail="session_id must be a positive integer",
         )
 
-    extension = ALLOWED_TYPES.get(photo.content_type or "")
+    extension = ALLOWED_TYPES.get(
+        photo.content_type or ""
+    )
 
     if extension is None:
         raise HTTPException(
             status_code=400,
-            detail="Unsupported image type. Allowed types: JPEG, PNG, WEBP",
+            detail=(
+                "Unsupported image type. "
+                "Allowed types: JPEG, PNG, WEBP"
+            ),
         )
 
-    data = await photo.read(MAX_PHOTO_SIZE_BYTES + 1)
+    data = await photo.read(
+        MAX_PHOTO_SIZE_BYTES + 1
+    )
 
     if not data:
         raise HTTPException(
@@ -114,50 +163,95 @@ async def upload_photo(
             detail="Uploaded photo exceeds the 10 MB limit",
         )
 
-    if not _validate_image_header(data, extension):
+    if not _validate_image_header(
+        data,
+        extension,
+    ):
         raise HTTPException(
             status_code=400,
             detail="Uploaded file is not a valid image",
         )
 
-    # Create session-specific upload directory.
-    session_dir = UPLOAD_ROOT / str(session_id)
-    session_dir.mkdir(parents=True, exist_ok=True)
+    session_dir = (
+        UPLOAD_ROOT / str(session_id)
+    )
 
-    # Save original uploaded photo.
-    stored_name = f"{uuid4().hex}{extension}"
-    stored_path = session_dir / stored_name
+    session_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    stored_name = (
+        f"{uuid4().hex}{extension}"
+    )
+
+    stored_path = (
+        session_dir / stored_name
+    )
+
     stored_path.write_bytes(data)
 
-    relative_path = stored_path.relative_to(
-        UPLOAD_ROOT.parent.parent
-    ).as_posix()
+    relative_path = (
+        stored_path
+        .relative_to(UPLOAD_ROOT.parent.parent)
+        .as_posix()
+    )
 
-    # Run existing face-detection service.
-    detected_name = f"{stored_path.stem}_detected.jpg"
-    detected_path = session_dir / detected_name
+    # Run existing OpenCV detection.
+    detected_name = (
+        f"{stored_path.stem}_detected.jpg"
+    )
+
+    detected_path = (
+        session_dir / detected_name
+    )
 
     try:
         detected_faces = detect_and_save(
             data,
             detected_path,
         )
-    except (OSError, ValueError, RuntimeError):
-        # Upload itself succeeded, but the image could not be decoded
-        # by the face-detection service.
+    except (
+        OSError,
+        ValueError,
+        RuntimeError,
+    ):
         detected_faces = []
         detected_relative_path = None
     else:
-        detected_relative_path = detected_path.relative_to(
-            UPLOAD_ROOT.parent.parent
-        ).as_posix()
+        detected_relative_path = (
+            detected_path
+            .relative_to(
+                UPLOAD_ROOT.parent.parent
+            )
+            .as_posix()
+        )
+
+    # Persist the uploaded photo path if
+    # the session already exists.
+    session = (
+        db.query(AttendanceSession)
+        .filter(
+            AttendanceSession.session_id
+            == session_id
+        )
+        .first()
+    )
+
+    if session is not None:
+        session.photo_uploaded_path = relative_path
+        db.commit()
 
     return {
         "session_id": session_id,
-        "message": "Classroom photo uploaded and face detection completed",
+        "message": (
+            "Classroom photo uploaded "
+            "and face detection completed"
+        ),
         "photo": {
             "original_filename": Path(
-                photo.filename or "uploaded_photo"
+                photo.filename
+                or "uploaded_photo"
             ).name,
             "stored_filename": stored_name,
             "content_type": photo.content_type,
@@ -167,15 +261,180 @@ async def upload_photo(
         "detection": {
             "face_count": len(detected_faces),
             "faces": detected_faces,
-            "annotated_path": detected_relative_path,
+            "annotated_path": (
+                detected_relative_path
+            ),
         },
     }
 
 
 @router.post("/{session_id}/recognize")
-def recognize_session(session_id: int):
-    from app.api._utils import not_implemented
+def recognize_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Detect and recognize faces from the classroom
+    photo belonging to the requested session.
+    """
 
-    return not_implemented(
-        "Face recognition is planned for a later Phase-2 milestone."
+    if session_id <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="session_id must be a positive integer",
+        )
+
+    session = (
+        db.query(AttendanceSession)
+        .filter(
+            AttendanceSession.session_id
+            == session_id
+        )
+        .first()
     )
+
+    if session is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Session not found",
+        )
+
+    if not session.photo_uploaded_path:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "No classroom photo is available "
+                "for this session"
+            ),
+        )
+
+    photo_path = _resolve_stored_path(
+        session.photo_uploaded_path
+    )
+
+    if not photo_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Session photo file not found",
+        )
+
+    data = photo_path.read_bytes()
+
+    encoded = np.frombuffer(
+        data,
+        dtype=np.uint8,
+    )
+
+    image = cv2.imdecode(
+        encoded,
+        cv2.IMREAD_COLOR,
+    )
+
+    if image is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Unable to decode session photo",
+        )
+
+    # face_recognition expects RGB.
+    rgb_image = cv2.cvtColor(
+        image,
+        cv2.COLOR_BGR2RGB,
+    )
+
+    try:
+        candidate_encodings = encode_image(
+            rgb_image
+        )
+    except (
+        RuntimeError,
+        ValueError,
+    ) as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Face recognition failed: {exc}"
+            ),
+        ) from exc
+
+    students = (
+        db.query(Student)
+        .filter(
+            Student.class_id == session.class_id,
+            Student.is_active.is_(True),
+            Student.face_encoding.is_not(None),
+        )
+        .order_by(Student.student_id)
+        .all()
+    )
+
+    recognized_faces = []
+    unknown_faces = []
+
+    for face_index, candidate_encoding in enumerate(
+        candidate_encodings
+    ):
+
+        student, distance = find_best_match(
+            candidate_encoding,
+            students,
+        )
+
+        if student is None:
+            unknown_faces.append(
+                {
+                    "face_index": face_index,
+                    "status": "unknown",
+                }
+            )
+            continue
+
+        distance_value = float(
+            distance
+        )
+
+        # This is a normalized similarity indicator,
+        # while the actual recognition decision is based
+        # on the face-distance tolerance.
+        confidence = max(
+            0.0,
+            min(
+                1.0,
+                1.0 - distance_value,
+            ),
+        )
+
+        recognized_faces.append(
+            {
+                "face_index": face_index,
+                "student_id": student.student_id,
+                "roll_no": student.roll_no,
+                "full_name": student.full_name,
+                "distance": round(
+                    distance_value,
+                    4,
+                ),
+                "confidence": round(
+                    confidence,
+                    4,
+                ),
+                "status": "recognized",
+            }
+        )
+
+    return {
+        "session_id": session_id,
+        "face_count": len(
+            candidate_encodings
+        ),
+        "recognized_count": len(
+            recognized_faces
+        ),
+        "unknown_count": len(
+            unknown_faces
+        ),
+        "recognized_faces": recognized_faces,
+        "unknown_faces": unknown_faces,
+    }
+
+
