@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date
 from pathlib import Path
 from uuid import uuid4
@@ -16,11 +18,14 @@ from app.services.face_recognition_service import (
     encode_image,
     find_best_match,
 )
+from app.services.attendance_service import mark_attendance
+
 
 router = APIRouter(
     prefix="/sessions",
     tags=["Sessions"],
 )
+
 
 # Development-only local upload storage.
 UPLOAD_ROOT = (
@@ -48,7 +53,6 @@ def _validate_image_header(
     data: bytes,
     extension: str,
 ) -> bool:
-
     if extension == ".webp":
         return (
             len(data) >= 12
@@ -276,6 +280,9 @@ def recognize_session(
     """
     Detect and recognize faces from the classroom
     photo belonging to the requested session.
+
+    Recognized active students are automatically
+    marked present for the session.
     """
 
     if session_id <= 0:
@@ -422,6 +429,16 @@ def recognize_session(
             }
         )
 
+        # Automatically mark the recognized student
+        # as present for this attendance session.
+        mark_attendance(
+            db,
+            session_id=session_id,
+            student_id=student.student_id,
+            status="present",
+            confidence_score=confidence,
+        )
+
     return {
         "session_id": session_id,
         "face_count": len(
@@ -436,5 +453,3 @@ def recognize_session(
         "recognized_faces": recognized_faces,
         "unknown_faces": unknown_faces,
     }
-
-
