@@ -128,7 +128,7 @@ class FaceAIEngine(ABC):
         filepath = output_dir / filename
 
         face_bgr = cv2.cvtColor(face_crop, cv2.COLOR_RGB2BGR)
-        cv2.imwrite(str(filepath), face_bgr)
+        cv2.imwrite(str(filepath), face_bgr, [cv2.IMWRITE_JPEG_QUALITY, 96])
         return str(filepath)
 
     def render_annotated_classroom_image(
@@ -180,7 +180,7 @@ class FaceAIEngine(ABC):
                 cv2.putText(annotated, label, (left + 7, max(lh + 4, top - 6)), cv2.FONT_HERSHEY_DUPLEX, font_scale, (255, 255, 255), 1, cv2.LINE_AA)
 
         if output_path:
-            cv2.imwrite(output_path, annotated)
+            cv2.imwrite(output_path, annotated, [cv2.IMWRITE_JPEG_QUALITY, 96])
         return output_path
 
     @abstractmethod

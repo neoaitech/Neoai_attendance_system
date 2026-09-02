@@ -429,13 +429,16 @@ class AdvancedFaceAIEngine(FaceAIEngine):
         target_students = registered_students if registered_students is not None else (enrolled_students or [])
         tol = tolerance if tolerance is not None else self.default_tolerance
 
-        image_rgb = self.load_and_orient_image(target_img)
-        image_rgb = self.preprocess_image(image_rgb)
-        h, w, _ = image_rgb.shape
-        image_bgr = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR)
+        clean_rgb = self.load_and_orient_image(target_img)
+        enhanced_rgb = self.preprocess_image(clean_rgb)
+        h, w, _ = clean_rgb.shape
+        enhanced_bgr = cv2.cvtColor(enhanced_rgb, cv2.COLOR_RGB2BGR)
 
-        # 1. YOLOv8-Face Detection
-        bboxes_xyxy, det_scores = self._detect_boxes_and_scores(image_bgr)
+        # 1. YOLOv8-Face Detection (use enhanced for low-light detection, fallback to clean)
+        bboxes_xyxy, det_scores = self._detect_boxes_and_scores(enhanced_bgr)
+        if len(bboxes_xyxy) == 0:
+            clean_bgr = cv2.cvtColor(clean_rgb, cv2.COLOR_RGB2BGR)
+            bboxes_xyxy, det_scores = self._detect_boxes_and_scores(clean_bgr)
 
         recognized_candidates = []
         unknown = []
@@ -450,7 +453,7 @@ class AdvancedFaceAIEngine(FaceAIEngine):
                 continue
 
             loc = (y1, x2, y2, x1)  # top, right, bottom, left
-            crop = image_rgb[y1:y2, x1:x2]
+            crop = clean_rgb[y1:y2, x1:x2]
 
             # 2. Face Quality Assessment
             is_quality_pass, quality_score, quality_reasons = self.assess_face_quality(
@@ -462,7 +465,7 @@ class AdvancedFaceAIEngine(FaceAIEngine):
             if not is_quality_pass:
                 crop_path = None
                 try:
-                    crop_path = self.crop_and_save_face(image_rgb, list(loc), settings.UNKNOWN_FACES_DIR)
+                    crop_path = self.crop_and_save_face(clean_rgb, list(loc), settings.UNKNOWN_FACES_DIR)
                 except Exception:
                     pass
                 item = {
@@ -482,7 +485,7 @@ class AdvancedFaceAIEngine(FaceAIEngine):
             # 3. MiniFASNetV2 Anti-Spoofing (PAD)
             is_live, liveness_score, spoof_reasons = self.evaluate_anti_spoofing(
                 crop_rgb=crop,
-                full_rgb=image_rgb,
+                full_rgb=clean_rgb,
                 bbox=loc,
                 liveness_threshold=settings.SPOOF_CONFIDENCE_THRESHOLD
             )
@@ -501,12 +504,12 @@ class AdvancedFaceAIEngine(FaceAIEngine):
                 spoofs.append(spoof_payload)
                 continue
 
-            # 4. ArcFace 512-D Normalized Embedding
-            encs = self.compute_face_encodings(image_rgb, [loc])
+            # 4. ArcFace 512-D Normalized Embedding (using pristine natural colors)
+            encs = self.compute_face_encodings(clean_rgb, [loc])
             if not encs:
                 crop_path = None
                 try:
-                    crop_path = self.crop_and_save_face(image_rgb, list(loc), settings.UNKNOWN_FACES_DIR)
+                    crop_path = self.crop_and_save_face(clean_rgb, list(loc), settings.UNKNOWN_FACES_DIR)
                 except Exception:
                     pass
                 unknown.append({
@@ -547,7 +550,7 @@ class AdvancedFaceAIEngine(FaceAIEngine):
             else:
                 crop_path = None
                 try:
-                    crop_path = self.crop_and_save_face(image_rgb, list(loc), settings.UNKNOWN_FACES_DIR)
+                    crop_path = self.crop_and_save_face(clean_rgb, list(loc), settings.UNKNOWN_FACES_DIR)
                 except Exception:
                     pass
 
@@ -565,11 +568,8 @@ class AdvancedFaceAIEngine(FaceAIEngine):
                 })
 
         # 6. Duplicate Identity Protection
-        # If multiple face boxes matched the same student, keep the highest similarity/confidence one
         recognized = []
         seen_student_ids = {}
-
-        # Sort candidates descending by similarity so highest confidence is processed first
         recognized_candidates.sort(key=lambda x: x["similarity"], reverse=True)
 
         for cand in recognized_candidates:
@@ -578,10 +578,9 @@ class AdvancedFaceAIEngine(FaceAIEngine):
                 seen_student_ids[sid] = cand
                 recognized.append(cand)
             else:
-                # Duplicate face in same photo matching the same student
                 crop_path = None
                 try:
-                    crop_path = self.crop_and_save_face(image_rgb, cand["bbox"], settings.UNKNOWN_FACES_DIR)
+                    crop_path = self.crop_and_save_face(clean_rgb, cand["bbox"], settings.UNKNOWN_FACES_DIR)
                 except Exception:
                     pass
                 unknown.append({
@@ -596,14 +595,14 @@ class AdvancedFaceAIEngine(FaceAIEngine):
                     "cropped_image_path": crop_path
                 })
 
-        # 7. Render annotated debug image
+        # 7. Render annotated debug image (on crisp, natural original photo)
         annotated_path = None
         try:
             import uuid
             output_filename = f"session_{session_id or 'anon'}_{uuid.uuid4().hex[:8]}_annotated.jpg"
             annotated_path = str(settings.SESSION_PHOTOS_DIR / output_filename)
             self.render_annotated_classroom_image(
-                image_rgb=image_rgb,
+                image_rgb=clean_rgb,
                 recognized=recognized,
                 unknown=unknown,
                 spoofs=spoofs,

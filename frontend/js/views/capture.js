@@ -1306,7 +1306,7 @@ const CaptureView = {
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.96);
 
     if (this.capturedClassroomSnaps.length >= 8) {
       App.showToast("Maximum 8 classroom angles reached", "info");
@@ -2786,7 +2786,7 @@ const CaptureView = {
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.96);
 
     const btn = document.getElementById("btn-quicksnap-verify");
     if (btn) {

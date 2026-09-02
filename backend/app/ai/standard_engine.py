@@ -358,12 +358,14 @@ class StandardFaceAIEngine(FaceAIEngine):
         tol = tolerance if tolerance is not None else self.default_tolerance
 
         # 1. Ingest & Preprocess Image
-        image_rgb = self.load_and_orient_image(target_img)
-        image_rgb = self.preprocess_image(image_rgb)
-        h, w, _ = image_rgb.shape
+        clean_rgb = self.load_and_orient_image(target_img)
+        enhanced_rgb = self.preprocess_image(clean_rgb)
+        h, w, _ = clean_rgb.shape
 
-        # 2. YOLOv8 Face Detection
-        raw_face_locations = self.detect_face_locations(image_rgb)
+        # 2. YOLOv8 Face Detection (use enhanced for low-light boost, fallback to clean)
+        raw_face_locations = self.detect_face_locations(enhanced_rgb)
+        if not raw_face_locations:
+            raw_face_locations = self.detect_face_locations(clean_rgb)
 
         live_locations = []
         spoofs = []
@@ -371,11 +373,11 @@ class StandardFaceAIEngine(FaceAIEngine):
         # 3. Anti-Spoofing / Presentation Attack Check
         for f_i, loc in enumerate(raw_face_locations, 1):
             top, right, bottom, left = loc
-            crop = image_rgb[max(0, top):min(h, bottom), max(0, left):min(w, right)]
+            crop = clean_rgb[max(0, top):min(h, bottom), max(0, left):min(w, right)]
 
             is_live, liveness_score, reasons = self.evaluate_anti_spoofing(
                 crop_rgb=crop,
-                full_rgb=image_rgb,
+                full_rgb=clean_rgb,
                 bbox=loc,
                 liveness_threshold=settings.SPOOF_CONFIDENCE_THRESHOLD
             )
@@ -393,8 +395,8 @@ class StandardFaceAIEngine(FaceAIEngine):
             else:
                 live_locations.append(loc)
 
-        # 4. ArcFace Embeddings on LIVE faces only
-        face_encodings = self.compute_face_encodings(image_rgb, live_locations)
+        # 4. ArcFace Embeddings on LIVE faces (using pristine natural colors)
+        face_encodings = self.compute_face_encodings(clean_rgb, live_locations)
 
         # 5. Face Matching
         recognized, unknown = self.match_detected_faces(
@@ -404,23 +406,23 @@ class StandardFaceAIEngine(FaceAIEngine):
             tolerance=tol
         )
 
-        # 6. Save unknown face crops
+        # 6. Save unknown face crops (using pristine natural colors)
         for unk in unknown:
             try:
-                crop_path = self.crop_and_save_face(image_rgb, unk["bbox"], settings.UNKNOWN_FACES_DIR)
+                crop_path = self.crop_and_save_face(clean_rgb, unk["bbox"], settings.UNKNOWN_FACES_DIR)
                 unk["cropped_image_path"] = crop_path
             except Exception as e:
                 logger.error(f"Error saving unknown face crop: {e}")
                 unk["cropped_image_path"] = None
 
-        # 7. Render annotated debug image
+        # 7. Render annotated debug image (drawn on crisp, natural original photo)
         annotated_path = None
         try:
             import uuid
             output_filename = f"session_{session_id or 'anon'}_{uuid.uuid4().hex[:8]}_annotated.jpg"
             annotated_path = str(settings.SESSION_PHOTOS_DIR / output_filename)
             self.render_annotated_classroom_image(
-                image_rgb=image_rgb,
+                image_rgb=clean_rgb,
                 recognized=recognized,
                 unknown=unknown,
                 spoofs=spoofs,
