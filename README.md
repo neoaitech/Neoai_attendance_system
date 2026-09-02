@@ -3,8 +3,8 @@ title: VisionAttend AI Attendance Platform
 emoji: 📸
 colorFrom: indigo
 colorTo: purple
-sdk: docker
-app_port: 8000
+sdk: gradio
+app_file: app.py
 pinned: false
 ---
 
