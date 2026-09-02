@@ -42,12 +42,14 @@ def main():
     print(f" [*] Swagger API Docs:    http://localhost:8000/docs")
     print("-" * 75 + "\n")
 
+    port_val = int(os.environ.get("PORT", 8000))
+    is_prod = bool(os.environ.get("RENDER") or os.environ.get("PORT"))
     uvicorn.run(
         "backend.app.main:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,
-        reload_dirs=[str(PROJECT_ROOT / "backend"), str(PROJECT_ROOT / "frontend")]
+        port=port_val,
+        reload=not is_prod,
+        reload_dirs=[str(PROJECT_ROOT / "backend"), str(PROJECT_ROOT / "frontend")] if not is_prod else None
     )
 
 if __name__ == "__main__":
