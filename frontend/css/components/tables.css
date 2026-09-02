@@ -1,0 +1,110 @@
+/* ===================================================================
+   VisionAttend - Data Table Components
+   File: frontend/css/components/tables.css
+   =================================================================== */
+
+.data-table-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.data-table-container::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.data-table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+
+.data-table-container::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.25);
+  border-radius: 6px;
+}
+
+.data-table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.45);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.84rem;
+  min-width: 640px;
+}
+
+.data-table th {
+  background: #f8fafc;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr {
+  transition: background-color 0.12s ease;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(79, 70, 229, 0.02);
+}
+
+@media (max-width: 768px) {
+  .data-table-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 10px;
+  }
+
+  .data-table {
+    min-width: 480px;
+  }
+
+  .data-table th, .data-table td {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .data-table {
+    min-width: 420px;
+  }
+
+  .data-table th, .data-table td {
+    padding: 7px 8px;
+    font-size: 0.72rem;
+  }
+}

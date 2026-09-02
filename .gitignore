@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Testing & Linting
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / Frontend
+node_modules/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Temporary database files
+test_attendance.db
+*.db-shm
+*.db-wal
+
+# Environment secrets
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Runtime Uploads & Generated Reports Cache
+data/uploads/*
+!data/uploads/.gitkeep
+data/reports_cache/*
+!data/reports_cache/.gitkeep
+database/backups/*
+!database/backups/.gitkeep
+
+# Heavy Model Weights (>100MB, download via scripts/download_models.py)
+models/arcface/*.onnx
+!models/arcface/README.md

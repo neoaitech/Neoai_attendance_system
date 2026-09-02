@@ -1,0 +1,75 @@
+﻿/* ===================================================================
+   VisionAttend - Institutional Design System
+   Design Tokens, Color Palette & Scale Variables
+   File: frontend/css/base/variables.css
+   =================================================================== */
+
+:root {
+  /* Surface & Background Palette (Light Institutional SaaS) */
+  --bg-app: #f8fafc;              /* Slate 50 */
+  --bg-surface: #ffffff;          /* Pure White */
+  --bg-surface-elevated: #ffffff;  /* Elevated Card Surface */
+  --bg-surface-subtle: #f1f5f9;   /* Slate 100 */
+  --bg-surface-hover: #f8fafc;    /* Hover State */
+  --bg-input: #ffffff;
+
+  /* Borders & Rules */
+  --border-subtle: rgba(15, 23, 42, 0.08);   /* Subtle Divider */
+  --border-medium: rgba(15, 23, 42, 0.14);   /* Form Border */
+  --border-strong: rgba(15, 23, 42, 0.22);   /* Active Element Border */
+  --border-focus: #4f46e5;                   /* Primary Focus Ring */
+
+  /* Typography Palette */
+  --text-primary: #0f172a;       /* Slate 900 */
+  --text-secondary: #475569;     /* Slate 600 */
+  --text-muted: #64748b;         /* Slate 500 */
+  --text-light: #94a3b8;         /* Slate 400 */
+  --text-inverse: #ffffff;
+
+  /* Institutional Primary Brand (Deep Indigo) */
+  --primary: #4f46e5;            /* Indigo 600 */
+  --primary-hover: #4338ca;      /* Indigo 700 */
+  --primary-active: #3730a3;     /* Indigo 800 */
+  --primary-light: rgba(79, 70, 229, 0.08);
+  --primary-subtle: rgba(79, 70, 229, 0.04);
+  --primary-glow: rgba(79, 70, 229, 0.18);
+
+  /* AI Accent (Violet) */
+  --accent-ai: #7c3aed;          /* Violet 600 */
+  --accent-ai-light: rgba(124, 58, 237, 0.08);
+
+  /* Semantic State Colors */
+  --emerald: #059669;            /* Emerald 600 - Success / Present / Active */
+  --emerald-hover: #047857;
+  --emerald-light: rgba(5, 150, 105, 0.08);
+  --emerald-border: rgba(5, 150, 105, 0.25);
+
+  --rose: #dc2626;               /* Rose 600 - Error / Absent / Destructive */
+  --rose-hover: #b91c1c;
+  --rose-light: rgba(220, 38, 38, 0.08);
+  --rose-border: rgba(220, 38, 38, 0.25);
+
+  --amber: #d97706;              /* Amber 600 - Warning / Late / Pending */
+  --amber-hover: #b45309;
+  --amber-light: rgba(217, 119, 6, 0.08);
+  --amber-border: rgba(217, 119, 6, 0.25);
+
+  --blue: #2563eb;               /* Blue 600 - Info / Enrolled */
+  --blue-light: rgba(37, 99, 235, 0.08);
+  --blue-border: rgba(37, 99, 235, 0.25);
+
+  /* Geometry & Radii */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 9999px;
+
+  /* Shadows (Clean & Restrained) */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}

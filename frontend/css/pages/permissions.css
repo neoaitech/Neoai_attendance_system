@@ -1,0 +1,342 @@
+/* ===================================================================
+   VisionAttend - Institutional Authority & Permissions Management CSS
+   File: frontend/css/pages/permissions.css
+   =================================================================== */
+
+.permissions-container {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header & Tabs */
+.permissions-tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-subtle, rgba(0,0,0,0.08));
+  padding-bottom: 8px;
+  overflow-x: auto;
+}
+
+.perm-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.perm-tab-btn:hover {
+  background: rgba(99, 102, 241, 0.05);
+  color: var(--primary, #6366f1);
+}
+
+.perm-tab-btn.active {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary, #6366f1);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+/* Toolbar & Filters */
+.permissions-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.perm-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface-elevated, #f8fafc);
+  border: 1px solid var(--border-subtle, rgba(0,0,0,0.1));
+  border-radius: 8px;
+  padding: 6px 12px;
+  min-width: 260px;
+  flex: 1;
+  max-width: 400px;
+}
+
+.perm-search-box input {
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  color: var(--text-primary, #0f172a);
+  outline: none;
+  width: 100%;
+}
+
+.perm-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* User Table Badges */
+.role-badge-super {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.status-pill-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.08);
+  color: #059669;
+}
+
+.status-pill-suspended {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.08);
+  color: #d97706;
+}
+
+.status-pill-deactivated {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+}
+
+.scope-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.06);
+  color: var(--primary, #6366f1);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  margin-right: 4px;
+  margin-bottom: 2px;
+}
+
+/* Side Drawer Component */
+.authority-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.authority-drawer-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.authority-drawer {
+  width: 100%;
+  max-width: 620px;
+  background: var(--bg-surface, #ffffff);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.18);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.authority-drawer-overlay.active .authority-drawer {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle, rgba(0,0,0,0.08));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface-elevated, #f8fafc);
+}
+
+.drawer-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.drawer-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-subtle, rgba(0,0,0,0.08));
+  background: var(--bg-surface-elevated, #f8fafc);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Drawer Sections */
+.drawer-section {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-subtle, rgba(0,0,0,0.08));
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.drawer-section-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.perm-cat-card {
+  border: 1px solid var(--border-subtle, rgba(0,0,0,0.08));
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.perm-cat-header {
+  background: var(--bg-surface-elevated, #f8fafc);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+}
+
+.perm-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  transition: background 0.15s;
+}
+
+.perm-item-row:last-child {
+  border-bottom: none;
+}
+
+.perm-item-row:hover {
+  background: rgba(99, 102, 241, 0.02);
+}
+
+.perm-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.perm-item-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.perm-item-desc {
+  font-size: 0.72rem;
+  color: var(--text-secondary, #64748b);
+}
+
+.badge-sensitive {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Permission Matrix Table */
+.matrix-table th, .matrix-table td {
+  text-align: center;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+}
+
+.matrix-table th:first-child, .matrix-table td:first-child {
+  text-align: left;
+}
+
+.matrix-check {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.matrix-cross {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .authority-drawer {
+    max-width: 100%;
+  }
+  .permissions-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .perm-search-box {
+    max-width: 100%;
+  }
+}

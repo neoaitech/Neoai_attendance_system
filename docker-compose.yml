@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  visionattend:
+    build: .
+    container_name: visionattend_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./database:/app/database
+      - ./data:/app/data
+      - ./models:/app/models
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - SECRET_KEY=super-secret-production-key-change-me
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/academic/metadata"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

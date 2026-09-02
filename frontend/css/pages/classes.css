@@ -1,0 +1,128 @@
+/* ===================================================================
+   VisionAttend - Academic Courses & Rosters Page Styles
+   File: frontend/css/pages/classes.css
+   =================================================================== */
+
+/* Toolbar */
+.courses-toolbar-panel {
+  margin-bottom: 20px;
+}
+
+.courses-toolbar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.course-search-wrap {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: 200px;
+}
+
+.course-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.course-filter-item {
+  flex: 0 1 160px;
+  min-width: 130px;
+}
+
+@media (max-width: 640px) {
+  .course-search-wrap {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+  .course-filter-item {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 120px;
+  }
+}
+
+/* 3-Column Responsive Course Grid */
+.courses-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .courses-grid-container {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+/* Course Card (Equal Height Flexbox Layout) */
+.course-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.course-card:hover {
+  border-color: rgba(79, 70, 229, 0.25);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.course-code-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  letter-spacing: 0.02em;
+}
+
+.course-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
+.course-metadata-box {
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.course-metadata-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  gap: 8px;
+}

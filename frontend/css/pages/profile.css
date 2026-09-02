@@ -1,0 +1,122 @@
+/* ===================================================================
+   VisionAttend - Faculty Profile & Teaching Workspace Page Styles
+   File: frontend/css/pages/profile.css
+   =================================================================== */
+
+.faculty-hero-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .faculty-hero-panel {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+.faculty-hero-identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+@media (max-width: 480px) {
+  .faculty-hero-identity {
+    gap: 12px;
+  }
+}
+
+.faculty-hero-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .faculty-hero-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.1rem;
+  }
+}
+
+.faculty-hero-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.faculty-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.faculty-hero-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Teaching Assignment Cards Grid */
+.teaching-assignments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .teaching-assignments-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.assignment-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.assignment-card:hover {
+  border-color: rgba(79, 70, 229, 0.25);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
