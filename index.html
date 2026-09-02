@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VisionAttend | AI-Powered Smart Attendance & Analytics Platform</title>
+  
+  <!-- VisionAttend Official Favicons & App Icons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Cache Control Meta Tags to force immediate browser refresh on mobile -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Enterprise Design System -->
+  <link rel="stylesheet" href="/css/styles.css?v=10.0" />
+  <link rel="stylesheet" href="/css/pages/permissions.css?v=10.0" />
+</head>
+<body>
+  
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Dedicated Full-Page Login Screen (Shown when unauthenticated) -->
+  <div id="login-container" class="login-page-wrapper hidden"></div>
+
+  <!-- Global Modal Container for Dialogs/Popups -->
+  <div id="modal-container" class="modal-backdrop hidden"></div>
+
+  <!-- Main Authenticated Application Shell -->
+  <div id="app" class="hidden">
+    
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Enterprise Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar">
+      
+      <!-- Brand Header -->
+      <div class="sidebar-brand">
+        <a href="#dashboard" class="sidebar-brand-link" title="VisionAttend - AI-Powered Attendance System">
+          <img src="/images/visionattend_logo.png" alt="VisionAttend - AI-Powered Attendance System" class="sidebar-full-logo" />
+        </a>
+      </div>
+
+      <!-- Navigation Menu with Categorized Sections -->
+      <nav class="sidebar-nav">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <div class="nav-category">Overview</div>
+        <button class="nav-item active" data-view="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </button>
+
+        <!-- SECTION 2: ATTENDANCE OPERATIONS -->
+        <div class="nav-category">Attendance Operations</div>
+        <button class="nav-item" data-view="capture">
+          <i data-lucide="camera"></i>
+          <span>Take Attendance</span>
+          <span class="nav-badge-pill">Scan</span>
+        </button>
+        <button class="nav-item" data-view="review">
+          <i data-lucide="calendar-check-2"></i>
+          <span>Attendance History</span>
+        </button>
+
+        <!-- SECTION 3: PEOPLE & ROSTERS -->
+        <div class="nav-category">People & Rosters</div>
+        <button class="nav-item" data-view="students">
+          <i data-lucide="users"></i>
+          <span>Students & Biometrics</span>
+        </button>
+        <button class="nav-item" data-view="classes">
+          <i data-lucide="book-open"></i>
+          <span>Courses & Classes</span>
+        </button>
+        <button class="nav-item" data-view="unknown_faces">
+          <i data-lucide="user-x"></i>
+          <span>Unknown Faces</span>
+          <span id="unknown-badge" class="nav-badge-danger hidden">0</span>
+        </button>
+
+        <!-- SECTION 4: ANALYTICS & INSIGHTS -->
+        <div class="nav-category">Analytics & Intel</div>
+        <button class="nav-item" data-view="reports">
+          <i data-lucide="file-spreadsheet"></i>
+          <span>Reports & Export</span>
+        </button>
+        <!-- Admin-only: AI Benchmarks -->
+        <div class="nav-category" data-admin-only="true" style="display:none;">AI & System</div>
+        <button class="nav-item" data-view="model_benchmark" data-admin-only="true" style="display:none;">
+          <i data-lucide="cpu"></i>
+          <span>AI Model Benchmarks</span>
+        </button>
+        <button class="nav-item" data-view="admin_panel" data-admin-only="true" style="display:none;">
+          <i data-lucide="shield"></i>
+          <span>Admin & Database</span>
+        </button>
+        <button class="nav-item" data-view="permissions" data-admin-only="true" style="display:none;">
+          <i data-lucide="shield-alert"></i>
+          <span>Authority & Permissions</span>
+        </button>
+
+      </nav>
+    </aside>
+
+    <!-- Main Workspace Container -->
+    <div class="main-wrapper">
+      
+      <!-- Top Navigation & Telemetry Bar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button id="sidebar-toggle" class="btn-icon" title="Toggle Navigation Menu" aria-label="Toggle Sidebar Navigation">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <div class="topbar-header-info">
+            <span class="breadcrumb-label" id="page-breadcrumb">PLATFORM / OVERVIEW</span>
+            <h1 class="page-main-title" id="page-title">Dashboard</h1>
+          </div>
+        </div>
+
+        <!-- Global Navigation & Feature Search -->
+        <div class="topbar-search-wrap" id="global-search-container">
+          <div class="topbar-search-box">
+            <i data-lucide="search" class="topbar-search-icon"></i>
+            <input type="text" id="global-search-input" class="topbar-search-input" placeholder="Search navigation, features, courses..." autocomplete="off" aria-label="Search navigation and features" />
+            <button id="global-search-clear" class="topbar-search-clear hidden" onclick="App.clearGlobalSearch()" title="Clear Search" aria-label="Clear Search">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <!-- Dropdown Results Box -->
+          <div id="global-search-results" class="search-dropdown-menu hidden"></div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Real-Time System Status Indicator -->
+          <div class="system-status-indicator" title="YOLOv8 & ArcFace Biometric Engine Online">
+            <span class="status-live-dot"></span>
+            <span class="hidden sm:inline">AI Engine Online</span>
+          </div>
+
+          <!-- Notification Bell Button & Dropdown -->
+          <div class="relative inline-block" id="topbar-notif-wrap">
+            <button class="btn-icon topbar-notif-btn" id="topbar-notif-btn" onclick="App.toggleNotifications()" title="Institutional Notifications & Activity" aria-label="View notifications" aria-expanded="false">
+              <i data-lucide="bell" class="w-4 h-4 text-slate-600"></i>
+              <span class="topbar-notif-dot hidden" id="topbar-notif-badge">0</span>
+            </button>
+            <div id="topbar-notif-dropdown" class="notif-dropdown hidden"></div>
+          </div>
+
+          <!-- Quick Action CTA Button -->
+          <button class="btn-primary btn-sm hidden sm:inline-flex items-center gap-1.5" id="topbar-quick-btn" onclick="App.navigate('capture')" title="Take Live Attendance">
+            <i data-lucide="camera" class="w-4 h-4"></i>
+            <span>Take Attendance</span>
+          </button>
+
+          <!-- Top-Right Logged-in User Profile Dropdown -->
+          <div class="topbar-profile-container">
+            <button class="topbar-user-pill" id="topbar-profile-trigger" onclick="App.toggleProfileDropdown()" aria-label="User profile menu" aria-expanded="false">
+              <div class="topbar-user-avatar" id="topbar-user-avatar">VA</div>
+              <div class="topbar-user-details hidden md:flex flex-col text-left">
+                <span class="topbar-user-name" id="topbar-user-name">Administrator</span>
+                <span class="topbar-user-role" id="topbar-user-role">System Administrator</span>
+              </div>
+              <i data-lucide="chevron-down" class="topbar-user-chevron w-3.5 h-3.5 hidden md:block text-slate-400"></i>
+            </button>
+
+            <!-- Profile Dropdown Menu -->
+            <div id="topbar-profile-dropdown" class="profile-dropdown-menu hidden">
+              <div class="profile-dropdown-header">
+                <div class="font-bold text-slate-900 text-xs truncate" id="dropdown-user-name">Administrator</div>
+                <div class="text-[11px] text-slate-500 truncate font-medium" id="dropdown-user-role">System Administrator</div>
+              </div>
+              <div class="profile-dropdown-body">
+                <button class="profile-dropdown-item" onclick="App.navigate('profile'); App.closeProfileDropdown();">
+                  <i data-lucide="user" class="w-4 h-4 text-slate-500"></i>
+                  <span>My Profile & Teaching</span>
+                </button>
+                <button class="profile-dropdown-item admin-only-item" data-admin-only="true" onclick="App.navigate('admin_panel'); App.closeProfileDropdown();" style="display:none;">
+                  <i data-lucide="shield" class="w-4 h-4 text-indigo-500"></i>
+                  <span>System Diagnostics</span>
+                </button>
+                <button class="profile-dropdown-item admin-only-item" data-admin-only="true" onclick="Auth.quickSwitchAccount(); App.closeProfileDropdown();" style="display:none;">
+                  <i data-lucide="arrow-left-right" class="w-4 h-4 text-purple-500"></i>
+                  <span>Switch Role</span>
+                </button>
+                <div class="profile-dropdown-divider"></div>
+                <button class="profile-dropdown-item text-rose-600 hover:bg-rose-50" onclick="Auth.logout()">
+                  <i data-lucide="log-out" class="w-4 h-4 text-rose-500"></i>
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </header>
+
+      <!-- Dynamic View Container (SPA Render Target) -->
+      <main id="view-container" class="view-content-wrapper">
+        <div class="p-12 text-center text-slate-400">
+          <span class="animate-spin mr-2">⏳</span> Initializing VisionAttend Platform...
+        </div>
+      </main>
+
+      <!-- Modern Mobile Bottom Navigation Bar (Visible on mobile <= 768px) -->
+      <nav id="mobile-bottom-nav" class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <button class="mobile-nav-item active" data-view="dashboard" aria-label="Dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="mobile-nav-item" data-view="review" aria-label="Attendance History">
+          <i data-lucide="calendar-check-2"></i>
+          <span>History</span>
+        </button>
+        <button class="mobile-nav-fab" data-view="capture" aria-label="Take Attendance" title="Take Attendance">
+          <div class="mobile-nav-fab-inner">
+            <i data-lucide="camera"></i>
+          </div>
+          <span>Scan</span>
+        </button>
+        <button class="mobile-nav-item" data-view="reports" aria-label="Reports">
+          <i data-lucide="file-spreadsheet"></i>
+          <span>Reports</span>
+        </button>
+        <button class="mobile-nav-item" id="mobile-bottom-menu-btn" aria-label="More Menu">
+          <i data-lucide="menu"></i>
+          <span>Menu</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules with Cache-Busting -->
+  <script src="/js/api.js?v=11.0"></script>
+  <script src="/js/utils/date_utils.js?v=11.0"></script>
+  <script src="/js/auth.js?v=11.0"></script>
+  <script src="/js/views/dashboard.js?v=11.0"></script>
+  <script src="/js/views/capture.js?v=11.0"></script>
+  <script src="/js/views/review.js?v=11.0"></script>
+  <script src="/js/views/students.js?v=11.0"></script>
+  <script src="/js/views/student_new.js?v=11.0"></script>
+  <script src="/js/views/student_edit.js?v=11.0"></script>
+  <script src="/js/views/classes.js?v=11.0"></script>
+  <script src="/js/views/course_new.js?v=11.0"></script>
+  <script src="/js/views/course_edit.js?v=11.0"></script>
+  <script src="/js/views/offering_new.js?v=11.0"></script>
+  <script src="/js/views/offering_edit.js?v=11.0"></script>
+  <script src="/js/views/roster_manage.js?v=11.0"></script>
+  <script src="/js/views/faculty_new.js?v=11.0"></script>
+  <script src="/js/views/faculty_edit.js?v=11.0"></script>
+  <script src="/js/views/reports.js?v=11.0"></script>
+  <script src="/js/views/unknown_faces.js?v=11.0"></script>
+  <script src="/js/views/model_benchmark.js?v=11.0"></script>
+  <script src="/js/views/admin_panel.js?v=11.0"></script>
+  <script src="/js/views/permissions.js?v=11.0"></script>
+  <script src="/js/views/profile.js?v=11.0"></script>
+  <script src="/js/views/student_attendance.js?v=11.0"></script>
+  <script src="/js/app.js?v=11.0"></script>
+</body>
+</html>

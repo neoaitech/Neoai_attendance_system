@@ -1,0 +1,43 @@
+/* ===================================================================
+   VisionAttend - AI Model Benchmarks & Metrics Page Styles
+   File: frontend/css/pages/model_benchmark.css
+   =================================================================== */
+
+.benchmark-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .benchmark-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.benchmark-metric-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+}
+
+.benchmark-meter-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-surface-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.benchmark-meter-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: var(--radius-full);
+}

@@ -1,0 +1,59 @@
+/* ===================================================================
+   VisionAttend - Unknown Faces Resolution Queue Page Styles
+   File: frontend/css/pages/unknown_faces.css
+   =================================================================== */
+
+.unknown-faces-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .unknown-faces-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+  }
+}
+
+.unknown-face-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.unknown-face-card:hover {
+  border-color: var(--border-medium);
+}
+
+.unknown-face-crop-wrap {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #0f172a;
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 12px;
+  position: relative;
+  text-align: center;
+  height: 140px;
+  max-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.unknown-face-crop-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 140px !important;
+  object-fit: cover !important;
+  display: block !important;
+}

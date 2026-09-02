@@ -1,0 +1,365 @@
+/* ===================================================================
+   VisionAttend - Students Directory & Master Academic Management
+   File: frontend/css/pages/students.css
+   =================================================================== */
+
+/* ================= Multi-Filter Toolbar ================= */
+.students-toolbar-panel {
+  margin-bottom: 16px;
+}
+
+.students-toolbar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.toolbar-search-wrap {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
+.toolbar-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.toolbar-filter-item {
+  flex: 0 1 140px;
+  min-width: 120px;
+}
+
+.toolbar-filter-item.narrow {
+  flex: 0 1 110px;
+  min-width: 90px;
+}
+
+@media (max-width: 768px) {
+  .toolbar-search-wrap {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+  .toolbar-filter-item, .toolbar-filter-item.narrow {
+    flex: 1 1 calc(50% - 6px);
+  }
+}
+
+.toolbar-view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface-subtle);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  margin-left: auto;
+}
+
+.toolbar-view-toggle button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toolbar-view-toggle button.active {
+  background: var(--bg-surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-xs);
+  font-weight: bold;
+}
+
+/* ================= Student Cards Grid ================= */
+.students-grid-container,
+.students-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .students-grid-container,
+  .students-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.student-grid-card,
+.student-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.student-grid-card:hover,
+.student-card:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.08);
+  transform: translateY(-1px);
+}
+
+.student-grid-card.selected {
+  border-color: #6366f1;
+  background: #fdfefe;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.student-avatar-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.student-avatar-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.student-avatar-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #4338ca;
+  background: #eef2ff;
+}
+
+.student-name-text {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.student-roll-badge {
+  font-family: monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #4338ca;
+  background: #eef2ff;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #c7d2fe;
+}
+
+/* ================= Student Profile Modal ================= */
+.profile-modal-card {
+  max-width: 740px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.profile-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  border: 1px solid #e0e7ff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  position: relative;
+}
+
+.profile-avatar-large {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #e0e7ff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.15);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-large span {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #4338ca;
+}
+
+.profile-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.profile-section-heading {
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .profile-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.profile-stat-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: all 0.15s ease;
+}
+
+.profile-stat-box:hover {
+  border-color: #c7d2fe;
+  background: #fdfefe;
+}
+
+.profile-stat-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.profile-stat-val {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.profile-meta-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.profile-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.profile-meta-item strong {
+  color: #1e293b;
+}
+
+.course-pill-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.15s ease;
+}
+
+.course-pill-card:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.08);
+}
+
+.biometric-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.biometric-photo-card {
+  width: 78px;
+  height: 78px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.biometric-photo-card:hover {
+  border-color: #6366f1;
+  transform: scale(1.04);
+  box-shadow: 0 6px 14px rgba(99, 102, 241, 0.18);
+}
+
+.biometric-photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
