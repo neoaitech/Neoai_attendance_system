@@ -97,189 +97,51 @@ const CaptureView = {
         <div class="capture-config-panel">
           
           <!-- Panel Header -->
-          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);">
-                <i data-lucide="layers" style="width: 19px; height: 19px;"></i>
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);">
+                <i data-lucide="layers" style="width: 18px; height: 18px;"></i>
               </div>
               <div>
-                <h3 style="font-size: 1.02rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2;">
-                  Lecture Scope & Target Roster
+                <h3 style="font-size: 0.98rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2;">
+                  Lecture Setup & Target Class
                 </h3>
-                <span style="font-size: 0.74rem; color: #64748b; font-weight: 500;">
-                  Specify academic hierarchy, divisions, and subject details for automatic face identification
+                <span style="font-size: 0.72rem; color: #64748b; font-weight: 500;">
+                  Select class to automatically load enrolled students for instant AI verification
                 </span>
               </div>
             </div>
             
             <!-- Live Active Roster Badge -->
             <div id="roster-active-indicator" style="display: flex; align-items: center; gap: 8px;">
-              <span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.74rem; font-weight: 800; padding: 6px 12px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(16, 185, 129, 0.1);">
-                <i data-lucide="shield-check" style="width: 15px; height: 15px; color: #059669;"></i>
+              <span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.74rem; font-weight: 800; padding: 5px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 1px 3px rgba(16, 185, 129, 0.1);">
+                <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #059669;"></i>
                 <span id="active-roster-text">Active Roster Ready</span>
               </span>
             </div>
           </div>
 
-          <!-- Section 1: Academic Hierarchy Context -->
-          <div class="config-section-tag">
-            <span class="step-num">1</span>
-            <span>Academic Hierarchy & Division Enrollment</span>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 18px;">
-            
-            <!-- 1. Department -->
-            <div class="form-group mb-0">
-              <label class="form-label" style="font-size: 0.75rem; font-weight: 700; color: #334155; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
-                <i data-lucide="building-2" style="width: 14px; height: 14px; color: #6366f1;"></i>
-                <span>Department *</span>
-              </label>
-              <select id="multi-dept-select" class="form-select text-xs" style="font-weight: 600; border-radius: 10px; border-color: #cbd5e1; height: 40px; background-color: #f8fafc;" onchange="CaptureView.onDeptChange()">
-                <option value="ALL">All Departments</option>
-                <option value="Computer" selected>Computer</option>
-                <option value="Law">Law</option>
-                <option value="Management">Management</option>
-                <option value="Sport">Sport</option>
-                <option value="OTHER">Other...</option>
-              </select>
-              <!-- Custom Department Input -->
-              <div id="custom-dept-wrapper" class="hidden mt-2">
-                <label class="form-label text-[11px] font-semibold text-indigo-600">Custom Department *</label>
-                <input type="text" id="custom-dept-input" class="form-input text-xs" placeholder="e.g. Biotechnology & Computational Sciences" oninput="CaptureView.onCustomFieldInput()" />
-              </div>
-            </div>
-
-            <!-- 2. Program / Degree (MULTI-SELECT) -->
-            <div class="form-group mb-0">
-              <label class="form-label" style="font-size: 0.75rem; font-weight: 700; color: #334155; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
-                <i data-lucide="graduation-cap" style="width: 14px; height: 14px; color: #6366f1;"></i>
-                <span>Program / Degree * (Multi-Select)</span>
-              </label>
-              
-              <div class="multi-select-container" id="program-multi-select-container" style="position: relative;">
-                <div class="multi-select-box" id="program-trigger-box" style="min-height: 40px; border-radius: 10px; border-color: #cbd5e1; background-color: #f8fafc;" onclick="CaptureView.toggleProgramDropdown()">
-                  <div class="multi-select-chips" id="program-selected-chips">
-                    <!-- Chips rendered here -->
-                  </div>
-                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-                </div>
-
-                <div class="multi-select-dropdown hidden" id="program-dropdown-menu">
-                  <div id="program-items-list" class="space-y-1">
-                    <!-- Checkboxes rendered dynamically -->
-                  </div>
-                  <div class="multi-select-actions">
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); CaptureView.selectAllPrograms()">Select All</button>
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); CaptureView.clearAllPrograms()">Clear All</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Custom Program Input -->
-              <div id="custom-prog-wrapper" class="hidden mt-2">
-                <label class="form-label text-[11px] font-semibold text-indigo-600">Custom Program / Degree *</label>
-                <input type="text" id="custom-prog-input" class="form-input text-xs" placeholder="e.g. MBA or Diploma in CS" oninput="CaptureView.onCustomFieldInput()" />
-              </div>
-            </div>
-
-            <!-- 3. Semester (MULTI-SELECT) -->
-            <div class="form-group mb-0">
-              <label class="form-label" style="font-size: 0.75rem; font-weight: 700; color: #334155; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
-                <i data-lucide="calendar" style="width: 14px; height: 14px; color: #6366f1;"></i>
-                <span>Semester * (Multi-Select)</span>
-              </label>
-              
-              <div class="multi-select-container" id="semester-multi-select-container" style="position: relative;">
-                <div class="multi-select-box" id="semester-trigger-box" style="min-height: 40px; border-radius: 10px; border-color: #cbd5e1; background-color: #f8fafc;" onclick="CaptureView.toggleSemesterDropdown()">
-                  <div class="multi-select-chips" id="semester-selected-chips">
-                    <!-- Chips rendered here -->
-                  </div>
-                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-                </div>
-
-                <div class="multi-select-dropdown hidden" id="semester-dropdown-menu">
-                  <div id="semester-items-list" class="space-y-1">
-                    <!-- Checkboxes rendered dynamically -->
-                  </div>
-                  <div class="multi-select-actions">
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); CaptureView.selectAllSemesters()">Select All</button>
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); CaptureView.clearAllSemesters()">Clear All</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Custom Semester Input -->
-              <div id="custom-sem-wrapper" class="hidden mt-2">
-                <label class="form-label text-[11px] font-semibold text-indigo-600">Custom Semester *</label>
-                <input type="text" id="custom-sem-input" class="form-input text-xs" placeholder="e.g. Semester 9 or Summer Term" oninput="CaptureView.onCustomFieldInput()" />
-              </div>
-            </div>
-
-            <!-- 4. Division / Section (MULTI-SELECT) -->
-            <div class="form-group mb-0">
-              <label class="form-label" style="font-size: 0.75rem; font-weight: 700; color: #334155; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
-                <i data-lucide="users" style="width: 14px; height: 14px; color: #6366f1;"></i>
-                <span>Division / Section * (Multi-Select)</span>
-              </label>
-              
-              <div class="multi-select-container" id="division-multi-select-container" style="position: relative;">
-                <!-- Clickable Trigger Box -->
-                <div class="multi-select-box" id="division-trigger-box" style="min-height: 40px; border-radius: 10px; border-color: #cbd5e1; background-color: #f8fafc;" onclick="CaptureView.toggleDivisionDropdown()">
-                  <div class="multi-select-chips" id="division-selected-chips">
-                    <!-- Chips rendered here -->
-                  </div>
-                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-                </div>
-
-                <!-- Dropdown Popup Menu -->
-                <div class="multi-select-dropdown hidden" id="division-dropdown-menu">
-                  <div id="division-items-list" class="space-y-1">
-                    <!-- Checkbox items rendered dynamically -->
-                  </div>
-
-                  <div class="multi-select-actions">
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); CaptureView.selectAllDivisions()">Select All</button>
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); CaptureView.clearAllDivisions()">Clear All</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Custom Division Input (Visible when 'Other' checked) -->
-              <div id="custom-div-wrapper" class="hidden mt-2">
-                <label class="form-label text-[11px] font-semibold text-indigo-600">Custom Division / Section *</label>
-                <input type="text" id="custom-div-input" class="form-input text-xs" placeholder="e.g. Special Section or Batch Alpha" oninput="CaptureView.onCustomFieldInput()" />
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Section 2: Course & Subject Details -->
-          <div class="config-section-tag">
-            <span class="step-num">2</span>
-            <span>Course & Lecture Session Details</span>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 20px;">
+          <!-- Section 1: Course & Lecture Selection (Primary Action) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 12px;">
             
             <!-- Subject Dropdown -->
             <div class="form-group mb-0">
-              <label class="form-label" style="font-size: 0.75rem; font-weight: 700; color: #334155; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+              <label class="form-label" style="font-size: 0.76rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
                 <i data-lucide="book-open" style="width: 14px; height: 14px; color: #6366f1;"></i>
-                <span>Subject / Course *</span>
+                <span>Target Class / Subject *</span>
               </label>
-              <select id="multi-class-select" class="form-select text-xs" style="font-weight: 600; border-radius: 10px; border-color: #cbd5e1; height: 40px; background-color: #f8fafc;" required onchange="CaptureView.onCourseChange()">
+              <select id="multi-class-select" class="form-select text-xs" style="font-weight: 600; border-radius: 10px; border-color: #cbd5e1; height: 42px; background-color: #f8fafc;" required onchange="CaptureView.onCourseChange()">
                 <option value="">Loading active subjects...</option>
               </select>
             </div>
 
             <!-- Lecture Topic Input -->
             <div class="form-group mb-0">
-              <label class="form-label" style="font-size: 0.75rem; font-weight: 700; color: #334155; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+              <label class="form-label" style="font-size: 0.76rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
                 <i data-lucide="file-text" style="width: 14px; height: 14px; color: #6366f1;"></i>
-                <span>Lecture Topic / Session Title *</span>
+                <span>Lecture Title / Topic *</span>
               </label>
-              <input type="text" id="multi-session-name" class="form-input text-xs" style="font-weight: 600; border-radius: 10px; border-color: #cbd5e1; height: 40px; background-color: #f8fafc;" placeholder="e.g. Deep Learning - Neural Networks" value="Deep Learning - Neural Networks" required oninput="CaptureView.updateAttendanceContextPreview()" />
+              <input type="text" id="multi-session-name" class="form-input text-xs" style="font-weight: 600; border-radius: 10px; border-color: #cbd5e1; height: 42px; background-color: #f8fafc;" placeholder="e.g. Regular Lecture" value="Regular Lecture" required oninput="CaptureView.updateAttendanceContextPreview()" />
             </div>
 
           </div>
@@ -297,27 +159,141 @@ const CaptureView = {
               </div>
               <div>
                 <label class="form-label text-[11px] font-semibold text-slate-700">Custom Course Title *</label>
-                <input type="text" id="custom-course-title-input" class="form-input text-xs font-semibold" placeholder="e.g. Advanced Computer Vision Workshop" oninput="CaptureView.onCustomFieldInput()" />
+                <input type="text" id="custom-course-title-input" class="form-input text-xs font-semibold" placeholder="e.g. Advanced Workshop" oninput="CaptureView.onCustomFieldInput()" />
               </div>
             </div>
           </div>
 
-          <!-- Method Selector Tabs - Segmented Pill -->
-          <div style="border-top: 1px solid #f1f5f9; padding-top: 18px; margin-top: 4px;">
+          <!-- Advanced Hierarchy Scope Toggle Bar -->
+          <div style="display: flex; align-items: center; justify-content: flex-end; margin-bottom: 12px;">
+            <button type="button" class="btn-secondary text-[11px] py-1.5 px-3" style="border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;" onclick="CaptureView.toggleAdvancedHierarchy()">
+              <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <span>Filter Department & Divisions</span>
+              <i data-lucide="chevron-down" id="hierarchy-toggle-icon" class="w-3.5 h-3.5 text-slate-400 transition-transform"></i>
+            </button>
+          </div>
+
+          <!-- Collapsible Section: Academic Hierarchy Context -->
+          <div id="advanced-hierarchy-section" class="hidden p-3.5 bg-slate-50/90 border border-dashed border-slate-200 rounded-xl mb-4">
+            <div class="config-section-tag" style="margin-bottom: 8px;">
+              <span class="step-num">⚙️</span>
+              <span>Advanced Cross-Program & Division Scope</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+              
+              <!-- 1. Department -->
+              <div class="form-group mb-0">
+                <label class="form-label" style="font-size: 0.72rem; font-weight: 700; color: #334155; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
+                  <i data-lucide="building-2" style="width: 13px; height: 13px; color: #6366f1;"></i>
+                  <span>Department</span>
+                </label>
+                <select id="multi-dept-select" class="form-select text-xs" style="font-weight: 600; border-radius: 8px; border-color: #cbd5e1; height: 38px; background-color: #ffffff;" onchange="CaptureView.onDeptChange()">
+                  <option value="ALL">All Departments</option>
+                  <option value="Computer" selected>Computer</option>
+                  <option value="Law">Law</option>
+                  <option value="Management">Management</option>
+                  <option value="Sport">Sport</option>
+                  <option value="OTHER">Other...</option>
+                </select>
+                <div id="custom-dept-wrapper" class="hidden mt-2">
+                  <input type="text" id="custom-dept-input" class="form-input text-xs" placeholder="Custom Department" oninput="CaptureView.onCustomFieldInput()" />
+                </div>
+              </div>
+
+              <!-- 2. Program / Degree -->
+              <div class="form-group mb-0">
+                <label class="form-label" style="font-size: 0.72rem; font-weight: 700; color: #334155; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
+                  <i data-lucide="graduation-cap" style="width: 13px; height: 13px; color: #6366f1;"></i>
+                  <span>Program / Degree</span>
+                </label>
+                <div class="multi-select-container" id="program-multi-select-container" style="position: relative;">
+                  <div class="multi-select-box" id="program-trigger-box" style="min-height: 38px; border-radius: 8px; border-color: #cbd5e1; background-color: #ffffff;" onclick="CaptureView.toggleProgramDropdown()">
+                    <div class="multi-select-chips" id="program-selected-chips"></div>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 flex-shrink-0"></i>
+                  </div>
+                  <div class="multi-select-dropdown hidden" id="program-dropdown-menu">
+                    <div id="program-items-list" class="space-y-1"></div>
+                    <div class="multi-select-actions">
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2" onclick="event.stopPropagation(); CaptureView.selectAllPrograms()">Select All</button>
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2 text-rose-600" onclick="event.stopPropagation(); CaptureView.clearAllPrograms()">Clear</button>
+                    </div>
+                  </div>
+                </div>
+                <div id="custom-prog-wrapper" class="hidden mt-2">
+                  <input type="text" id="custom-prog-input" class="form-input text-xs" placeholder="Custom Program" oninput="CaptureView.onCustomFieldInput()" />
+                </div>
+              </div>
+
+              <!-- 3. Semester -->
+              <div class="form-group mb-0">
+                <label class="form-label" style="font-size: 0.72rem; font-weight: 700; color: #334155; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
+                  <i data-lucide="calendar" style="width: 13px; height: 13px; color: #6366f1;"></i>
+                  <span>Semester</span>
+                </label>
+                <div class="multi-select-container" id="semester-multi-select-container" style="position: relative;">
+                  <div class="multi-select-box" id="semester-trigger-box" style="min-height: 38px; border-radius: 8px; border-color: #cbd5e1; background-color: #ffffff;" onclick="CaptureView.toggleSemesterDropdown()">
+                    <div class="multi-select-chips" id="semester-selected-chips"></div>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 flex-shrink-0"></i>
+                  </div>
+                  <div class="multi-select-dropdown hidden" id="semester-dropdown-menu">
+                    <div id="semester-items-list" class="space-y-1"></div>
+                    <div class="multi-select-actions">
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2" onclick="event.stopPropagation(); CaptureView.selectAllSemesters()">Select All</button>
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2 text-rose-600" onclick="event.stopPropagation(); CaptureView.clearAllSemesters()">Clear</button>
+                    </div>
+                  </div>
+                </div>
+                <div id="custom-sem-wrapper" class="hidden mt-2">
+                  <input type="text" id="custom-sem-input" class="form-input text-xs" placeholder="Custom Semester" oninput="CaptureView.onCustomFieldInput()" />
+                </div>
+              </div>
+
+              <!-- 4. Division / Section -->
+              <div class="form-group mb-0">
+                <label class="form-label" style="font-size: 0.72rem; font-weight: 700; color: #334155; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
+                  <i data-lucide="users" style="width: 13px; height: 13px; color: #6366f1;"></i>
+                  <span>Division / Section</span>
+                </label>
+                <div class="multi-select-container" id="division-multi-select-container" style="position: relative;">
+                  <div class="multi-select-box" id="division-trigger-box" style="min-height: 38px; border-radius: 8px; border-color: #cbd5e1; background-color: #ffffff;" onclick="CaptureView.toggleDivisionDropdown()">
+                    <div class="multi-select-chips" id="division-selected-chips"></div>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 flex-shrink-0"></i>
+                  </div>
+                  <div class="multi-select-dropdown hidden" id="division-dropdown-menu">
+                    <div id="division-items-list" class="space-y-1"></div>
+                    <div class="multi-select-actions">
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2" onclick="event.stopPropagation(); CaptureView.selectAllDivisions()">Select All</button>
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2 text-rose-600" onclick="event.stopPropagation(); CaptureView.clearAllDivisions()">Clear</button>
+                    </div>
+                  </div>
+                </div>
+                <div id="custom-div-wrapper" class="hidden mt-2">
+                  <input type="text" id="custom-div-input" class="form-input text-xs" placeholder="Custom Division" oninput="CaptureView.onCustomFieldInput()" />
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Section 2: Method Selector Tabs - Segmented Pill -->
+          <div style="border-top: 1px solid #f1f5f9; padding-top: 14px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
               <label class="form-label" style="font-size: 0.75rem; font-weight: 800; color: #334155; margin-bottom: 0; text-transform: uppercase; letter-spacing: 0.04em;">Classroom Ingestion Mode</label>
-              <span style="font-size: 0.7rem; color: #64748b; font-weight: 500;">Select panoramic upload or real-time camera stream</span>
             </div>
             
             <div class="ingest-method-nav">
               <button type="button" id="tab-upload-btn" class="ingest-method-btn active" onclick="CaptureView.setSourceMode('upload')">
                 <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-600"></i>
-                <span>Upload Classroom Photos (1–8 Photos)</span>
-                <span class="badge" style="background: rgba(99, 102, 241, 0.12); color: #4f46e5; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; margin-left: 4px;">PANORAMIC</span>
+                <span>Upload Photos</span>
+                <span class="badge desktop-badge" style="background: rgba(99, 102, 241, 0.12); color: #4f46e5; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; margin-left: 4px;">1–8 ANGLES</span>
               </button>
               <button type="button" id="tab-camera-btn" class="ingest-method-btn" onclick="CaptureView.setSourceMode('camera')">
                 <i data-lucide="camera" class="w-4 h-4"></i>
-                <span>Live Classroom Camera Scanner</span>
+                <span>Live Camera</span>
+              </button>
+            </div>
+          </div>
                 <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; margin-left: 4px;">REAL-TIME</span>
               </button>
             </div>
@@ -1074,6 +1050,21 @@ const CaptureView = {
     }
 
     this.updateAttendanceContextPreview();
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  toggleAdvancedHierarchy() {
+    const sec = document.getElementById("advanced-hierarchy-section");
+    const icon = document.getElementById("hierarchy-toggle-icon");
+    if (!sec) return;
+    const isHidden = sec.classList.contains("hidden");
+    if (isHidden) {
+      sec.classList.remove("hidden");
+      if (icon) icon.style.transform = "rotate(180deg)";
+    } else {
+      sec.classList.add("hidden");
+      if (icon) icon.style.transform = "rotate(0deg)";
+    }
     if (window.lucide) window.lucide.createIcons();
   },
 
