@@ -12,7 +12,7 @@
   margin-bottom: 22px;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 4px 10px -2px rgba(0, 0, 0, 0.02);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .capture-config-panel::before {
@@ -22,6 +22,7 @@
   left: 0;
   right: 0;
   height: 3.5px;
+  border-radius: 18px 18px 0 0;
   background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899, #6366f1);
   background-size: 200% 100%;
 }
@@ -1485,74 +1486,195 @@
 
 /* ================= Mobile Breakpoints for Capture Scanner ================= */
 @media (max-width: 768px) {
+  /* Prevent horizontal screen expansion */
   .capture-workspace-grid {
     grid-template-columns: 1fr !important;
-    gap: 16px;
+    gap: 14px !important;
   }
 
   .capture-config-panel {
-    padding: 16px 14px;
-    border-radius: 14px;
-    margin-bottom: 16px;
+    padding: 16px 14px !important;
+    border-radius: 16px !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* Compact Header on Mobile */
+  .capture-page-header .text-xs.text-slate-500 {
+    display: none !important;
+  }
+
+  .capture-page-header .badge {
+    padding: 2px 6px !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* Dropdown Z-index & Clipping Prevention */
+  .multi-select-dropdown {
+    position: absolute !important;
+    top: calc(100% + 4px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 9999 !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16) !important;
+    max-height: 240px !important;
+    overflow-y: auto !important;
+  }
+
+  /* Ingestion Mode Segmented Tabs on Mobile */
+  .ingest-method-nav {
+    display: flex !important;
+    gap: 6px !important;
+    padding: 4px !important;
+    background: #f1f5f9 !important;
+    border-radius: 12px !important;
+  }
+
+  .ingest-method-btn {
+    flex: 1 !important;
+    padding: 10px 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    justify-content: center !important;
+    gap: 6px !important;
+  }
+
+  .ingest-method-btn .desktop-badge {
+    display: none !important;
+  }
+
+  /* Camera Viewport on Mobile */
+  .camera-viewport-card {
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .camera-feed-container {
+    min-height: 220px !important;
+    max-height: 48vh !important;
+    border-radius: 14px !important;
+    aspect-ratio: 4 / 3 !important;
   }
 
   .upload-dropzone {
-    padding: 24px 16px;
-    border-radius: 14px;
+    padding: 26px 16px !important;
+    border-radius: 14px !important;
   }
 
   .upload-dropzone i[data-lucide="camera"],
   .upload-dropzone i[data-lucide="upload-cloud"] {
-    width: 38px !important;
-    height: 38px !important;
+    width: 36px !important;
+    height: 36px !important;
   }
 
+  /* Multi-Angle Strip Horizontal Scroll */
   .multi-snap-strip {
-    padding: 8px 10px;
-    gap: 8px;
+    padding: 8px !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
+  .multi-snap-strip::-webkit-scrollbar {
+    height: 4px !important;
+  }
+
+  /* Camera Controls */
+  .camera-controls-bar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
+  }
+
+  .camera-controls-bar .btn-primary {
+    grid-column: span 2 !important;
+    padding: 12px 16px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Floating Sticky "Scan Attendance" Button on Mobile */
   #multi-scan-btn {
     width: 100% !important;
-    padding: 14px 18px !important;
-    font-size: 0.92rem !important;
-    border-radius: 12px !important;
-    justify-content: center;
+    padding: 15px 18px !important;
+    font-size: 0.95rem !important;
+    font-weight: 800 !important;
+    border-radius: 14px !important;
+    justify-content: center !important;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+  }
+
+  /* Photo Canvas Frame Responsiveness */
+  .photo-canvas-frame {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    border-radius: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  .zoomable-photo-wrapper {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  #active-classroom-photo {
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  /* Mobile Crop Cards Grid (2 Columns) */
+  .crop-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .crop-card {
+    padding: 10px 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .crop-card-img {
+    width: 68px !important;
+    height: 68px !important;
+    min-width: 68px !important;
+    max-width: 68px !important;
+  }
+
+  /* Extra Candidate Cards */
+  .extra-candidate-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+  }
+
+  .extra-candidate-card .flex.items-center.gap-2 {
+    width: 100% !important;
+  }
+
+  .extra-candidate-card .flex.items-center.gap-2 button {
+    flex: 1 !important;
+    justify-content: center !important;
   }
 }
 
-@media (max-width: 640px) {
-  .ingest-method-nav {
-    flex-direction: row;
-    gap: 4px;
+@media (max-width: 480px) {
+  .crop-card-img {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
   }
-  .ingest-method-btn {
-    flex: 1;
-    padding: 9px 8px;
-    font-size: 0.76rem;
-  }
-  .camera-feed-container {
-    min-height: 200px;
-    max-height: 40vh;
-  }
+
   .camera-controls-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
+    grid-template-columns: 1fr !important;
   }
-  .camera-controls-bar button, .camera-controls-bar label {
-    width: 100%;
-    justify-content: center;
-  }
-  .extra-candidate-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .extra-candidate-card .flex.items-center.gap-2 {
-    width: 100%;
-  }
-  .extra-candidate-card .flex.items-center.gap-2 button {
-    flex: 1;
+
+  .camera-controls-bar .btn-primary {
+    grid-column: span 1 !important;
   }
 }
