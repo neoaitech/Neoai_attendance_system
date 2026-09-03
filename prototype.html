@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>VisionAttend AI — Mobile App Prototype</title>
+  <title>VisionAttend — Smart Fintech-Style Attendance</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
     }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #0f172a;
+      background: #090e17;
       color: #0f172a;
       display: flex;
       align-items: center;
@@ -32,12 +32,12 @@
       max-width: 412px;
       height: 100vh;
       max-height: 890px;
-      background: #f8fafc;
+      background: #f4f6fb;
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6);
     }
     @media (min-width: 600px) {
       .device-shell {
@@ -51,7 +51,7 @@
         left: 50%;
         transform: translateX(-50%);
         width: 130px;
-        height: 28px;
+        height: 26px;
         background: #1e293b;
         border-bottom-left-radius: 18px;
         border-bottom-right-radius: 18px;
@@ -77,14 +77,14 @@
         height: 100dvh;
       }
     }
-    /* Screen Viewport */
+    /* Scrollable Container */
     .app-screen-container {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
       overflow-x: hidden;
-      padding-bottom: 84px;
+      padding-bottom: 86px;
       position: relative;
       -webkit-overflow-scrolling: touch;
     }
@@ -93,109 +93,377 @@
       flex-direction: column;
       width: 100%;
       min-height: 100%;
-      animation: fadeIn 0.25s ease-out;
+      animation: fadeIn 0.2s ease-out;
     }
     .screen-view.active {
       display: flex;
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* Top Bar */
-    .mobile-header {
+
+    /* Top Fintech Header */
+    .fintech-header {
+      background: #ffffff;
       padding: 16px 18px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #ffffff;
-      border-bottom: 1px solid rgba(0,0,0,0.06);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
       position: sticky;
       top: 0;
       z-index: 40;
     }
-    .brand-group {
+    .user-profile-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
-    .brand-logo-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
+    .avatar-bubble {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
       background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      font-weight: 800;
+      font-size: 0.88rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
       box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+      position: relative;
     }
-    .brand-text h1 {
+    .online-indicator {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 11px;
+      height: 11px;
+      background: #10b981;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+    }
+    .greeting-text h2 {
       font-size: 0.98rem;
       font-weight: 800;
       color: #0f172a;
-      line-height: 1.1;
+      line-height: 1.2;
     }
-    .brand-text span {
-      font-size: 0.68rem;
-      color: #10b981;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    .greeting-text p {
+      font-size: 0.7rem;
+      color: #64748b;
+      font-weight: 600;
     }
-    .live-dot {
-      width: 6px;
-      height: 6px;
-      background: #10b981;
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.3); opacity: 0.6; }
-    }
-    .header-actions {
+    .header-icons {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .header-user-avatar {
-      width: 32px;
-      height: 32px;
+    .icon-btn {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: #e0e7ff;
-      color: #4f46e5;
-      font-weight: 700;
-      font-size: 0.75rem;
+      background: #f1f5f9;
+      border: none;
+      color: #475569;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid #ffffff;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+      position: relative;
     }
-    /* Fixed Bottom Nav */
-    .mobile-bottom-bar {
+    .badge-notif {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+    }
+
+    /* Screen Content */
+    .screen-content {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Bank-Style Hero Quick Action Card */
+    .hero-scanner-banner {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      border-radius: 20px;
+      padding: 18px;
+      color: white;
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-scanner-banner::before {
+      content: '';
+      position: absolute;
+      right: -25px;
+      bottom: -35px;
+      width: 140px;
+      height: 140px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .hero-top-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .hero-subject-name {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin: 10px 0 4px;
+      line-height: 1.2;
+    }
+    .hero-sub-detail {
+      font-size: 0.8rem;
+      opacity: 0.92;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .hero-primary-cta {
+      background: #ffffff;
+      color: #4f46e5;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .hero-primary-cta:active {
+      transform: scale(0.97);
+    }
+
+    /* 8-Icon Grid (GPay / PhonePe Style) */
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 4px 0 2px;
+    }
+    .section-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+    }
+    .section-link {
+      font-size: 0.72rem;
+      color: #6366f1;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .fintech-grid-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 16px 10px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px 6px;
+    }
+    .grid-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-align: center;
+      position: relative;
+    }
+    .grid-tile:active {
+      transform: scale(0.93);
+    }
+    .tile-icon-bubble {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: transform 0.15s;
+    }
+    .tile-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #334155;
+      line-height: 1.15;
+    }
+    .tile-badge-count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.58rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 999px;
+      border: 2px solid #ffffff;
+    }
+
+    /* Urgent Alert Banner (Like Bills Due in GPay) */
+    .urgent-banner-card {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .urgent-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .urgent-icon-pill {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #ef4444;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .urgent-text h4 {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #991b1b;
+      line-height: 1.2;
+    }
+    .urgent-text p {
+      font-size: 0.68rem;
+      color: #b91c1c;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Recent Transactions Style Feed */
+    .activity-feed-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 14px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .feed-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+    }
+    .feed-item:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    .feed-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .feed-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .feed-meta h4 {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .feed-meta p {
+      font-size: 0.68rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .feed-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .feed-badge-green {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: #065f46;
+      background: #ecfdf5;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .feed-time {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    /* Fixed Bottom Navigation Bar */
+    .fintech-bottom-bar {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 68px;
-      background: rgba(255, 255, 255, 0.96);
+      height: 70px;
+      background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(16px);
       border-top: 1px solid rgba(0,0,0,0.08);
       display: flex;
       align-items: center;
       justify-content: space-around;
-      padding: 0 8px;
+      padding: 0 10px;
       z-index: 50;
     }
-    .nav-btn {
+    .fin-nav-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 4px;
       background: transparent;
       border: none;
       color: #64748b;
@@ -203,153 +471,46 @@
       font-weight: 700;
       cursor: pointer;
       flex: 1;
-      padding: 6px 0;
       transition: all 0.15s ease;
     }
-    .nav-btn.active {
-      color: #6366f1;
+    .fin-nav-btn.active {
+      color: #4f46e5;
     }
-    .nav-btn.center-fab {
+    .floating-center-scan {
       position: relative;
-      top: -12px;
+      top: -14px;
     }
-    .center-fab-circle {
-      width: 50px;
-      height: 50px;
+    .center-scan-circle {
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #6366f1, #4f46e5);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
-      transition: transform 0.15s ease;
-    }
-    .nav-btn.center-fab:active .center-fab-circle {
-      transform: scale(0.92);
-    }
-    /* Content Padding */
-    .screen-content {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    /* Card Styles */
-    .app-card {
-      background: #ffffff;
-      border-radius: 18px;
-      padding: 16px;
-      border: 1px solid rgba(0,0,0,0.06);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-    /* Hero Schedule Card */
-    .hero-class-card {
       background: linear-gradient(135deg, #4f46e5, #6366f1);
       color: white;
-      border-radius: 20px;
-      padding: 18px;
-      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.35);
-      position: relative;
-      overflow: hidden;
-    }
-    .hero-class-card::after {
-      content: '';
-      position: absolute;
-      right: -20px;
-      bottom: -30px;
-      width: 120px;
-      height: 120px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-    .badge-pill-white {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-    }
-    .hero-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin: 10px 0 4px;
-      line-height: 1.2;
-    }
-    .hero-meta {
-      font-size: 0.8rem;
-      opacity: 0.9;
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .btn-white-action {
-      background: #ffffff;
-      color: #4f46e5;
-      border: none;
-      border-radius: 14px;
-      padding: 12px 16px;
-      font-size: 0.88rem;
-      font-weight: 800;
-      width: 100%;
-      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(99, 102, 241, 0.45);
+      border: 4px solid #ffffff;
       transition: transform 0.15s ease;
     }
-    .btn-white-action:active {
-      transform: scale(0.97);
+    .floating-center-scan:active .center-scan-circle {
+      transform: scale(0.92);
     }
-    /* Metric Ring Row */
-    .metric-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .metric-box {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 14px;
-      border: 1px solid rgba(0,0,0,0.06);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .metric-icon-circle {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .metric-label {
-      font-size: 0.72rem;
-      color: #64748b;
-      font-weight: 600;
-    }
-    .metric-val {
-      font-size: 1.15rem;
+    .center-scan-label {
+      font-size: 0.62rem;
       font-weight: 800;
-      color: #0f172a;
+      color: #4f46e5;
+      margin-top: 2px;
     }
-    /* Camera Viewfinder Screen */
+
+    /* CAMERA SCREEN */
     .camera-hud-container {
       position: relative;
       width: 100%;
-      height: 360px;
+      height: 380px;
       background: #090d16;
-      border-radius: 22px;
+      border-radius: 24px;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -361,60 +522,13 @@
       height: 100%;
       object-fit: cover;
       opacity: 0.75;
-      transition: filter 0.3s;
     }
-    .camera-hud-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 14px;
-      pointer-events: none;
-    }
-    .hud-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      pointer-events: auto;
-    }
-    .hud-badge {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(8px);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      border: 1px solid rgba(255,255,255,0.15);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .hud-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    /* Simulated Bounding Box */
     .sim-bbox {
       position: absolute;
       border: 2px solid #10b981;
       border-radius: 6px;
       background: rgba(16, 185, 129, 0.15);
       pointer-events: none;
-      animation: pulseBox 2s infinite;
-    }
-    @keyframes pulseBox {
-      0%, 100% { border-color: #10b981; }
-      50% { border-color: #34d399; }
     }
     .bbox-tag {
       position: absolute;
@@ -428,12 +542,11 @@
       border-radius: 4px;
       white-space: nowrap;
     }
-    /* Snap Counter Strip */
     .snap-strip {
       display: flex;
       gap: 8px;
       justify-content: center;
-      margin: 10px 0;
+      margin: 12px 0 6px;
     }
     .snap-pill {
       flex: 1;
@@ -455,18 +568,11 @@
       border: 2px solid #10b981;
       color: #065f46;
     }
-    /* Shutter Trigger Button */
-    .shutter-btn-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
     .shutter-btn {
-      width: 68px;
-      height: 68px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
-      border: 4px solid #6366f1;
+      border: 4px solid #4f46e5;
       background: white;
       padding: 4px;
       cursor: pointer;
@@ -474,39 +580,15 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
-      transition: transform 0.1s;
-    }
-    .shutter-btn:active {
-      transform: scale(0.9);
     }
     .shutter-inner {
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: #6366f1;
+      background: #4f46e5;
     }
-    /* AI Processing Spinner */
-    .processing-view {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 50px 20px;
-      text-align: center;
-      gap: 18px;
-    }
-    .radar-scanner {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      border: 3px solid #e0e7ff;
-      border-top-color: #6366f1;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    /* Student Verification Cards */
+
+    /* STUDENT VERIFICATION CARDS */
     .student-touch-card {
       background: #ffffff;
       border-radius: 16px;
@@ -516,46 +598,14 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      transition: all 0.15s ease;
-    }
-    .student-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
     }
     .student-thumb {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       border-radius: 12px;
       object-fit: cover;
       border: 2px solid #e2e8f0;
     }
-    .student-meta h4 {
-      font-size: 0.86rem;
-      font-weight: 700;
-      color: #0f172a;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .student-meta p {
-      font-size: 0.72rem;
-      color: #64748b;
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 600;
-    }
-    .match-pill {
-      display: inline-block;
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: #10b981;
-      background: #ecfdf5;
-      padding: 1px 6px;
-      border-radius: 4px;
-      margin-top: 2px;
-    }
-    /* Touch Toggle Buttons */
     .toggle-pill-group {
       display: flex;
       background: #f1f5f9;
@@ -572,7 +622,6 @@
       cursor: pointer;
       background: transparent;
       color: #64748b;
-      transition: all 0.15s;
     }
     .toggle-btn.active-p {
       background: #10b981;
@@ -583,65 +632,6 @@
       background: #ef4444;
       color: white;
       box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
-    }
-    .frozen-tag {
-      background: #ecfeff;
-      color: #0891b2;
-      border: 1px solid #a5f3fc;
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 6px 12px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    /* Bottom Sheet Banner */
-    .bottom-sheet-banner {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: 14px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .banner-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .banner-badge {
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: #b45309;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .banner-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .btn-approve-extra {
-      flex: 1;
-      background: #f59e0b;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 7px 10px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    /* Sticky Finalize Button */
-    .sticky-finalize-bar {
-      position: sticky;
-      bottom: 0;
-      background: #ffffff;
-      padding: 12px 16px;
-      border-top: 1px solid rgba(0,0,0,0.06);
-      margin: 10px -16px -16px;
     }
     .btn-finalize {
       width: 100%;
@@ -663,93 +653,207 @@
 </head>
 <body>
 
-  <!-- Phone Shell -->
   <div class="device-shell">
     <div class="device-notch"><div class="notch-camera"></div></div>
 
-    <!-- Mobile Top Header -->
-    <header class="mobile-header">
-      <div class="brand-group">
-        <div class="brand-logo-icon">
-          <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+    <!-- Top Bank-Style Header -->
+    <header class="fintech-header">
+      <div class="user-profile-row">
+        <div class="avatar-bubble">
+          PC
+          <span class="online-indicator"></span>
         </div>
-        <div class="brand-text">
-          <h1>VisionAttend</h1>
-          <span><span class="live-dot"></span> AI Engine Online</span>
+        <div class="greeting-text">
+          <h2>Prof. Prathviraj 👋</h2>
+          <p>BCA Department • CS Faculty</p>
         </div>
       </div>
-      <div class="header-actions">
-        <div class="header-user-avatar">PC</div>
+      <div class="header-icons">
+        <button class="icon-btn" onclick="alert('AI Biometric Engine Status: Healthy & Online!')" title="Status">
+          <i data-lucide="shield-check" style="width: 18px; height: 18px; color: #10b981;"></i>
+        </button>
+        <button class="icon-btn" onclick="alert('Notifications: 2 Defaulter warning alerts')" title="Alerts">
+          <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
+          <span class="badge-notif"></span>
+        </button>
       </div>
     </header>
 
-    <!-- App Viewport Container -->
+    <!-- App Viewport -->
     <div class="app-screen-container">
 
-      <!-- ================= SCREEN 1: HOME LAUNCHPAD ================= -->
+      <!-- SCREEN 1: BANK-STYLE HOME DASHBOARD -->
       <section id="screen-home" class="screen-view active">
         <div class="screen-content">
-          
-          <!-- Current Class Hero Card -->
-          <div class="hero-class-card">
-            <span class="badge-pill-white">
-              <i data-lucide="clock" style="width: 12px; height: 12px;"></i> In Progress • 10:30 AM
-            </span>
-            <h2 class="hero-title">MongoDB & Distributed DB</h2>
-            <div class="hero-meta">
+
+          <!-- 1. HERO QUICK SCAN CARD (Like "Scan QR to Pay") -->
+          <div class="hero-scanner-banner">
+            <div class="hero-top-badge">
+              <i data-lucide="clock" style="width: 12px; height: 12px;"></i> Active Class • Room 402
+            </div>
+            <h1 class="hero-subject-name">MongoDB & Distributed DB</h1>
+            <div class="hero-sub-detail">
               <span>BCA Sem 7 • Div A</span>
               <span>•</span>
-              <span>16 Students</span>
+              <span>16 Students Enrolled</span>
             </div>
-            <button class="btn-white-action" onclick="AppNav.goTo('camera')">
-              <i data-lucide="camera" style="width: 16px; height: 16px;"></i>
-              <span>Start 10-Second Attendance</span>
+            <button class="hero-primary-cta" onclick="AppNav.goTo('camera')">
+              <i data-lucide="scan-face" style="width: 20px; height: 20px;"></i>
+              <span>Scan Classroom Attendance</span>
             </button>
           </div>
 
-          <!-- Quick Metrics Row -->
-          <div class="metric-row">
-            <div class="metric-box">
-              <div class="metric-icon-circle" style="background: #ecfdf5; color: #10b981;">
-                <i data-lucide="check-circle-2" style="width: 20px; height: 20px;"></i>
+          <!-- 2. QUICK ACTIONS 8-ICON GRID (Like GPay / PhonePe Service Grid) -->
+          <div class="section-title-row">
+            <span class="section-title">Quick Services</span>
+            <span class="section-link" onclick="alert('All academic services are ready!')">8 Services</span>
+          </div>
+
+          <div class="fintech-grid-card">
+            <!-- Tile 1: Scan Attendance -->
+            <div class="grid-tile" onclick="AppNav.goTo('camera')">
+              <div class="tile-icon-bubble" style="background: #eef2ff; color: #4f46e5;">
+                <i data-lucide="camera" style="width: 22px; height: 22px;"></i>
               </div>
-              <div>
-                <div class="metric-label">Today's Avg</div>
-                <div class="metric-val">88.4%</div>
-              </div>
+              <span class="tile-label">Take Scan</span>
             </div>
-            <div class="metric-box">
-              <div class="metric-icon-circle" style="background: #fef2f2; color: #ef4444;">
-                <i data-lucide="alert-triangle" style="width: 20px; height: 20px;"></i>
+
+            <!-- Tile 2: Student Directory -->
+            <div class="grid-tile" onclick="alert('Student Directory: 16 verified student biometric records')">
+              <div class="tile-icon-bubble" style="background: #f0fdf4; color: #16a34a;">
+                <i data-lucide="users" style="width: 22px; height: 22px;"></i>
               </div>
-              <div>
-                <div class="metric-label">Defaulters</div>
-                <div class="metric-val">2 Students</div>
+              <span class="tile-label">Students</span>
+            </div>
+
+            <!-- Tile 3: Defaulter Alert (<75%) -->
+            <div class="grid-tile" onclick="alert('Defaulter Notice: 2 students below 75% threshold in your class')">
+              <div class="tile-icon-bubble" style="background: #fef2f2; color: #dc2626;">
+                <i data-lucide="alert-triangle" style="width: 22px; height: 22px;"></i>
+                <span class="tile-badge-count">2</span>
               </div>
+              <span class="tile-label">Defaulters</span>
+            </div>
+
+            <!-- Tile 4: Excel Reports -->
+            <div class="grid-tile" onclick="alert('Downloading Today\'s Excel Attendance Sheet...')">
+              <div class="tile-icon-bubble" style="background: #ecfeff; color: #0891b2;">
+                <i data-lucide="file-spreadsheet" style="width: 22px; height: 22px;"></i>
+              </div>
+              <span class="tile-label">Reports</span>
+            </div>
+
+            <!-- Tile 5: Unknown Faces -->
+            <div class="grid-tile" onclick="alert('Unknown Faces Queue: 1 unidentified crop pending teacher review')">
+              <div class="tile-icon-bubble" style="background: #fdf4ff; color: #c026d3;">
+                <i data-lucide="help-circle" style="width: 22px; height: 22px;"></i>
+                <span class="tile-badge-count">1</span>
+              </div>
+              <span class="tile-label">Unknowns</span>
+            </div>
+
+            <!-- Tile 6: Medical Freeze -->
+            <div class="grid-tile" onclick="alert('Medical Exemption: Rohan Deshmukh is frozen for approved medical leave')">
+              <div class="tile-icon-bubble" style="background: #f0fdfa; color: #0d9488;">
+                <i data-lucide="snowflake" style="width: 22px; height: 22px;"></i>
+              </div>
+              <span class="tile-label">Exemptions</span>
+            </div>
+
+            <!-- Tile 7: Lecture History -->
+            <div class="grid-tile" onclick="AppNav.goTo('results')">
+              <div class="tile-icon-bubble" style="background: #fffbeb; color: #d97706;">
+                <i data-lucide="calendar-check" style="width: 22px; height: 22px;"></i>
+              </div>
+              <span class="tile-label">History</span>
+            </div>
+
+            <!-- Tile 8: AI Settings -->
+            <div class="grid-tile" onclick="alert('AI Architecture: Dual Engine Standard YOLOv8 + ArcFace 512-D active')">
+              <div class="tile-icon-bubble" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;">
+                <i data-lucide="cpu" style="width: 22px; height: 22px;"></i>
+              </div>
+              <span class="tile-label">AI Engine</span>
             </div>
           </div>
 
-          <!-- Quick Actions & Defaulter Warning -->
-          <div class="app-card">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-              <h3 style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">Attendance Alert (<75%)</h3>
-              <span style="font-size: 0.68rem; color: #ef4444; font-weight: 700;">Action Needed</span>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid #f1f5f9;">
-              <div>
-                <div style="font-size: 0.8rem; font-weight: 700;">Rohan Deshmukh</div>
-                <div style="font-size: 0.68rem; color: #64748b;">Roll BCA2302146 • 64% Attendance</div>
+          <!-- 3. IMPORTANT ALERT BANNER (Like "Electricity Bill Due" in GPay) -->
+          <div class="urgent-banner-card" onclick="alert('Alert dispatched to Rohan Deshmukh & Parent regarding 64% attendance.')">
+            <div class="urgent-left">
+              <div class="urgent-icon-pill">
+                <i data-lucide="bell-ring" style="width: 18px; height: 18px;"></i>
               </div>
-              <button style="background: #eef2ff; color: #4f46e5; border: none; padding: 5px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">
-                Notify
-              </button>
+              <div class="urgent-text">
+                <h4>Low Attendance Notice</h4>
+                <p>Rohan Deshmukh dropped to 64% • Tap to send warning</p>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: #ef4444;"></i>
+          </div>
+
+          <!-- 4. RECENT LECTURE SESSIONS (Like "Recent Transactions" Feed) -->
+          <div class="section-title-row">
+            <span class="section-title">Recent Lecture History</span>
+            <span class="section-link" onclick="AppNav.goTo('results')">View All</span>
+          </div>
+
+          <div class="activity-feed-card">
+            <!-- Item 1 -->
+            <div class="feed-item" onclick="AppNav.goTo('results')">
+              <div class="feed-left">
+                <div class="feed-icon" style="background: #ecfdf5; color: #10b981;">
+                  <i data-lucide="check-circle-2" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="feed-meta">
+                  <h4>MongoDB Aggregations</h4>
+                  <p>BCA Sem 7 • Div A</p>
+                </div>
+              </div>
+              <div class="feed-right">
+                <span class="feed-badge-green">14/16 Present</span>
+                <div class="feed-time">Today, 10:30 AM</div>
+              </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="feed-item" onclick="alert('Cloud Computing Session: 32/34 Present (94.1%)')">
+              <div class="feed-left">
+                <div class="feed-icon" style="background: #eef2ff; color: #6366f1;">
+                  <i data-lucide="book-open" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="feed-meta">
+                  <h4>Cloud Computing</h4>
+                  <p>BCA Sem 5 • Div B</p>
+                </div>
+              </div>
+              <div class="feed-right">
+                <span class="feed-badge-green">32/34 Present</span>
+                <div class="feed-time">Today, 09:15 AM</div>
+              </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="feed-item" onclick="alert('Neural Networks Session: 20/22 Present (90.9%)')">
+              <div class="feed-left">
+                <div class="feed-icon" style="background: #fdf4ff; color: #a855f7;">
+                  <i data-lucide="cpu" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="feed-meta">
+                  <h4>Deep Learning & AI</h4>
+                  <p>MCA Sem 3 • Div A</p>
+                </div>
+              </div>
+              <div class="feed-right">
+                <span class="feed-badge-green">20/22 Present</span>
+                <div class="feed-time">Yesterday</div>
+              </div>
             </div>
           </div>
 
         </div>
       </section>
 
-      <!-- ================= SCREEN 2: CAMERA SCANNER ================= -->
+      <!-- SCREEN 2: SCANNER SCREEN -->
       <section id="screen-camera" class="screen-view">
         <div class="screen-content">
           
@@ -758,16 +862,14 @@
               <h2 style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">Classroom Scanner</h2>
               <p style="font-size: 0.72rem; color: #64748b;">Snap 3 angles of the room (Left, Center, Right)</p>
             </div>
-            <button onclick="AppNav.goTo('home')" style="background: none; border: none; color: #64748b; padding: 4px;">
-              <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+            <button onclick="AppNav.goTo('home')" style="background: none; border: none; color: #64748b; padding: 4px; cursor: pointer;">
+              <i data-lucide="x" style="width: 22px; height: 22px;"></i>
             </button>
           </div>
 
-          <!-- Live Camera Viewfinder HUD -->
           <div class="camera-hud-container">
-            <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80" alt="Classroom" class="camera-bg-sim" id="camera-sim-img" />
+            <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80" alt="Classroom" class="camera-bg-sim" />
             
-            <!-- Simulated Face Bounding Boxes -->
             <div class="sim-bbox" style="top: 38%; left: 24%; width: 50px; height: 50px;">
               <span class="bbox-tag">Prathviraj 96%</span>
             </div>
@@ -775,35 +877,22 @@
               <span class="bbox-tag">Pooja 92%</span>
             </div>
 
-            <!-- HUD Overlays -->
-            <div class="camera-hud-overlay">
-              <div class="hud-top">
-                <div class="hud-badge">
-                  <i data-lucide="shield-check" style="width: 12px; height: 12px; color: #10b981;"></i> MiniFASNet Active
-                </div>
-                <button class="hud-btn" onclick="CameraSim.flipCamera()">
-                  <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
-                </button>
-              </div>
-              <div style="text-align: center; color: rgba(255,255,255,0.85); font-size: 0.7rem; font-weight: 600;">
-                Hold steady • AI detecting classroom faces
-              </div>
+            <div style="position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; color: white; font-size: 0.72rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+              ⚡ MiniFASNet Anti-Spoof Active
             </div>
           </div>
 
-          <!-- Multi-Angle Snap Pills -->
           <div class="snap-strip">
             <div class="snap-pill" id="pill-snap-1"><i data-lucide="camera" style="width: 14px; height: 14px;"></i> Left Wing</div>
             <div class="snap-pill" id="pill-snap-2"><i data-lucide="camera" style="width: 14px; height: 14px;"></i> Center Hall</div>
             <div class="snap-pill" id="pill-snap-3"><i data-lucide="camera" style="width: 14px; height: 14px;"></i> Right Wing</div>
           </div>
 
-          <!-- Shutter Action -->
-          <div class="shutter-btn-wrap">
-            <button class="shutter-btn" id="shutter-btn-trigger" onclick="CameraSim.takeSnap()">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
+            <button class="shutter-btn" onclick="CameraSim.takeSnap()">
               <div class="shutter-inner"></div>
             </button>
-            <span id="shutter-hint" style="font-size: 0.72rem; color: #64748b; font-weight: 700;">
+            <span id="shutter-hint" style="font-size: 0.75rem; color: #64748b; font-weight: 700;">
               Tap to Snap Angle 1 (Left Wing)
             </span>
           </div>
@@ -811,65 +900,29 @@
         </div>
       </section>
 
-      <!-- ================= SCREEN 3: PROCESSING STATE ================= -->
-      <section id="screen-processing" class="screen-view">
-        <div class="processing-view">
-          <div class="radar-scanner"></div>
-          <div>
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a;">AI Matching in Progress...</h3>
-            <p style="font-size: 0.76rem; color: #64748b; margin-top: 4px;">Extracting 512-D ArcFace Biometrics</p>
-          </div>
-          <div style="background: white; border-radius: 14px; padding: 14px; width: 100%; text-align: left; font-size: 0.75rem; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px;">
-            <div style="color: #10b981; font-weight: 700;">✓ YOLOv8 Face Detection (14 Faces Located)</div>
-            <div style="color: #10b981; font-weight: 700;">✓ MiniFASNet Liveness Verification Passed</div>
-            <div style="color: #6366f1; font-weight: 700;">⚡ ArcFace 512-D Cosine Similarity Matching...</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= SCREEN 4: BIOMETRIC RESULTS ROSTER ================= -->
+      <!-- SCREEN 3: RESULTS ROSTER -->
       <section id="screen-results" class="screen-view">
         <div class="screen-content">
 
-          <!-- Results Telemetry Header -->
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <div>
               <h2 style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">Attendance Verified</h2>
-              <p style="font-size: 0.72rem; color: #10b981; font-weight: 700;">14 Detected • 13 Present • 3 Absent</p>
+              <p style="font-size: 0.72rem; color: #10b981; font-weight: 700;">14 Present • 2 Absent • 1 Frozen</p>
             </div>
-            <button onclick="AppNav.goTo('camera')" style="background: #eef2ff; color: #4f46e5; border: none; font-size: 0.7rem; font-weight: 700; padding: 5px 10px; border-radius: 8px;">
-              Re-Snap
+            <button onclick="AppNav.goTo('home')" style="background: #eef2ff; color: #4f46e5; border: none; font-size: 0.72rem; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer;">
+              Done
             </button>
           </div>
 
-          <!-- Bottom-Sheet Banner: Extra Student -->
-          <div class="bottom-sheet-banner" id="extra-student-banner">
-            <div class="banner-head">
-              <span class="banner-badge">
-                <i data-lucide="graduation-cap" style="width: 14px; height: 14px;"></i> Extra Student Detected
-              </span>
-              <span style="font-size: 0.68rem; color: #64748b;">From Div B</span>
-            </div>
-            <p style="font-size: 0.74rem; color: #78350f;">
-              <b>Rahul Patil</b> (Roll BCA2302188) is attending this class. Grant extra lecture?
-            </p>
-            <div class="banner-actions">
-              <button class="btn-approve-extra" onclick="RosterSim.approveExtra()">✓ Approve Extra Attendance (+1)</button>
-              <button style="background: #f1f5f9; border: none; font-size: 0.75rem; padding: 7px 12px; border-radius: 8px; color: #64748b; font-weight: 700;" onclick="document.getElementById('extra-student-banner').style.display='none'">Ignore</button>
-            </div>
-          </div>
-
-          <!-- Student Touch Cards List -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            
-            <!-- Card 1: Prathviraj -->
+            <!-- Student 1 -->
             <div class="student-touch-card">
-              <div class="student-left">
+              <div style="display: flex; align-items: center; gap: 10px;">
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="student-thumb" style="border-color: #10b981;" />
-                <div class="student-meta">
-                  <h4>Prathviraj Chavan</h4>
-                  <p>BCA2302144</p>
-                  <span class="match-pill">96.2% Match</span>
+                <div>
+                  <h4 style="font-size: 0.86rem; font-weight: 700;">Prathviraj Chavan</h4>
+                  <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302144</p>
+                  <span style="font-size: 0.65rem; color: #10b981; font-weight: 700;">96.2% Match</span>
                 </div>
               </div>
               <div class="toggle-pill-group">
@@ -878,14 +931,14 @@
               </div>
             </div>
 
-            <!-- Card 2: Pooja -->
+            <!-- Student 2 -->
             <div class="student-touch-card">
-              <div class="student-left">
+              <div style="display: flex; align-items: center; gap: 10px;">
                 <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" class="student-thumb" style="border-color: #10b981;" />
-                <div class="student-meta">
-                  <h4>Pooja Choudhary</h4>
-                  <p>BCA2302145</p>
-                  <span class="match-pill">92.4% Match</span>
+                <div>
+                  <h4 style="font-size: 0.86rem; font-weight: 700;">Pooja Choudhary</h4>
+                  <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302145</p>
+                  <span style="font-size: 0.65rem; color: #10b981; font-weight: 700;">92.4% Match</span>
                 </div>
               </div>
               <div class="toggle-pill-group">
@@ -894,29 +947,29 @@
               </div>
             </div>
 
-            <!-- Card 3: Rohan (Frozen Exemption) -->
+            <!-- Student 3: Frozen -->
             <div class="student-touch-card" style="border-color: #a5f3fc; background: #f0fdfa;">
-              <div class="student-left">
+              <div style="display: flex; align-items: center; gap: 10px;">
                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" class="student-thumb" style="border-color: #0891b2;" />
-                <div class="student-meta">
-                  <h4>Rohan Deshmukh</h4>
-                  <p>BCA2302146</p>
-                  <span style="font-size: 0.65rem; color: #0891b2; font-weight: 700;">Medical Exemption</span>
+                <div>
+                  <h4 style="font-size: 0.86rem; font-weight: 700;">Rohan Deshmukh</h4>
+                  <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302146</p>
+                  <span style="font-size: 0.65rem; color: #0891b2; font-weight: 700;">Medical Leave</span>
                 </div>
               </div>
-              <div class="frozen-tag">
+              <div style="background: #ecfeff; color: #0891b2; font-size: 0.72rem; font-weight: 700; padding: 6px 10px; border-radius: 8px; display: flex; align-items: center; gap: 4px;">
                 <i data-lucide="snowflake" style="width: 12px; height: 12px;"></i> Frozen
               </div>
             </div>
 
-            <!-- Card 4: Shweta Singh -->
+            <!-- Student 4: Absent -->
             <div class="student-touch-card">
-              <div class="student-left">
+              <div style="display: flex; align-items: center; gap: 10px;">
                 <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" class="student-thumb" style="border-color: #ef4444;" />
-                <div class="student-meta">
-                  <h4>Shweta Singh</h4>
-                  <p>BCA2302147</p>
-                  <span style="font-size: 0.65rem; color: #ef4444; font-weight: 700; background: #fef2f2; padding: 1px 6px; border-radius: 4px;">Unrecognized</span>
+                <div>
+                  <h4 style="font-size: 0.86rem; font-weight: 700;">Shweta Singh</h4>
+                  <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302147</p>
+                  <span style="font-size: 0.65rem; color: #ef4444; font-weight: 700;">Unrecognized</span>
                 </div>
               </div>
               <div class="toggle-pill-group">
@@ -924,63 +977,59 @@
                 <button class="toggle-btn active-a" onclick="RosterSim.toggle(this, 'a')">A</button>
               </div>
             </div>
-
           </div>
 
-          <!-- Sticky Finalize Button -->
-          <div class="sticky-finalize-bar">
-            <button class="btn-finalize" onclick="RosterSim.finalize()">
-              <i data-lucide="check-check" style="width: 18px; height: 18px;"></i>
-              <span>Save Attendance (14/16 Present)</span>
-            </button>
-          </div>
+          <button class="btn-finalize" onclick="RosterSim.finalize()" style="margin-top: 10px;">
+            <i data-lucide="check-check" style="width: 18px; height: 18px;"></i>
+            <span>Lock & Save Attendance</span>
+          </button>
 
         </div>
       </section>
 
     </div>
 
-    <!-- Mobile Bottom Navigation Bar -->
-    <nav class="mobile-bottom-bar">
-      <button class="nav-btn active" id="tab-home" onclick="AppNav.goTo('home')">
-        <i data-lucide="layout-dashboard" style="width: 20px; height: 20px;"></i>
+    <!-- Fintech Bottom Navigation Bar -->
+    <nav class="fintech-bottom-bar">
+      <button class="fin-nav-btn active" id="tab-home" onclick="AppNav.goTo('home')">
+        <i data-lucide="home" style="width: 20px; height: 20px;"></i>
         <span>Home</span>
       </button>
-      <button class="nav-btn center-fab" onclick="AppNav.goTo('camera')">
-        <div class="center-fab-circle">
-          <i data-lucide="camera" style="width: 22px; height: 22px;"></i>
+      
+      <!-- Big Center Floating Scanner (Like PhonePe / GPay QR button) -->
+      <button class="fin-nav-btn floating-center-scan" onclick="AppNav.goTo('camera')">
+        <div class="center-scan-circle">
+          <i data-lucide="scan" style="width: 24px; height: 24px;"></i>
         </div>
+        <span class="center-scan-label">SCAN</span>
       </button>
-      <button class="nav-btn" id="tab-results" onclick="AppNav.goTo('results')">
-        <i data-lucide="clipboard-check" style="width: 20px; height: 20px;"></i>
-        <span>Roster</span>
+
+      <button class="fin-nav-btn" id="tab-history" onclick="AppNav.goTo('results')">
+        <i data-lucide="history" style="width: 20px; height: 20px;"></i>
+        <span>History</span>
       </button>
     </nav>
 
   </div>
 
   <script>
-    // Lucide Icons init
     lucide.createIcons();
 
-    // App Navigation Controller
     const AppNav = {
       goTo(screenId) {
         document.querySelectorAll('.screen-view').forEach(s => s.classList.remove('active'));
         const target = document.getElementById('screen-' + screenId);
         if (target) target.classList.add('active');
 
-        // Update nav buttons
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.fin-nav-btn').forEach(b => b.classList.remove('active'));
         if (screenId === 'home') document.getElementById('tab-home').classList.add('active');
-        if (screenId === 'results') document.getElementById('tab-results').classList.add('active');
+        if (screenId === 'results') document.getElementById('tab-history').classList.add('active');
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
         lucide.createIcons();
       }
     };
 
-    // Camera Simulation Controller
     const CameraSim = {
       snapsTaken: 0,
       takeSnap() {
@@ -996,14 +1045,11 @@
         } else if (this.snapsTaken >= 3) {
           document.getElementById('pill-snap-3').classList.add('snapped');
           document.getElementById('pill-snap-3').innerHTML = '✓ Right Done';
-          document.getElementById('shutter-hint').textContent = 'Processing Biometrics...';
+          document.getElementById('shutter-hint').textContent = 'Matching ArcFace 512-D Vectors...';
           
-          // Switch to processing screen
-          AppNav.goTo('processing');
           setTimeout(() => {
             AppNav.goTo('results');
             this.snapsTaken = 0;
-            // Reset pills for next time
             setTimeout(() => {
               document.getElementById('pill-snap-1').className = 'snap-pill';
               document.getElementById('pill-snap-1').innerHTML = '<i data-lucide="camera" style="width:14px;height:14px;"></i> Left Wing';
@@ -1014,30 +1060,20 @@
               document.getElementById('shutter-hint').textContent = 'Tap to Snap Angle 1 (Left Wing)';
               lucide.createIcons();
             }, 1000);
-          }, 1800);
+          }, 1200);
         }
-      },
-      flipCamera() {
-        alert("Camera switched to Front View!");
       }
     };
 
-    // Roster Simulation Controller
     const RosterSim = {
       toggle(btn, type) {
         const parent = btn.parentElement;
-        parent.querySelectorAll('.toggle-btn').forEach(b => {
-          b.classList.remove('active-p', 'active-a');
-        });
+        parent.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-p', 'active-a'));
         if (type === 'p') btn.classList.add('active-p');
         if (type === 'a') btn.classList.add('active-a');
       },
-      approveExtra() {
-        alert("Extra Lecture attendance (+1) approved for Rahul Patil in MongoDB!");
-        document.getElementById('extra-student-banner').style.display = 'none';
-      },
       finalize() {
-        alert("🎉 Success! Attendance saved and locked in database.\n\n14 Students Marked Present.\nReport archived in institutional records.");
+        alert('🎉 Attendance Successfully Locked in SQLite DB!\n\n14 Present • 2 Absent • 1 Medical Exemption.\nReport generated.');
         AppNav.goTo('home');
       }
     };
