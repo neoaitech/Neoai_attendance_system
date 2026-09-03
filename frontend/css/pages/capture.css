@@ -1662,7 +1662,76 @@
   }
 }
 
-@media (max-width: 480px) {
+/* ================= Academic Filters Grid (Auto-Responsive) ================= */
+.academic-filters-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.academic-filters-grid .form-group:nth-child(5),
+.academic-filters-grid .form-group:nth-child(6) {
+  grid-column: span 2;
+}
+
+@media (max-width: 1024px) {
+  .academic-filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .academic-filters-grid .form-group:nth-child(5),
+  .academic-filters-grid .form-group:nth-child(6) {
+    grid-column: span 1 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .academic-filters-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  .academic-filters-grid .form-group:nth-child(5),
+  .academic-filters-grid .form-group:nth-child(6) {
+    grid-column: span 1 !important;
+  }
+
+  /* Prevent student cards and actions from overflowing right edge */
+  .student-verification-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .student-verification-card > div:first-child {
+    width: 100% !important;
+  }
+
+  .student-verification-card > div:last-child {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+
+  .status-toggle-group {
+    width: 100% !important;
+    display: flex !important;
+  }
+
+  .status-toggle-btn {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 8px 0 !important;
+    font-size: 0.76rem !important;
+  }
+
+  .division-summary-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
   .crop-card-img {
     width: 60px !important;
     height: 60px !important;
