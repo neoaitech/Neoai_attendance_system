@@ -259,8 +259,8 @@ class AdvancedFaceAIEngine(FaceAIEngine):
             locations = self.detect_face_locations(image_rgb)
 
             if len(locations) == 0:
-                h, w, _ = image_rgb.shape
-                locations = [(0, w, h, 0)]
+                logger.warning(f"No face detected in portrait image: {image_path_or_bytes}")
+                return None
 
             encodings = self.compute_face_encodings(image_rgb, [locations[0]])
             if len(encodings) > 0:

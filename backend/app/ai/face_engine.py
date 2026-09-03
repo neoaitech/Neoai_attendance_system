@@ -334,9 +334,8 @@ class FaceEngine:
 
         locations = self.detect_face_locations(image_rgb)
         if not locations:
-            # Central portrait crop fallback
-            h, w, _ = image_rgb.shape
-            locations = [(int(h * 0.15), int(w * 0.85), int(h * 0.85), int(w * 0.15))]
+            logger.warning(f"No face detected in portrait image: {image_path}")
+            return None
 
         # Pick largest face
         locations.sort(key=lambda loc: (loc[2] - loc[0]) * (loc[1] - loc[3]), reverse=True)
