@@ -222,6 +222,7 @@ const App = {
   init() {
     this.bindEvents();
     this.initGlobalSearch();
+    this.initPwa();
     if (window.lucide) window.lucide.createIcons();
     Auth.init().then(authenticated => {
       if (authenticated) {
@@ -1270,6 +1271,102 @@ const App = {
         setTimeout(() => toast.remove(), 250);
       }
     }, 4500);
+  },
+
+  // ================= Progressive Web App (PWA) Setup =================
+  initPwa() {
+    // 1. Register Service Worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js")
+          .then((reg) => {
+            console.log("VisionAttend PWA Service Worker Registered:", reg.scope);
+          })
+          .catch((err) => {
+            console.warn("Service Worker registration skipped:", err);
+          });
+      });
+    }
+
+    // 2. Capture BeforeInstallPrompt Event (Android / Chrome)
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      window._deferredPwaPrompt = e;
+      const installBtn = document.getElementById("pwa-install-btn");
+      if (installBtn) {
+        installBtn.classList.remove("hidden");
+        installBtn.classList.add("inline-flex");
+      }
+      const mobileBanner = document.getElementById("pwa-mobile-banner");
+      if (mobileBanner && !window.matchMedia('(display-mode: standalone)').matches) {
+        mobileBanner.classList.remove("hidden");
+      }
+    });
+
+    // 3. Show button on iOS Safari if not already installed as standalone
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+    if (isIos && !isStandalone) {
+      const installBtn = document.getElementById("pwa-install-btn");
+      if (installBtn) {
+        installBtn.classList.remove("hidden");
+        installBtn.classList.add("inline-flex");
+      }
+      const mobileBanner = document.getElementById("pwa-mobile-banner");
+      if (mobileBanner) {
+        mobileBanner.classList.remove("hidden");
+      }
+    }
+
+    window.addEventListener("appinstalled", () => {
+      window._deferredPwaPrompt = null;
+      const installBtn = document.getElementById("pwa-install-btn");
+      if (installBtn) installBtn.classList.add("hidden");
+      const mobileBanner = document.getElementById("pwa-mobile-banner");
+      if (mobileBanner) mobileBanner.classList.add("hidden");
+      App.showToast("VisionAttend App installed successfully! You can launch it from your home screen.", "success");
+    });
+  },
+
+  async triggerPwaInstall() {
+    if (window._deferredPwaPrompt) {
+      window._deferredPwaPrompt.prompt();
+      const choice = await window._deferredPwaPrompt.userChoice;
+      if (choice && choice.outcome === "accepted") {
+        App.showToast("Installing VisionAttend App...", "info");
+      }
+      window._deferredPwaPrompt = null;
+      const installBtn = document.getElementById("pwa-install-btn");
+      if (installBtn) installBtn.classList.add("hidden");
+      const mobileBanner = document.getElementById("pwa-mobile-banner");
+      if (mobileBanner) mobileBanner.classList.add("hidden");
+    } else {
+      // iOS Safari guided prompt or manual instructions
+      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIos) {
+        App.showModal(
+          "Install VisionAttend on iPhone",
+          `
+            <div class="text-xs text-slate-600 space-y-3 py-2">
+              <p class="font-semibold text-slate-800">To install VisionAttend as a native app on your iPhone:</p>
+              <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0">1</span>
+                <span>Tap the <b>Share</b> button <i data-lucide="share" class="w-3.5 h-3.5 inline text-indigo-600"></i> in Safari's bottom toolbar.</span>
+              </div>
+              <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0">2</span>
+                <span>Scroll down and tap <b>'Add to Home Screen'</b> <i data-lucide="plus-square" class="w-3.5 h-3.5 inline text-indigo-600"></i>.</span>
+              </div>
+              <p class="text-[11px] text-slate-500">The app will be installed directly on your Home Screen with the official icon!</p>
+            </div>
+          `,
+          null,
+          "Got it"
+        );
+      } else {
+        App.showToast("To install, open your browser menu (⋮) and tap 'Install app' or 'Add to Home screen'", "info");
+      }
+    }
   }
 };
 
