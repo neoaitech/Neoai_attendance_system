@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>VisionAttend — Smart Fintech-Style Attendance</title>
+  <title>VisionAttend — Smart Fintech Mobile Prototype</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -26,7 +26,6 @@
       min-height: 100vh;
       overflow: hidden;
     }
-    /* Phone Shell (on desktop) / Fullscreen (on mobile) */
     .device-shell {
       width: 100%;
       max-width: 412px;
@@ -77,7 +76,6 @@
         height: 100dvh;
       }
     }
-    /* Scrollable Container */
     .app-screen-container {
       flex: 1;
       display: flex;
@@ -103,7 +101,40 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Top Fintech Header */
+    /* Common App Header */
+    .screen-header {
+      background: #ffffff;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    .screen-header-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-back-round {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #334155;
+    }
+
+    /* Top Fintech Home Header */
     .fintech-header {
       background: #ffffff;
       padding: 16px 18px 12px;
@@ -183,7 +214,6 @@
       border-radius: 50%;
     }
 
-    /* Screen Content */
     .screen-content {
       padding: 14px 16px;
       display: flex;
@@ -191,7 +221,7 @@
       gap: 14px;
     }
 
-    /* Bank-Style Hero Quick Action Card */
+    /* Hero Scanner Banner */
     .hero-scanner-banner {
       background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
       border-radius: 20px;
@@ -221,7 +251,6 @@
       border-radius: 999px;
       font-size: 0.68rem;
       font-weight: 700;
-      letter-spacing: 0.02em;
     }
     .hero-subject-name {
       font-size: 1.25rem;
@@ -258,7 +287,7 @@
       transform: scale(0.97);
     }
 
-    /* 8-Icon Grid (GPay / PhonePe Style) */
+    /* 8-Icon Grid */
     .section-title-row {
       display: flex;
       align-items: center;
@@ -269,7 +298,6 @@
       font-size: 0.88rem;
       font-weight: 800;
       color: #0f172a;
-      letter-spacing: -0.01em;
     }
     .section-link {
       font-size: 0.72rem;
@@ -277,7 +305,6 @@
       font-weight: 700;
       cursor: pointer;
     }
-
     .fintech-grid-card {
       background: #ffffff;
       border-radius: 20px;
@@ -308,7 +335,6 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      transition: transform 0.15s;
     }
     .tile-label {
       font-size: 0.68rem;
@@ -329,7 +355,7 @@
       border: 2px solid #ffffff;
     }
 
-    /* Urgent Alert Banner (Like Bills Due in GPay) */
+    /* Urgent Banner */
     .urgent-banner-card {
       background: #fef2f2;
       border: 1px solid #fecaca;
@@ -362,7 +388,6 @@
       font-size: 0.78rem;
       font-weight: 800;
       color: #991b1b;
-      line-height: 1.2;
     }
     .urgent-text p {
       font-size: 0.68rem;
@@ -372,7 +397,7 @@
       text-overflow: ellipsis;
     }
 
-    /* Recent Transactions Style Feed */
+    /* Activity Feed */
     .activity-feed-card {
       background: #ffffff;
       border-radius: 20px;
@@ -414,9 +439,6 @@
       font-size: 0.82rem;
       font-weight: 800;
       color: #0f172a;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     .feed-meta p {
       font-size: 0.68rem;
@@ -442,20 +464,43 @@
       margin-top: 2px;
     }
 
-    /* Fixed Bottom Navigation Bar */
+    /* Search Input */
+    .search-box-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .search-box-wrap input {
+      width: 100%;
+      padding: 12px 14px 12px 38px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+    }
+    .search-icon-pos {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+    }
+
+    /* Bottom Navigation Bar (5-Tab Fintech Navigation) */
     .fintech-bottom-bar {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 70px;
+      height: 72px;
       background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(16px);
       border-top: 1px solid rgba(0,0,0,0.08);
       display: flex;
       align-items: center;
       justify-content: space-around;
-      padding: 0 10px;
+      padding: 0 6px;
       z-index: 50;
     }
     .fin-nav-btn {
@@ -463,14 +508,15 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 3px;
       background: transparent;
       border: none;
       color: #64748b;
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       font-weight: 700;
       cursor: pointer;
       flex: 1;
+      padding: 6px 0;
       transition: all 0.15s ease;
     }
     .fin-nav-btn.active {
@@ -504,7 +550,59 @@
       margin-top: 2px;
     }
 
-    /* CAMERA SCREEN */
+    /* Common Card / List UI */
+    .app-white-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .student-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .student-item-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .student-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .student-avatar-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 2px solid #e2e8f0;
+    }
+    .student-name-text {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .student-roll-text {
+      font-size: 0.7rem;
+      color: #64748b;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+    .pill-green-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #059669;
+      background: #ecfdf5;
+      padding: 2px 6px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    /* Camera Simulator Elements */
     .camera-hud-container {
       position: relative;
       width: 100%;
@@ -515,7 +613,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
     .camera-bg-sim {
       width: 100%;
@@ -588,24 +685,7 @@
       background: #4f46e5;
     }
 
-    /* STUDENT VERIFICATION CARDS */
-    .student-touch-card {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 12px 14px;
-      border: 1px solid rgba(0,0,0,0.06);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .student-thumb {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      object-fit: cover;
-      border: 2px solid #e2e8f0;
-    }
+    /* Roster Toggle Buttons */
     .toggle-pill-group {
       display: flex;
       background: #f1f5f9;
@@ -656,40 +736,39 @@
   <div class="device-shell">
     <div class="device-notch"><div class="notch-camera"></div></div>
 
-    <!-- Top Bank-Style Header -->
-    <header class="fintech-header">
-      <div class="user-profile-row">
-        <div class="avatar-bubble">
-          PC
-          <span class="online-indicator"></span>
-        </div>
-        <div class="greeting-text">
-          <h2>Prof. Prathviraj 👋</h2>
-          <p>BCA Department • CS Faculty</p>
-        </div>
-      </div>
-      <div class="header-icons">
-        <button class="icon-btn" onclick="alert('AI Biometric Engine Status: Healthy & Online!')" title="Status">
-          <i data-lucide="shield-check" style="width: 18px; height: 18px; color: #10b981;"></i>
-        </button>
-        <button class="icon-btn" onclick="alert('Notifications: 2 Defaulter warning alerts')" title="Alerts">
-          <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
-          <span class="badge-notif"></span>
-        </button>
-      </div>
-    </header>
-
     <!-- App Viewport -->
     <div class="app-screen-container">
 
-      <!-- SCREEN 1: BANK-STYLE HOME DASHBOARD -->
+      <!-- ================= 1. TAB: HOME (Fintech Super Dashboard) ================= -->
       <section id="screen-home" class="screen-view active">
-        <div class="screen-content">
+        <!-- Top Bank Header -->
+        <header class="fintech-header">
+          <div class="user-profile-row">
+            <div class="avatar-bubble">
+              PC
+              <span class="online-indicator"></span>
+            </div>
+            <div class="greeting-text">
+              <h2>Prof. Prathviraj 👋</h2>
+              <p>BCA Department • CS Faculty</p>
+            </div>
+          </div>
+          <div class="header-icons">
+            <button class="icon-btn" onclick="AppNav.goTo('diagnostics')" title="AI Health">
+              <i data-lucide="shield-check" style="width: 18px; height: 18px; color: #10b981;"></i>
+            </button>
+            <button class="icon-btn" onclick="AppNav.goTo('defaulters')" title="Alerts">
+              <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
+              <span class="badge-notif"></span>
+            </button>
+          </div>
+        </header>
 
-          <!-- 1. HERO QUICK SCAN CARD (Like "Scan QR to Pay") -->
+        <div class="screen-content">
+          <!-- Hero Quick Scan Card -->
           <div class="hero-scanner-banner">
             <div class="hero-top-badge">
-              <i data-lucide="clock" style="width: 12px; height: 12px;"></i> Active Class • Room 402
+              <i data-lucide="clock" style="width: 12px; height: 12px;"></i> Active Lecture • Room 402
             </div>
             <h1 class="hero-subject-name">MongoDB & Distributed DB</h1>
             <div class="hero-sub-detail">
@@ -703,10 +782,10 @@
             </button>
           </div>
 
-          <!-- 2. QUICK ACTIONS 8-ICON GRID (Like GPay / PhonePe Service Grid) -->
+          <!-- 8-Icon Quick Service Grid -->
           <div class="section-title-row">
-            <span class="section-title">Quick Services</span>
-            <span class="section-link" onclick="alert('All academic services are ready!')">8 Services</span>
+            <span class="section-title">Quick Academic Services</span>
+            <span class="section-link">8 Ready</span>
           </div>
 
           <div class="fintech-grid-card">
@@ -719,15 +798,15 @@
             </div>
 
             <!-- Tile 2: Student Directory -->
-            <div class="grid-tile" onclick="alert('Student Directory: 16 verified student biometric records')">
+            <div class="grid-tile" onclick="AppNav.goTo('students')">
               <div class="tile-icon-bubble" style="background: #f0fdf4; color: #16a34a;">
                 <i data-lucide="users" style="width: 22px; height: 22px;"></i>
               </div>
               <span class="tile-label">Students</span>
             </div>
 
-            <!-- Tile 3: Defaulter Alert (<75%) -->
-            <div class="grid-tile" onclick="alert('Defaulter Notice: 2 students below 75% threshold in your class')">
+            <!-- Tile 3: Defaulters (<75%) -->
+            <div class="grid-tile" onclick="AppNav.goTo('defaulters')">
               <div class="tile-icon-bubble" style="background: #fef2f2; color: #dc2626;">
                 <i data-lucide="alert-triangle" style="width: 22px; height: 22px;"></i>
                 <span class="tile-badge-count">2</span>
@@ -736,7 +815,7 @@
             </div>
 
             <!-- Tile 4: Excel Reports -->
-            <div class="grid-tile" onclick="alert('Downloading Today\'s Excel Attendance Sheet...')">
+            <div class="grid-tile" onclick="AppNav.goTo('insights')">
               <div class="tile-icon-bubble" style="background: #ecfeff; color: #0891b2;">
                 <i data-lucide="file-spreadsheet" style="width: 22px; height: 22px;"></i>
               </div>
@@ -744,7 +823,7 @@
             </div>
 
             <!-- Tile 5: Unknown Faces -->
-            <div class="grid-tile" onclick="alert('Unknown Faces Queue: 1 unidentified crop pending teacher review')">
+            <div class="grid-tile" onclick="AppNav.goTo('unknowns')">
               <div class="tile-icon-bubble" style="background: #fdf4ff; color: #c026d3;">
                 <i data-lucide="help-circle" style="width: 22px; height: 22px;"></i>
                 <span class="tile-badge-count">1</span>
@@ -753,7 +832,7 @@
             </div>
 
             <!-- Tile 6: Medical Freeze -->
-            <div class="grid-tile" onclick="alert('Medical Exemption: Rohan Deshmukh is frozen for approved medical leave')">
+            <div class="grid-tile" onclick="AppNav.goTo('exemptions')">
               <div class="tile-icon-bubble" style="background: #f0fdfa; color: #0d9488;">
                 <i data-lucide="snowflake" style="width: 22px; height: 22px;"></i>
               </div>
@@ -761,15 +840,15 @@
             </div>
 
             <!-- Tile 7: Lecture History -->
-            <div class="grid-tile" onclick="AppNav.goTo('results')">
+            <div class="grid-tile" onclick="AppNav.goTo('history')">
               <div class="tile-icon-bubble" style="background: #fffbeb; color: #d97706;">
                 <i data-lucide="calendar-check" style="width: 22px; height: 22px;"></i>
               </div>
               <span class="tile-label">History</span>
             </div>
 
-            <!-- Tile 8: AI Settings -->
-            <div class="grid-tile" onclick="alert('AI Architecture: Dual Engine Standard YOLOv8 + ArcFace 512-D active')">
+            <!-- Tile 8: AI Engine -->
+            <div class="grid-tile" onclick="AppNav.goTo('diagnostics')">
               <div class="tile-icon-bubble" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;">
                 <i data-lucide="cpu" style="width: 22px; height: 22px;"></i>
               </div>
@@ -777,8 +856,8 @@
             </div>
           </div>
 
-          <!-- 3. IMPORTANT ALERT BANNER (Like "Electricity Bill Due" in GPay) -->
-          <div class="urgent-banner-card" onclick="alert('Alert dispatched to Rohan Deshmukh & Parent regarding 64% attendance.')">
+          <!-- Urgent Alert Card -->
+          <div class="urgent-banner-card" onclick="AppNav.goTo('defaulters')">
             <div class="urgent-left">
               <div class="urgent-icon-pill">
                 <i data-lucide="bell-ring" style="width: 18px; height: 18px;"></i>
@@ -791,14 +870,13 @@
             <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: #ef4444;"></i>
           </div>
 
-          <!-- 4. RECENT LECTURE SESSIONS (Like "Recent Transactions" Feed) -->
+          <!-- Recent Lectures Feed -->
           <div class="section-title-row">
             <span class="section-title">Recent Lecture History</span>
-            <span class="section-link" onclick="AppNav.goTo('results')">View All</span>
+            <span class="section-link" onclick="AppNav.goTo('history')">View All</span>
           </div>
 
           <div class="activity-feed-card">
-            <!-- Item 1 -->
             <div class="feed-item" onclick="AppNav.goTo('results')">
               <div class="feed-left">
                 <div class="feed-icon" style="background: #ecfdf5; color: #10b981;">
@@ -815,8 +893,7 @@
               </div>
             </div>
 
-            <!-- Item 2 -->
-            <div class="feed-item" onclick="alert('Cloud Computing Session: 32/34 Present (94.1%)')">
+            <div class="feed-item" onclick="AppNav.goTo('results')">
               <div class="feed-left">
                 <div class="feed-icon" style="background: #eef2ff; color: #6366f1;">
                   <i data-lucide="book-open" style="width: 20px; height: 20px;"></i>
@@ -831,42 +908,102 @@
                 <div class="feed-time">Today, 09:15 AM</div>
               </div>
             </div>
-
-            <!-- Item 3 -->
-            <div class="feed-item" onclick="alert('Neural Networks Session: 20/22 Present (90.9%)')">
-              <div class="feed-left">
-                <div class="feed-icon" style="background: #fdf4ff; color: #a855f7;">
-                  <i data-lucide="cpu" style="width: 20px; height: 20px;"></i>
-                </div>
-                <div class="feed-meta">
-                  <h4>Deep Learning & AI</h4>
-                  <p>MCA Sem 3 • Div A</p>
-                </div>
-              </div>
-              <div class="feed-right">
-                <span class="feed-badge-green">20/22 Present</span>
-                <div class="feed-time">Yesterday</div>
-              </div>
-            </div>
           </div>
-
         </div>
       </section>
 
-      <!-- SCREEN 2: SCANNER SCREEN -->
-      <section id="screen-camera" class="screen-view">
+      <!-- ================= 2. TAB: STUDENTS DIRECTORY ================= -->
+      <section id="screen-students" class="screen-view">
+        <header class="screen-header">
+          <div class="screen-header-title">
+            <button class="btn-back-round" onclick="AppNav.goTo('home')"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i></button>
+            <span>Student Biometric Roster</span>
+          </div>
+          <span class="pill-green-badge">16 Enrolled</span>
+        </header>
+
         <div class="screen-content">
-          
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <h2 style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">Classroom Scanner</h2>
-              <p style="font-size: 0.72rem; color: #64748b;">Snap 3 angles of the room (Left, Center, Right)</p>
-            </div>
-            <button onclick="AppNav.goTo('home')" style="background: none; border: none; color: #64748b; padding: 4px; cursor: pointer;">
-              <i data-lucide="x" style="width: 22px; height: 22px;"></i>
-            </button>
+          <!-- Search Box -->
+          <div class="search-box-wrap">
+            <i data-lucide="search" class="search-icon-pos" style="width: 18px; height: 18px;"></i>
+            <input type="text" placeholder="Search student by Name or Roll Number..." />
           </div>
 
+          <!-- Students List -->
+          <div class="app-white-card">
+            <!-- Student 1 -->
+            <div class="student-item-row" onclick="alert('Student Profile: Prathviraj Chavan
+Roll: BCA2302144
+Biometric Quality: 98% (5/5 Angles)')">
+              <div class="student-item-left">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="student-avatar-img" />
+                <div>
+                  <div class="student-name-text">Prathviraj Chavan</div>
+                  <div class="student-roll-text">BCA2302144 • Div A</div>
+                  <span class="pill-green-badge">5/5 Photos Enrolled</span>
+                </div>
+              </div>
+              <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: #94a3b8;"></i>
+            </div>
+
+            <!-- Student 2 -->
+            <div class="student-item-row" onclick="alert('Student Profile: Pooja Choudhary
+Roll: BCA2302145
+Biometric Quality: 96%')">
+              <div class="student-item-left">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" class="student-avatar-img" />
+                <div>
+                  <div class="student-name-text">Pooja Choudhary</div>
+                  <div class="student-roll-text">BCA2302145 • Div A</div>
+                  <span class="pill-green-badge">5/5 Photos Enrolled</span>
+                </div>
+              </div>
+              <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: #94a3b8;"></i>
+            </div>
+
+            <!-- Student 3 -->
+            <div class="student-item-row" onclick="alert('Student Profile: Rohan Deshmukh
+Roll: BCA2302146
+Status: ❄️ Medical Exemption Active')">
+              <div class="student-item-left">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" class="student-avatar-img" />
+                <div>
+                  <div class="student-name-text">Rohan Deshmukh</div>
+                  <div class="student-roll-text">BCA2302146 • Div A</div>
+                  <span style="font-size: 0.65rem; color: #0891b2; font-weight: 700; background: #ecfeff; padding: 2px 6px; border-radius: 6px;">❄️ Medical Exemption</span>
+                </div>
+              </div>
+              <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: #94a3b8;"></i>
+            </div>
+
+            <!-- Student 4 -->
+            <div class="student-item-row" onclick="alert('Student Profile: Shweta Singh
+Roll: BCA2302147')">
+              <div class="student-item-left">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" class="student-avatar-img" />
+                <div>
+                  <div class="student-name-text">Shweta Singh</div>
+                  <div class="student-roll-text">BCA2302147 • Div A</div>
+                  <span class="pill-green-badge">5/5 Photos Enrolled</span>
+                </div>
+              </div>
+              <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: #94a3b8;"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. TAB: SCANNER SCREEN ================= -->
+      <section id="screen-camera" class="screen-view">
+        <header class="screen-header">
+          <div class="screen-header-title">
+            <button class="btn-back-round" onclick="AppNav.goTo('home')"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i></button>
+            <span>Classroom Face Scanner</span>
+          </div>
+          <span style="font-size: 0.72rem; color: #10b981; font-weight: 700;">● Live Stream</span>
+        </header>
+
+        <div class="screen-content">
           <div class="camera-hud-container">
             <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80" alt="Classroom" class="camera-bg-sim" />
             
@@ -896,107 +1033,337 @@
               Tap to Snap Angle 1 (Left Wing)
             </span>
           </div>
-
         </div>
       </section>
 
-      <!-- SCREEN 3: RESULTS ROSTER -->
+      <!-- ================= 4. TAB: RESULTS ROSTER ================= -->
       <section id="screen-results" class="screen-view">
-        <div class="screen-content">
+        <header class="screen-header">
+          <div class="screen-header-title">
+            <button class="btn-back-round" onclick="AppNav.goTo('home')"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i></button>
+            <span>Verified Attendance Roster</span>
+          </div>
+          <span class="pill-green-badge">14 Present</span>
+        </header>
 
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <h2 style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">Attendance Verified</h2>
-              <p style="font-size: 0.72rem; color: #10b981; font-weight: 700;">14 Present • 2 Absent • 1 Frozen</p>
+        <div class="screen-content">
+          <!-- Student 1 -->
+          <div class="app-white-card" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" style="width: 44px; height: 44px; border-radius: 12px; border: 2px solid #10b981; object-fit: cover;" />
+              <div>
+                <h4 style="font-size: 0.86rem; font-weight: 700;">Prathviraj Chavan</h4>
+                <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302144</p>
+                <span style="font-size: 0.65rem; color: #10b981; font-weight: 700;">96.2% ArcFace Match</span>
+              </div>
             </div>
-            <button onclick="AppNav.goTo('home')" style="background: #eef2ff; color: #4f46e5; border: none; font-size: 0.72rem; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer;">
-              Done
+            <div class="toggle-pill-group">
+              <button class="toggle-btn active-p" onclick="RosterSim.toggle(this, 'p')">P</button>
+              <button class="toggle-btn" onclick="RosterSim.toggle(this, 'a')">A</button>
+            </div>
+          </div>
+
+          <!-- Student 2 -->
+          <div class="app-white-card" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" style="width: 44px; height: 44px; border-radius: 12px; border: 2px solid #10b981; object-fit: cover;" />
+              <div>
+                <h4 style="font-size: 0.86rem; font-weight: 700;">Pooja Choudhary</h4>
+                <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302145</p>
+                <span style="font-size: 0.65rem; color: #10b981; font-weight: 700;">92.4% ArcFace Match</span>
+              </div>
+            </div>
+            <div class="toggle-pill-group">
+              <button class="toggle-btn active-p" onclick="RosterSim.toggle(this, 'p')">P</button>
+              <button class="toggle-btn" onclick="RosterSim.toggle(this, 'a')">A</button>
+            </div>
+          </div>
+
+          <!-- Student 3: Frozen -->
+          <div class="app-white-card" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-color: #a5f3fc; background: #f0fdfa;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" style="width: 44px; height: 44px; border-radius: 12px; border: 2px solid #0891b2; object-fit: cover;" />
+              <div>
+                <h4 style="font-size: 0.86rem; font-weight: 700;">Rohan Deshmukh</h4>
+                <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302146</p>
+                <span style="font-size: 0.65rem; color: #0891b2; font-weight: 700;">Medical Leave</span>
+              </div>
+            </div>
+            <div style="background: #ecfeff; color: #0891b2; font-size: 0.72rem; font-weight: 700; padding: 6px 10px; border-radius: 8px; display: flex; align-items: center; gap: 4px;">
+              <i data-lucide="snowflake" style="width: 12px; height: 12px;"></i> Frozen
+            </div>
+          </div>
+
+          <!-- Student 4: Absent -->
+          <div class="app-white-card" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" style="width: 44px; height: 44px; border-radius: 12px; border: 2px solid #ef4444; object-fit: cover;" />
+              <div>
+                <h4 style="font-size: 0.86rem; font-weight: 700;">Shweta Singh</h4>
+                <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302147</p>
+                <span style="font-size: 0.65rem; color: #ef4444; font-weight: 700;">Unrecognized</span>
+              </div>
+            </div>
+            <div class="toggle-pill-group">
+              <button class="toggle-btn" onclick="RosterSim.toggle(this, 'p')">P</button>
+              <button class="toggle-btn active-a" onclick="RosterSim.toggle(this, 'a')">A</button>
+            </div>
+          </div>
+
+          <button class="btn-finalize" onclick="RosterSim.finalize()" style="margin-top: 6px;">
+            <i data-lucide="check-check" style="width: 18px; height: 18px;"></i>
+            <span>Lock & Save Attendance (14/16)</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= 5. TAB: HISTORY (Bank Passbook Style) ================= -->
+      <section id="screen-history" class="screen-view">
+        <header class="screen-header">
+          <div class="screen-header-title">
+            <button class="btn-back-round" onclick="AppNav.goTo('home')"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i></button>
+            <span>Lecture Passbook & Audits</span>
+          </div>
+          <button style="background: #ecfdf5; color: #065f46; border: none; font-size: 0.72rem; font-weight: 800; padding: 6px 12px; border-radius: 8px; cursor: pointer;" onclick="alert('Downloading Full Excel (.xlsx) Report...')">
+            📥 Excel
+          </button>
+        </header>
+
+        <div class="screen-content">
+          <div class="search-box-wrap">
+            <i data-lucide="calendar" class="search-icon-pos" style="width: 18px; height: 18px;"></i>
+            <input type="text" placeholder="Filter by date, topic or semester..." />
+          </div>
+
+          <div class="activity-feed-card">
+            <!-- Item 1 -->
+            <div class="feed-item" onclick="AppNav.goTo('results')">
+              <div class="feed-left">
+                <div class="feed-icon" style="background: #ecfdf5; color: #10b981;">
+                  <i data-lucide="check-circle-2" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="feed-meta">
+                  <h4>MongoDB Aggregations</h4>
+                  <p>BCA Sem 7 • Div A</p>
+                </div>
+              </div>
+              <div class="feed-right">
+                <span class="feed-badge-green">14/16 Present</span>
+                <div class="feed-time">Sep 3, 10:30 AM</div>
+              </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="feed-item" onclick="alert('Audit Details:
+Cloud Computing
+Faculty: Prof. Prathviraj
+Present: 32, Absent: 2
+Rate: 94.1%')">
+              <div class="feed-left">
+                <div class="feed-icon" style="background: #eef2ff; color: #6366f1;">
+                  <i data-lucide="cloud" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="feed-meta">
+                  <h4>Cloud Infrastructure</h4>
+                  <p>BCA Sem 5 • Div B</p>
+                </div>
+              </div>
+              <div class="feed-right">
+                <span class="feed-badge-green">32/34 Present</span>
+                <div class="feed-time">Sep 3, 09:15 AM</div>
+              </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="feed-item" onclick="alert('Audit Details:
+Python & AI Neural Networks
+Present: 20, Absent: 2')">
+              <div class="feed-left">
+                <div class="feed-icon" style="background: #fdf4ff; color: #a855f7;">
+                  <i data-lucide="cpu" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="feed-meta">
+                  <h4>Neural Networks & AI</h4>
+                  <p>MCA Sem 3 • Div A</p>
+                </div>
+              </div>
+              <div class="feed-right">
+                <span class="feed-badge-green">20/22 Present</span>
+                <div class="feed-time">Sep 2, 02:00 PM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 6. TAB: DEFAULTERS & ALERTS ================= -->
+      <section id="screen-defaulters" class="screen-view">
+        <header class="screen-header">
+          <div class="screen-header-title">
+            <button class="btn-back-round" onclick="AppNav.goTo('home')"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i></button>
+            <span>Defaulters List (< 75%)</span>
+          </div>
+          <span style="font-size: 0.72rem; color: #ef4444; font-weight: 800; background: #fef2f2; padding: 4px 8px; border-radius: 6px;">2 Defaulters</span>
+        </header>
+
+        <div class="screen-content">
+          <div class="app-white-card" style="background: #fff1f2; border-color: #fecdd3;">
+            <h4 style="font-size: 0.86rem; font-weight: 800; color: #9f1239; margin-bottom: 4px;">Institutional Compliance Threshold</h4>
+            <p style="font-size: 0.74rem; color: #be123c;">Students with attendance below 75% are ineligible for semester examinations.</p>
+          </div>
+
+          <!-- Defaulter 1 -->
+          <div class="app-white-card" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 0.88rem; font-weight: 800;">Rohan Deshmukh</h4>
+              <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302146 • BCA Sem 7</p>
+              <span style="font-size: 0.72rem; color: #dc2626; font-weight: 800;">64.2% Attendance (Critical)</span>
+            </div>
+            <button style="background: #25d366; color: white; border: none; padding: 8px 12px; border-radius: 10px; font-size: 0.74rem; font-weight: 800; display: flex; align-items: center; gap: 4px; cursor: pointer;" onclick="alert('WhatsApp Alert & Parent SMS sent successfully for Rohan Deshmukh!')">
+              <i data-lucide="send" style="width: 12px; height: 12px;"></i> Alert
             </button>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <!-- Student 1 -->
-            <div class="student-touch-card">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="student-thumb" style="border-color: #10b981;" />
-                <div>
-                  <h4 style="font-size: 0.86rem; font-weight: 700;">Prathviraj Chavan</h4>
-                  <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302144</p>
-                  <span style="font-size: 0.65rem; color: #10b981; font-weight: 700;">96.2% Match</span>
-                </div>
-              </div>
-              <div class="toggle-pill-group">
-                <button class="toggle-btn active-p" onclick="RosterSim.toggle(this, 'p')">P</button>
-                <button class="toggle-btn" onclick="RosterSim.toggle(this, 'a')">A</button>
-              </div>
+          <!-- Defaulter 2 -->
+          <div class="app-white-card" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 0.88rem; font-weight: 800;">Shweta Singh</h4>
+              <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302147 • BCA Sem 7</p>
+              <span style="font-size: 0.72rem; color: #dc2626; font-weight: 800;">71.4% Attendance (Warning)</span>
             </div>
+            <button style="background: #25d366; color: white; border: none; padding: 8px 12px; border-radius: 10px; font-size: 0.74rem; font-weight: 800; display: flex; align-items: center; gap: 4px; cursor: pointer;" onclick="alert('WhatsApp Alert & Parent SMS sent successfully for Shweta Singh!')">
+              <i data-lucide="send" style="width: 12px; height: 12px;"></i> Alert
+            </button>
+          </div>
+        </div>
+      </section>
 
-            <!-- Student 2 -->
-            <div class="student-touch-card">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" class="student-thumb" style="border-color: #10b981;" />
-                <div>
-                  <h4 style="font-size: 0.86rem; font-weight: 700;">Pooja Choudhary</h4>
-                  <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302145</p>
-                  <span style="font-size: 0.65rem; color: #10b981; font-weight: 700;">92.4% Match</span>
-                </div>
-              </div>
-              <div class="toggle-pill-group">
-                <button class="toggle-btn active-p" onclick="RosterSim.toggle(this, 'p')">P</button>
-                <button class="toggle-btn" onclick="RosterSim.toggle(this, 'a')">A</button>
-              </div>
-            </div>
+      <!-- ================= 7. TAB: UNKNOWNS QUEUE ================= -->
+      <section id="screen-unknowns" class="screen-view">
+        <header class="screen-header">
+          <div class="screen-header-title">
+            <button class="btn-back-round" onclick="AppNav.goTo('home')"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i></button>
+            <span>Unknown Faces Queue</span>
+          </div>
+          <span style="font-size: 0.72rem; color: #9333ea; font-weight: 800;">1 Crop Pending</span>
+        </header>
 
-            <!-- Student 3: Frozen -->
-            <div class="student-touch-card" style="border-color: #a5f3fc; background: #f0fdfa;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" class="student-thumb" style="border-color: #0891b2;" />
-                <div>
-                  <h4 style="font-size: 0.86rem; font-weight: 700;">Rohan Deshmukh</h4>
-                  <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302146</p>
-                  <span style="font-size: 0.65rem; color: #0891b2; font-weight: 700;">Medical Leave</span>
-                </div>
-              </div>
-              <div style="background: #ecfeff; color: #0891b2; font-size: 0.72rem; font-weight: 700; padding: 6px 10px; border-radius: 8px; display: flex; align-items: center; gap: 4px;">
-                <i data-lucide="snowflake" style="width: 12px; height: 12px;"></i> Frozen
-              </div>
-            </div>
-
-            <!-- Student 4: Absent -->
-            <div class="student-touch-card">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" class="student-thumb" style="border-color: #ef4444;" />
-                <div>
-                  <h4 style="font-size: 0.86rem; font-weight: 700;">Shweta Singh</h4>
-                  <p style="font-size: 0.7rem; color: #64748b; font-family: monospace;">BCA2302147</p>
-                  <span style="font-size: 0.65rem; color: #ef4444; font-weight: 700;">Unrecognized</span>
-                </div>
-              </div>
-              <div class="toggle-pill-group">
-                <button class="toggle-btn" onclick="RosterSim.toggle(this, 'p')">P</button>
-                <button class="toggle-btn active-a" onclick="RosterSim.toggle(this, 'a')">A</button>
-              </div>
+        <div class="screen-content">
+          <div class="app-white-card" style="text-align: center; padding: 20px;">
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" style="width: 80px; height: 80px; border-radius: 20px; object-fit: cover; border: 3px solid #c026d3; margin: 0 auto 10px;" />
+            <h4 style="font-size: 0.95rem; font-weight: 800;">Unknown Face #102</h4>
+            <p style="font-size: 0.72rem; color: #64748b;">Captured in MongoDB Lecture • Angle 2</p>
+            
+            <div style="display: flex; gap: 8px; margin-top: 14px;">
+              <button style="flex: 1; background: #6366f1; color: white; border: none; padding: 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; cursor: pointer;" onclick="alert('Tagged to Student: Rahul Patil (Div B). Future lectures will auto-recognize him!')">
+                🏷️ Assign to Student
+              </button>
+              <button style="background: #f1f5f9; color: #475569; border: none; padding: 10px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer;" onclick="alert('Ignored.')">
+                Ignore
+              </button>
             </div>
           </div>
+        </div>
+      </section>
 
-          <button class="btn-finalize" onclick="RosterSim.finalize()" style="margin-top: 10px;">
-            <i data-lucide="check-check" style="width: 18px; height: 18px;"></i>
-            <span>Lock & Save Attendance</span>
-          </button>
+      <!-- ================= 8. TAB: MEDICAL EXEMPTIONS ================= -->
+      <section id="screen-exemptions" class="screen-view">
+        <header class="screen-header">
+          <div class="screen-header-title">
+            <button class="btn-back-round" onclick="AppNav.goTo('home')"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i></button>
+            <span>Medical & Sports Exemptions</span>
+          </div>
+          <span style="font-size: 0.72rem; color: #0891b2; font-weight: 800;">❄️ 1 Frozen</span>
+        </header>
 
+        <div class="screen-content">
+          <div class="app-white-card" style="border-left: 4px solid #0891b2;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <h4 style="font-size: 0.88rem; font-weight: 800;">Rohan Deshmukh</h4>
+              <span style="font-size: 0.68rem; color: #0891b2; font-weight: 800; background: #ecfeff; padding: 2px 8px; border-radius: 6px;">Medical Leave</span>
+            </div>
+            <p style="font-size: 0.72rem; color: #64748b; margin: 4px 0 10px;">Roll: BCA2302146 • Sanctioned by College Principal</p>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.72rem; color: #0e7490; font-weight: 600;">
+              <span>Period: Sep 1 - Sep 10</span>
+              <button style="background: #f1f5f9; border: none; padding: 5px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; color: #0f172a; cursor: pointer;" onclick="alert('Unfrozen: Rohan Deshmukh is now active in regular attendance tracking.')">Unfreeze</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 9. TAB: INSIGHTS & REPORTS ================= -->
+      <section id="screen-insights" class="screen-view">
+        <header class="screen-header">
+          <div class="screen-header-title">
+            <button class="btn-back-round" onclick="AppNav.goTo('home')"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i></button>
+            <span>Academic Intel & Insights</span>
+          </div>
+        </header>
+
+        <div class="screen-content">
+          <!-- Big Metric Card -->
+          <div class="app-white-card" style="text-align: center; padding: 20px;">
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 700;">Overall Weekly Attendance</div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: #10b981; margin: 6px 0;">88.4%</div>
+            <div style="font-size: 0.72rem; color: #059669; font-weight: 700;">+3.2% vs Last Week • Top 5% in University</div>
+          </div>
+
+          <!-- Quick Export Buttons -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;" onclick="alert('Downloading Full Excel Multi-Sheet...')">
+              <i data-lucide="file-spreadsheet" style="width: 24px; height: 24px; color: #10b981;"></i>
+              <span style="font-size: 0.76rem; font-weight: 800;">Excel Sheet (.xlsx)</span>
+            </button>
+            <button style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;" onclick="alert('Generating Official PDF Transcript...')">
+              <i data-lucide="file-text" style="width: 24px; height: 24px; color: #ef4444;"></i>
+              <span style="font-size: 0.76rem; font-weight: 800;">Official PDF</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 10. TAB: AI DIAGNOSTICS ================= -->
+      <section id="screen-diagnostics" class="screen-view">
+        <header class="screen-header">
+          <div class="screen-header-title">
+            <button class="btn-back-round" onclick="AppNav.goTo('home')"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i></button>
+            <span>AI Architecture & Engine</span>
+          </div>
+          <span class="pill-green-badge">Dual AI Ready</span>
+        </header>
+
+        <div class="screen-content">
+          <div class="app-white-card">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <i data-lucide="cpu" style="width: 20px; height: 20px; color: #6366f1;"></i>
+              <h4 style="font-size: 0.88rem; font-weight: 800;">Dual AI Engine Active</h4>
+            </div>
+            <p style="font-size: 0.74rem; color: #64748b;">
+              1. <b>YOLOv8-Face</b>: Real-time classroom multi-face detection (45ms).<br>
+              2. <b>MiniFASNet</b>: Optical anti-spoofing filter.<br>
+              3. <b>ArcFace 512-D</b>: High-precision embedding vector matching (0.8226 similarity on verified students).
+            </p>
+          </div>
         </div>
       </section>
 
     </div>
 
-    <!-- Fintech Bottom Navigation Bar -->
+    <!-- 5-Tab Fintech Bottom Navigation Bar -->
     <nav class="fintech-bottom-bar">
+      <!-- 1. Home -->
       <button class="fin-nav-btn active" id="tab-home" onclick="AppNav.goTo('home')">
         <i data-lucide="home" style="width: 20px; height: 20px;"></i>
         <span>Home</span>
       </button>
-      
-      <!-- Big Center Floating Scanner (Like PhonePe / GPay QR button) -->
+
+      <!-- 2. Students -->
+      <button class="fin-nav-btn" id="tab-students" onclick="AppNav.goTo('students')">
+        <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+        <span>Students</span>
+      </button>
+
+      <!-- 3. Floating Center Camera Shutter -->
       <button class="fin-nav-btn floating-center-scan" onclick="AppNav.goTo('camera')">
         <div class="center-scan-circle">
           <i data-lucide="scan" style="width: 24px; height: 24px;"></i>
@@ -1004,9 +1371,16 @@
         <span class="center-scan-label">SCAN</span>
       </button>
 
-      <button class="fin-nav-btn" id="tab-history" onclick="AppNav.goTo('results')">
+      <!-- 4. History -->
+      <button class="fin-nav-btn" id="tab-history" onclick="AppNav.goTo('history')">
         <i data-lucide="history" style="width: 20px; height: 20px;"></i>
         <span>History</span>
+      </button>
+
+      <!-- 5. Insights -->
+      <button class="fin-nav-btn" id="tab-insights" onclick="AppNav.goTo('insights')">
+        <i data-lucide="bar-chart-3" style="width: 20px; height: 20px;"></i>
+        <span>Insights</span>
       </button>
     </nav>
 
@@ -1021,11 +1395,15 @@
         const target = document.getElementById('screen-' + screenId);
         if (target) target.classList.add('active');
 
+        // Update Bottom Nav Active States
         document.querySelectorAll('.fin-nav-btn').forEach(b => b.classList.remove('active'));
         if (screenId === 'home') document.getElementById('tab-home').classList.add('active');
-        if (screenId === 'results') document.getElementById('tab-history').classList.add('active');
+        if (screenId === 'students') document.getElementById('tab-students').classList.add('active');
+        if (screenId === 'history') document.getElementById('tab-history').classList.add('active');
+        if (screenId === 'insights') document.getElementById('tab-insights').classList.add('active');
 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Scroll to top
+        document.querySelector('.app-screen-container').scrollTo({ top: 0, behavior: 'smooth' });
         lucide.createIcons();
       }
     };
