@@ -10,6 +10,14 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+  
+  <!-- Progressive Web App (PWA) Manifest & Native Mobile App Meta Tags -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="VisionAttend" />
 
   <!-- Modern Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -162,6 +170,12 @@
             <div id="topbar-notif-dropdown" class="notif-dropdown hidden"></div>
           </div>
 
+          <!-- PWA Native App Install Button -->
+          <button class="btn-secondary btn-sm items-center gap-1.5 hidden" id="pwa-install-btn" onclick="App.triggerPwaInstall()" style="color: #4f46e5; border-color: rgba(99, 102, 241, 0.35); font-weight: 700; background: rgba(99, 102, 241, 0.08); border-radius: 9px;" title="Install VisionAttend as Native App">
+            <i data-lucide="download" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <span class="text-xs">Install App</span>
+          </button>
+
           <!-- Quick Action CTA Button -->
           <button class="btn-primary btn-sm hidden sm:inline-flex items-center gap-1.5" id="topbar-quick-btn" onclick="App.navigate('capture')" title="Take Live Attendance">
             <i data-lucide="camera" class="w-4 h-4"></i>
@@ -209,6 +223,21 @@
 
         </div>
       </header>
+
+      <!-- Mobile PWA Install Floating Banner (Shown only when uninstalled on mobile) -->
+      <div id="pwa-mobile-banner" class="pwa-mobile-banner hidden">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <img src="/images/icon-192.png" alt="VisionAttend" class="w-7 h-7 rounded-lg shadow-xs flex-shrink-0" />
+          <div class="min-w-0">
+            <div class="font-bold text-slate-900 text-xs truncate">Install VisionAttend App</div>
+            <div class="text-[10px] text-slate-500 truncate">Add to Home Screen for fast full-screen access</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button class="btn-primary text-xs py-1 px-3 font-bold" style="border-radius: 8px;" onclick="App.triggerPwaInstall()">Install</button>
+          <button class="text-slate-400 hover:text-slate-600 text-base p-1" onclick="document.getElementById('pwa-mobile-banner').classList.add('hidden')">&times;</button>
+        </div>
+      </div>
 
       <!-- Dynamic View Container (SPA Render Target) -->
       <main id="view-container" class="view-content-wrapper">
