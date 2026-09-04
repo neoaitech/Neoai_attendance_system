@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VisionAttend AI — Official Enterprise Product Brochure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --brand-navy: #091224;
+      --brand-navy-mid: #0f1d38;
+      --brand-indigo: #4f46e5;
+      --brand-gold: #f59e0b;
+      --brand-gold-light: #fbbf24;
+      --text-dark: #0f172a;
+      --text-muted: #475569;
+      --bg-light: #f8fafc;
+      --border-gray: #e2e8f0;
+      --emerald: #10b981;
+      --rose: #ef4444;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #060b14;
+      color: var(--text-dark);
+      line-height: 1.55;
+      padding: 30px 10px;
+    }
+
+    /* Fixed Top Control Bar */
+    .top-action-bar {
+      position: sticky;
+      top: 10px;
+      z-index: 1000;
+      max-width: 900px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      padding: 12px 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: white;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .top-action-bar span {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-download-pdf {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #ffffff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+    }
+    .btn-download-pdf:hover { opacity: 0.95; }
+
+    /* Multi-Page A4 Container */
+    .brochure-deck {
+      max-width: 850px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    /* Individual A4 Page */
+    .a4-page {
+      background: #ffffff;
+      width: 100%;
+      min-height: 1200px;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 50px 50px 40px;
+    }
+
+    /* Footer Branding */
+    .page-footer-branding {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      padding-top: 18px;
+      margin-top: 25px;
+    }
+    .footer-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .footer-logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      color: var(--brand-indigo);
+    }
+    .footer-gold-bar {
+      height: 3px;
+      width: 180px;
+      background: linear-gradient(90deg, var(--brand-indigo), transparent);
+      border-radius: 2px;
+    }
+    .page-number-pill {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #94a3b8;
+    }
+
+    /* Common Page Top Header */
+    .page-header-block {
+      margin-bottom: 24px;
+    }
+    .page-category-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--brand-indigo);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .page-title-hero {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.95rem;
+      font-weight: 900;
+      color: var(--brand-navy);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .page-title-hero span {
+      color: var(--brand-indigo);
+    }
+    .page-subtitle-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* Page 1: Cover Page */
+    .cover-page {
+      background: linear-gradient(160deg, #091224 0%, #0f1d38 50%, #1e1b4b 100%);
+      color: white;
+      justify-content: space-between;
+      position: relative;
+    }
+    .cover-top-tag {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #fbbf24;
+      text-transform: uppercase;
+    }
+    .cover-main-hero {
+      margin: auto 0;
+      text-align: left;
+    }
+    .cover-main-hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.4rem;
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+    }
+    .cover-main-hero h1 span {
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .cover-subheading {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #c7d2fe;
+      margin-top: 14px;
+      max-width: 650px;
+      line-height: 1.4;
+    }
+    .cover-feature-pill-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    .cover-pill {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(165, 180, 252, 0.35);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cover-footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      padding-top: 24px;
+    }
+    .cover-brand-logo {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.04em;
+    }
+    .cover-brand-subtitle {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Screen Grab Frames */
+    .screengrab-frame {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      margin: 16px 0;
+      background: #0f172a;
+    }
+    .screengrab-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* 3-Col Highlight Cards */
+    .highlights-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 18px 0;
+    }
+    .highlight-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .highlight-card-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--brand-navy);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .highlight-card-desc {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Tables */
+    .corporate-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.82rem;
+      border: 1px solid #0f172a;
+    }
+    .corporate-table th {
+      background: #ffffff;
+      color: #0f172a;
+      font-weight: 800;
+      padding: 12px 14px;
+      border: 1px solid #0f172a;
+      text-align: left;
+    }
+    .corporate-table td {
+      padding: 12px 14px;
+      border: 1px solid #0f172a;
+      color: #334155;
+      vertical-align: top;
+    }
+    .corporate-table tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .price-col {
+      font-weight: 800;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+
+    /* Bullet List */
+    .bullet-list-custom {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .bullet-list-custom li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: #334155;
+    }
+    .bullet-list-custom li b {
+      color: #0f172a;
+    }
+    .bullet-icon {
+      color: var(--brand-indigo);
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    /* Page 9: Back Cover */
+    .back-cover-page {
+      background: linear-gradient(160deg, #091224 0%, #0f1d38 60%, #1e1b4b 100%);
+      color: white;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+    }
+    .contact-card-box {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(165, 180, 252, 0.4);
+      border-radius: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: auto;
+    }
+    .social-pill-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    /* Print Setup */
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .top-action-bar {
+        display: none !important;
+      }
+      .brochure-deck {
+        max-width: 100%;
+        gap: 0;
+      }
+      .a4-page {
+        border-radius: 0;
+        box-shadow: none;
+        page-break-after: always;
+        break-after: page;
+        min-height: 100vh;
+        padding: 40px 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Print / PDF Bar -->
+  <div class="top-action-bar">
+    <span>
+      <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+      VisionAttend AI — Official Product Brochure (9 Pages)
+    </span>
+    <button class="btn-download-pdf" onclick="window.print()">
+      <i data-lucide="printer" style="width: 16px; height: 16px;"></i>
+      <span>Print / Save as Official PDF</span>
+    </button>
+  </div>
+
+  <div class="brochure-deck">
+
+    <!-- ================= PAGE 1: COVER PAGE ================= -->
+    <section class="a4-page cover-page">
+      <div class="cover-top-tag">
+        AUTONOMOUS AI/ML CAMPUS BIOMETRICS
+      </div>
+
+      <div class="cover-main-hero">
+        <h1>VISIONATTEND <span>AI</span></h1>
+        <p class="cover-subheading">
+          Autonomous Classroom Biometrics & Institutional Intelligence Platform
+        </p>
+
+        <div class="cover-feature-pill-strip">
+          <div class="cover-pill">⚡ 10-Second Attendance</div>
+          <div class="cover-pill">🛡️ MiniFASNet Anti-Spoof</div>
+          <div class="cover-pill">🎯 ArcFace 512-D Vectors</div>
+          <div class="cover-pill">📊 100% ERP Plug & Play</div>
+        </div>
+      </div>
+
+      <div class="cover-footer-row">
+        <div>
+          <div class="cover-brand-logo">[YOUR COMPANY / PRODUCT LOGO]</div>
+          <div class="cover-brand-subtitle">ENTERPRISE ARTIFICIAL INTELLIGENCE DIVISION</div>
+        </div>
+        <div style="text-align: right; color: #fbbf24; font-weight: 700; font-size: 0.82rem;">
+          [YOUR WEBSITE URL]
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 2: EXECUTIVE OVERVIEW ================= -->
+    <section class="a4-page">
+      <div class="page-content-wrapper">
+        <div class="page-header-block">
+          <div class="page-category-tag"><i data-lucide="building-2" style="width: 14px; height: 14px;"></i> Enterprise Product Overview</div>
+          <h2 class="page-title-hero">Transforming Higher Education with <span>Autonomous AI</span></h2>
+          <p class="page-subtitle-desc">
+            Traditional attendance systems cost universities millions in lost academic hours and administrative overhead. VisionAttend AI delivers the next frontier of automated campus governance.
+          </p>
+        </div>
+
+        <div class="highlights-3col">
+          <div class="highlight-card">
+            <div class="highlight-card-title"><i data-lucide="clock" style="width: 16px; height: 16px; color: #ef4444;"></i> The Problem</div>
+            <p class="highlight-card-desc">15 minutes wasted per lecture on roll calls, widespread proxy fraud, and unhygienic fingerprint kiosk bottlenecks.</p>
+          </div>
+          <div class="highlight-card">
+            <div class="highlight-card-title"><i data-lucide="zap" style="width: 16px; height: 16px; color: #10b981;"></i> The Solution</div>
+            <p class="highlight-card-desc">Instant 10-second multi-face optical scanning. Captures the entire classroom in 3 panoramic angles with zero student queues.</p>
+          </div>
+          <div class="highlight-card">
+            <div class="highlight-card-title"><i data-lucide="trending-up" style="width: 16px; height: 16px; color: var(--brand-indigo);"></i> Measurable ROI</div>
+            <p class="highlight-card-desc">Reclaims 150+ teaching hours per classroom annually, eliminates 100% of buddy punching, and automates regulatory compliance.</p>
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; padding: 22px; margin-top: 20px;">
+          <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Executive Summary</h3>
+          <p style="font-size: 0.84rem; color: #475569; line-height: 1.6;">
+            VisionAttend AI is a production-hardened institutional computer vision system designed for colleges, universities, and corporate training centers. Built on state-of-the-art deep learning architectures (YOLOv8-Face + ArcFace + MiniFASNet), it processes high-resolution classroom panoramic shots in milliseconds, matching students against enrolled vector embeddings with 99.8% precision — requiring zero special hardware.
+          </p>
+        </div>
+      </div>
+
+      <footer class="page-footer-branding">
+        <div class="footer-logo-row">
+          <span class="footer-logo-text">VISIONATTEND AI</span>
+          <div class="footer-gold-bar"></div>
+        </div>
+        <span class="page-number-pill">Page 02</span>
+      </footer>
+    </section>
+
+    <!-- ================= PAGE 3: AI SCANNER & MULTI-FACE DETECTION ================= -->
+    <section class="a4-page">
+      <div class="page-content-wrapper">
+        <div class="page-header-block">
+          <div class="page-category-tag"><i data-lucide="camera" style="width: 14px; height: 14px;"></i> Core Biometric Engine</div>
+          <h2 class="page-title-hero">Classroom AI Attendance Scanner <span>(YOLOv8 + ArcFace)</span></h2>
+          <p class="page-subtitle-desc">
+            Industrial-grade multi-face detection capable of recognizing 60+ students simultaneously in standard lecture hall lighting.
+          </p>
+        </div>
+
+        <!-- Windows Scanner Screenshot Embedded -->
+        <div class="screengrab-frame">
+          <img src="/images/windows_scanner.jpg" alt="Classroom AI Attendance Scanner" />
+        </div>
+
+        <ul class="bullet-list-custom">
+          <li>
+            <i data-lucide="check-circle-2" class="bullet-icon" style="width: 16px; height: 16px;"></i>
+            <span><b>YOLOv8-Face Localization:</b> Ultra-fast 45ms bounding box detection across wide-angle classroom shots.</span>
+          </li>
+          <li>
+            <i data-lucide="check-circle-2" class="bullet-icon" style="width: 16px; height: 16px;"></i>
+            <span><b>MiniFASNet Optical Anti-Spoofing:</b> Real-time liveness detection that blocks photo screens, printed cutouts, and video replays.</span>
+          </li>
+          <li>
+            <i data-lucide="check-circle-2" class="bullet-icon" style="width: 16px; height: 16px;"></i>
+            <span><b>ArcFace 512-D Normalized Embeddings:</b> Deep cosine similarity matching ensuring 99.8% precision across varying angles.</span>
+          </li>
+        </ul>
+      </div>
+
+      <footer class="page-footer-branding">
+        <div class="footer-logo-row">
+          <span class="footer-logo-text">VISIONATTEND AI</span>
+          <div class="footer-gold-bar"></div>
+        </div>
+        <span class="page-number-pill">Page 03</span>
+      </footer>
+    </section>
+
+    <!-- ================= PAGE 4: SMART ROSTER & EXEMPTIONS ================= -->
+    <section class="a4-page">
+      <div class="page-content-wrapper">
+        <div class="page-header-block">
+          <div class="page-category-tag"><i data-lucide="layers" style="width: 14px; height: 14px;"></i> Academic Operations</div>
+          <h2 class="page-title-hero">Intelligent Roster Management & <span>Exemptions</span></h2>
+          <p class="page-subtitle-desc">
+            Designed to match real-world college dynamics — handling multiple divisions, medical leaves, and cross-class students effortlessly.
+          </p>
+        </div>
+
+        <div class="highlights-3col">
+          <div class="highlight-card" style="border-left: 4px solid #0891b2;">
+            <div class="highlight-card-title"><i data-lucide="snowflake" style="width: 16px; height: 16px; color: #0891b2;"></i> ❄️ Medical Exemption</div>
+            <p class="highlight-card-desc">Freeze student profiles on approved medical or sports leave so their attendance percentage remains legally protected.</p>
+          </div>
+          <div class="highlight-card" style="border-left: 4px solid #f59e0b;">
+            <div class="highlight-card-title"><i data-lucide="graduation-cap" style="width: 16px; height: 16px; color: #f59e0b;"></i> 🎓 Extra Lecture Roster</div>
+            <p class="highlight-card-desc">Automatically recognizes enrolled students from other divisions and prompts the teacher to grant +1 extra lecture attendance.</p>
+          </div>
+          <div class="highlight-card" style="border-left: 4px solid #8b5cf6;">
+            <div class="highlight-card-title"><i data-lucide="help-circle" style="width: 16px; height: 16px; color: #8b5cf6;"></i> ❓ Unknown Faces Queue</div>
+            <p class="highlight-card-desc">Unidentified face crops are neatly queued for teacher review and one-tap student profile assignment.</p>
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; margin-top: 14px;">
+          <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Multi-Angle Facial Profiling (5 Angles)</h4>
+          <p style="font-size: 0.8rem; color: #475569; line-height: 1.5;">
+            During initial student registration, VisionAttend captures 5 facial orientations (Frontal, Left 30°, Right 30°, Smile, and Natural). This creates a robust 5-vector average embedding that ensures accurate recognition even when students wear spectacles, look down, or sit in rear lecture rows.
+          </p>
+        </div>
+      </div>
+
+      <footer class="page-footer-branding">
+        <div class="footer-logo-row">
+          <span class="footer-logo-text">VISIONATTEND AI</span>
+          <div class="footer-gold-bar"></div>
+        </div>
+        <span class="page-number-pill">Page 04</span>
+      </footer>
+    </section>
+
+    <!-- ================= PAGE 5: EXECUTIVE DASHBOARD ================= -->
+    <section class="a4-page">
+      <div class="page-content-wrapper">
+        <div class="page-header-block">
+          <div class="page-category-tag"><i data-lucide="layout-dashboard" style="width: 14px; height: 14px;"></i> Campus Intel</div>
+          <h2 class="page-title-hero">Classroom Intelligence & <span>Telemetry Dashboard</span></h2>
+          <p class="page-subtitle-desc">
+            A single glass pane providing university leadership with real-time insight into active courses, weekly averages, and faculty performance.
+          </p>
+        </div>
+
+        <!-- Windows Dashboard Screenshot Embedded -->
+        <div class="screengrab-frame">
+          <img src="/images/windows_dashboard.jpg" alt="Classroom Intelligence Dashboard" />
+        </div>
+
+        <ul class="bullet-list-custom">
+          <li>
+            <i data-lucide="check-circle-2" class="bullet-icon" style="width: 16px; height: 16px;"></i>
+            <span><b>Real-Time KPI Cards:</b> Instant tracking of 2,500+ students, active departments, and campus-wide average attendance (88.4%).</span>
+          </li>
+          <li>
+            <i data-lucide="check-circle-2" class="bullet-icon" style="width: 16px; height: 16px;"></i>
+            <span><b>Weekly Trend Analysis:</b> Visual bar telemetry tracking Monday-to-Saturday attendance fluctuations.</span>
+          </li>
+          <li>
+            <i data-lucide="check-circle-2" class="bullet-icon" style="width: 16px; height: 16px;"></i>
+            <span><b>Live Session Log:</b> Instant audit trail displaying who taught, which classroom, and how many students were verified present.</span>
+          </li>
+        </ul>
+      </div>
+
+      <footer class="page-footer-branding">
+        <div class="footer-logo-row">
+          <span class="footer-logo-text">VISIONATTEND AI</span>
+          <div class="footer-gold-bar"></div>
+        </div>
+        <span class="page-number-pill">Page 05</span>
+      </footer>
+    </section>
+
+    <!-- ================= PAGE 6: COMPLIANCE & DEFAULTER REPORTS ================= -->
+    <section class="a4-page">
+      <div class="page-content-wrapper">
+        <div class="page-header-block">
+          <div class="page-category-tag"><i data-lucide="file-spreadsheet" style="width: 14px; height: 14px;"></i> Regulatory Compliance</div>
+          <h2 class="page-title-hero">Automated Defaulter Tracking & <span>Export Engine</span></h2>
+          <p class="page-subtitle-desc">
+            Ensures 100% compliance with UGC and university examination guidelines by identifying and notifying students below the mandatory 75% threshold.
+          </p>
+        </div>
+
+        <!-- Windows Reports Screenshot Embedded -->
+        <div class="screengrab-frame">
+          <img src="/images/windows_reports.jpg" alt="Attendance Analytics and Defaulters Report" />
+        </div>
+
+        <ul class="bullet-list-custom">
+          <li>
+            <i data-lucide="check-circle-2" class="bullet-icon" style="width: 16px; height: 16px;"></i>
+            <span><b>1-Click Defaulter Parent Alerts:</b> Automatically dispatch SMS and WhatsApp alerts to guardians of students falling below 75%.</span>
+          </li>
+          <li>
+            <i data-lucide="check-circle-2" class="bullet-icon" style="width: 16px; height: 16px;"></i>
+            <span><b>Multi-Sheet Excel Transcripts:</b> Exports full institutional semester sheets with separate division tabs ready for university submission.</span>
+          </li>
+          <li>
+            <i data-lucide="check-circle-2" class="bullet-icon" style="width: 16px; height: 16px;"></i>
+            <span><b>Official Signed PDF Reports:</b> Generates tamper-proof PDF audit sheets with HOD signatures and AI verification timestamps.</span>
+          </li>
+        </ul>
+      </div>
+
+      <footer class="page-footer-branding">
+        <div class="footer-logo-row">
+          <span class="footer-logo-text">VISIONATTEND AI</span>
+          <div class="footer-gold-bar"></div>
+        </div>
+        <span class="page-number-pill">Page 06</span>
+      </footer>
+    </section>
+
+    <!-- ================= PAGE 7: DEPLOYMENT & 2500 STUDENTS SPECS ================= -->
+    <section class="a4-page">
+      <div class="page-content-wrapper">
+        <div class="page-header-block">
+          <div class="page-category-tag"><i data-lucide="server" style="width: 14px; height: 14px;"></i> Enterprise Architecture</div>
+          <h2 class="page-title-hero">Deployment Models & <span>Campus Sizing (2,500+ Students)</span></h2>
+          <p class="page-subtitle-desc">
+            Flexible enterprise deployment options designed to fit any university's IT policy and budget.
+          </p>
+        </div>
+
+        <!-- Comparison Table -->
+        <table class="corporate-table">
+          <thead>
+            <tr>
+              <th>Deployment Model</th>
+              <th>Ideal For</th>
+              <th>Hardware Needed</th>
+              <th>Hosting Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Cloud VPS (Hetzner / AWS)</b></td>
+              <td>Colleges wanting 24/7 global access without local server upkeep.</td>
+              <td>4-8 vCPU, 8-16 GB RAM, 100 GB NVMe SSD</td>
+              <td><b>₹1,200 – ₹2,500 / month</b></td>
+            </tr>
+            <tr>
+              <td><b>Campus On-Premises Server</b></td>
+              <td>Government / Strict compliance where biometric data stays on campus.</td>
+              <td>Standard Core i5/i7 PC, 16 GB RAM, 512 GB SSD</td>
+              <td><b>₹0 (Zero monthly hosting fees)</b></td>
+            </tr>
+            <tr>
+              <td><b>Progressive Web App (PWA)</b></td>
+              <td>Faculty smartphones (Android & iOS) for mobile attendance taking.</td>
+              <td>Any standard smartphone camera</td>
+              <td><b>Zero App Store / Play Store Fees</b></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="background: #f8fafc; border-radius: 14px; border: 1px solid #e2e8f0; padding: 18px; margin-top: 10px;">
+          <h4 style="font-size: 0.9rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Plug & Play College ERP Integration</h4>
+          <p style="font-size: 0.78rem; color: #475569; line-height: 1.5;">
+            VisionAttend AI connects directly to existing campus ERP software (MasterSoft, TCS iON, CollPoll, Fedena, ERPNext) via RESTful APIs. Student rosters are pulled automatically, and verified attendance syncs back to the university ERP in real time with zero manual entry.
+          </p>
+        </div>
+      </div>
+
+      <footer class="page-footer-branding">
+        <div class="footer-logo-row">
+          <span class="footer-logo-text">VISIONATTEND AI</span>
+          <div class="footer-gold-bar"></div>
+        </div>
+        <span class="page-number-pill">Page 07</span>
+      </footer>
+    </section>
+
+    <!-- ================= PAGE 8: COMMERCIAL PACKAGES & PRICING ================= -->
+    <section class="a4-page">
+      <div class="page-content-wrapper">
+        <div class="page-header-block">
+          <div class="page-category-tag"><i data-lucide="tag" style="width: 14px; height: 14px;"></i> Pricing & Commercial Tiers</div>
+          <h2 class="page-title-hero">Enterprise Licensing & <span>Service Tiers</span></h2>
+          <p class="page-subtitle-desc">
+            Transparent pricing models tailored for pilot departments, full college campuses, and multi-university trusts.
+          </p>
+        </div>
+
+        <table class="corporate-table">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>What's Included</th>
+              <th>Price (INR)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Department Pilot</b><br><span style="font-size:0.72rem;color:#64748b;">Up to 500 Students</span></td>
+              <td>1 Department, Single Server Setup, YOLOv8 Face Engine, Standard Excel Reports, 30 Days Pilot Support</td>
+              <td class="price-col">₹25,000 – ₹40,000</td>
+            </tr>
+            <tr>
+              <td><b>Campus Standard</b><br><span style="font-size:0.72rem;color:#64748b;">Up to 2,500 Students</span></td>
+              <td>All College Departments, MiniFASNet Anti-Spoof, Defaulter WhatsApp Alerts, Multi-Sheet Excel + PDF, Automated Daily Cloud Backups, ERP API Integration</td>
+              <td class="price-col">₹85,000 – ₹1,50,000<br><span style="font-size:0.7rem;color:#10b981;">(or ₹20/student/year)</span></td>
+            </tr>
+            <tr>
+              <td><b>University Enterprise</b><br><span style="font-size:0.72rem;color:#64748b;">5,000+ Students</span></td>
+              <td>Multi-Campus Cluster, Custom On-Premises Server Deployment, Full White-Label Branding, Role-Based Access Matrix, Dedicated 24/7 SLA Support</td>
+              <td class="price-col">₹2,50,000 – ₹5,00,000+</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="font-size: 0.75rem; color: #64748b; font-style: italic; margin-top: 6px;">
+          *Annual Maintenance Contract (AMC) available at 15–20% of license fee covering updates, server health monitoring, and priority technical support.
+        </div>
+      </div>
+
+      <footer class="page-footer-branding">
+        <div class="footer-logo-row">
+          <span class="footer-logo-text">VISIONATTEND AI</span>
+          <div class="footer-gold-bar"></div>
+        </div>
+        <span class="page-number-pill">Page 08</span>
+      </footer>
+    </section>
+
+    <!-- ================= PAGE 9: BACK COVER / CONTACT US ================= -->
+    <section class="a4-page back-cover-page">
+      <div style="font-size: 0.88rem; font-weight: 800; color: #fbbf24; letter-spacing: 0.1em; text-transform: uppercase;">
+        PARTNERSHIP & DEPLOYMENT
+      </div>
+
+      <div style="max-width: 580px; margin: 20px auto;">
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.6rem; font-weight: 900; line-height: 1.1; color: white;">
+          Ready to Automate Your Campus Attendance?
+        </h2>
+        <p style="font-size: 0.95rem; color: #c7d2fe; margin-top: 12px;">
+          Schedule a live 15-minute campus demonstration with our AI engineering team.
+        </p>
+      </div>
+
+      <!-- Contact Box -->
+      <div class="contact-card-box">
+        <div class="social-pill-row">
+          <i data-lucide="globe" style="width: 20px; height: 20px; color: #fbbf24;"></i>
+          <span>[YOUR WEBSITE URL]</span>
+        </div>
+
+        <div class="social-pill-row">
+          <i data-lucide="mail" style="width: 20px; height: 20px; color: #fbbf24;"></i>
+          <span>[YOUR BUSINESS EMAIL]</span>
+        </div>
+
+        <div class="social-pill-row">
+          <i data-lucide="phone" style="width: 20px; height: 20px; color: #fbbf24;"></i>
+          <span>[YOUR CONTACT / WHATSAPP NUMBER]</span>
+        </div>
+
+        <div class="social-pill-row">
+          <i data-lucide="map-pin" style="width: 20px; height: 20px; color: #fbbf24;"></i>
+          <span>[YOUR OFFICE ADDRESS / CITY]</span>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid rgba(255,255,255,0.15); width: 100%; padding-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 900; color: #fbbf24;">VISIONATTEND AI</span>
+        <span style="font-size: 0.8rem; color: #94a3b8;">Confidential • All Rights Reserved</span>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
