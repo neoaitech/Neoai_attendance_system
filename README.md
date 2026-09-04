@@ -185,5 +185,32 @@ python tests/run_all_tests.py
 
 ---
 
+## 🏛️ Enterprise University Deployment & Handover Manual
+
+For institutional deployments (2,500 to 10,000+ students) across universities, colleges, and enterprise training centers, refer to our comprehensive manuals:
+
+- **[Enterprise Deployment & University Handover Manual](docs/deployment/ENTERPRISE_DEPLOYMENT_AND_UNIVERSITY_HANDOVER_MANUAL.md)**:
+  - Capacity Planning & Storage Calculations (85–100 GB NVMe SSD sizing for 2,500 students)
+  - Cloud VPS (Hetzner / AWS / DigitalOcean) vs. Campus On-Premises Server (Zero cloud fees)
+  - College ERP Integration (REST APIs for MasterSoft, TCS iON, CollPoll, Fedena, ERPNext)
+  - Phase-by-Phase University Handover SOP & Admin Onboarding
+  - Automated Disaster Recovery, Daily AES-256 Cloud Backups & AMC SLA Terms
+  - DPDP Act 2023 & UGC Academic Biometric Compliance
+  - Printable Institutional Handover Sign-Off Acceptance Form
+- **[Complete Technical Setup & Deployment Guide](DEPLOYMENT_AND_SETUP_GUIDE.md)**: Ubuntu Linux, Nginx, Systemd, SSL & Docker configurations.
+
+---
+
+## 📱 Interactive Mobile Prototype & Product Brochure
+
+- **Interactive Mobile App Prototype (Fintech / Bank Style)**:
+  - Experience the 1-tap Google Pay / PhonePe style mobile UI designed for faculty on smartphones.
+  - Access locally at: `http://127.0.0.1:8000/prototype.html` or in `frontend/prototype.html`.
+- **Official Enterprise Product Brochure & Whitepaper (9 Pages)**:
+  - Ready-to-print, high-resolution product brochure with embedded Windows screen grabs, ROI tables, and technical specs.
+  - Access locally at: `http://127.0.0.1:8000/visionattend_brochure.html` or in `frontend/visionattend_brochure.html`.
+
+---
+
 ## 📄 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
