@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VisionAttend AI — Enterprise Product Brochure & Whitepaper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --bg-page: #f8fafc;
+      --border-color: #e2e8f0;
+      --card-bg: #ffffff;
+      --emerald: #10b981;
+      --rose: #ef4444;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding: 40px 20px;
+    }
+    .brochure-container {
+      max-width: 1080px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.08);
+      padding: 48px;
+      overflow: hidden;
+    }
+
+    /* Print Controls */
+    .no-print-bar {
+      position: sticky;
+      top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-bottom: 24px;
+      z-index: 100;
+    }
+    .btn-action {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+      text-decoration: none;
+    }
+    .btn-action:hover { opacity: 0.95; }
+
+    /* Header Banner */
+    .hero-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 32px;
+      margin-bottom: 36px;
+    }
+    .brand-title-group h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-title-group h1 span {
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .tagline {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-weight: 600;
+    }
+    .enterprise-badge {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      color: #4338ca;
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 999px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* 4-Pillars Grid */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .pillar-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .pillar-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+    .pillar-card h3 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+    .pillar-card p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Showcase Sections */
+    .showcase-section {
+      margin-bottom: 48px;
+    }
+    .section-header-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: #4f46e5;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: #eef2ff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    .section-main-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .section-desc {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      max-width: 900px;
+    }
+    .image-frame-container {
+      background: #0f172a;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+      margin-bottom: 16px;
+    }
+    .image-frame-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .feature-bullets-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+    }
+    .bullet-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .bullet-dot {
+      color: var(--emerald);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .bullet-item div h4 {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .bullet-item div p {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* Comparison / ROI Table */
+    .roi-table-container {
+      margin-bottom: 40px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+    .roi-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+    .roi-table th {
+      background: #f1f5f9;
+      padding: 14px 18px;
+      font-weight: 800;
+      color: #334155;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .roi-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #475569;
+    }
+    .roi-table tr:last-child td { border-bottom: none; }
+    .badge-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--emerald);
+      font-weight: 800;
+    }
+    .badge-cross {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--rose);
+      font-weight: 800;
+    }
+
+    /* Spec & Deployment Grid */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .spec-card {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 22px;
+      border: 1px solid #e2e8f0;
+    }
+    .spec-card h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #0f172a;
+    }
+    .spec-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.84rem;
+      color: #334155;
+    }
+    .spec-list li {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed #e2e8f0;
+      padding-bottom: 6px;
+    }
+    .spec-list li b { color: #0f172a; }
+
+    /* Footer Call to Action */
+    .brochure-footer {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .footer-left h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .footer-left p {
+      font-size: 0.88rem;
+      opacity: 0.85;
+    }
+    .footer-contact-pill {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 12px 20px;
+      border-radius: 12px;
+      text-align: right;
+      font-size: 0.82rem;
+    }
+    .footer-contact-pill b {
+      display: block;
+      font-size: 0.98rem;
+      color: #ffffff;
+    }
+
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .brochure-container { border: none; box-shadow: none; padding: 0; max-width: 100%; }
+      .no-print-bar { display: none !important; }
+      .image-frame-container { break-inside: avoid; }
+      .showcase-section { break-inside: avoid; }
+    }
+
+    @media (max-width: 768px) {
+      .brochure-container { padding: 24px 16px; border-radius: 16px; }
+      .pillars-grid { grid-template-columns: 1fr 1fr; }
+      .feature-bullets-grid { grid-template-columns: 1fr; }
+      .specs-grid { grid-template-columns: 1fr; }
+      .brochure-footer { flex-direction: column; text-align: center; }
+      .footer-contact-pill { text-align: center; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Print to PDF Bar -->
+  <div class="no-print-bar">
+    <button class="btn-action" onclick="window.print()">
+      <i data-lucide="printer" style="width: 16px; height: 16px;"></i>
+      <span>Print / Save as PDF</span>
+    </button>
+  </div>
+
+  <div class="brochure-container">
+
+    <!-- Hero Header -->
+    <header class="hero-header">
+      <div class="brand-title-group">
+        <h1>
+          <i data-lucide="scan-face" style="width: 38px; height: 38px; color: #4f46e5;"></i>
+          VisionAttend <span>AI</span>
+        </h1>
+        <p class="tagline">Enterprise Autonomous Facial Biometrics & Classroom Attendance Platform</p>
+      </div>
+      <div>
+        <span class="enterprise-badge">Enterprise Edition 2026</span>
+      </div>
+    </header>
+
+    <!-- 4 Value Pillars -->
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-icon-box">
+          <i data-lucide="zap" style="width: 22px; height: 22px;"></i>
+        </div>
+        <h3>10-Second Scan</h3>
+        <p>Replaces 15-minute manual roll calls with automated panoramic multi-face capture.</p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-icon-box">
+          <i data-lucide="shield-check" style="width: 22px; height: 22px;"></i>
+        </div>
+        <h3>100% Anti-Proxy</h3>
+        <p>YOLOv8-Face + ArcFace 512-D vectors with MiniFASNet anti-spoof liveness filter.</p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-icon-box">
+          <i data-lucide="database" style="width: 22px; height: 22px;"></i>
+        </div>
+        <h3>ERP Plug & Play</h3>
+        <p>Seamless REST API integration for MasterSoft, TCS iON, CollPoll, and Fedena.</p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-icon-box">
+          <i data-lucide="bell" style="width: 22px; height: 22px;"></i>
+        </div>
+        <h3>Defaulter Alerts</h3>
+        <p>Automated warning alerts for students falling below the mandatory 75% threshold.</p>
+      </div>
+    </div>
+
+    <!-- SHOWCASE 1: EXECUTIVE DASHBOARD -->
+    <section class="showcase-section">
+      <span class="section-header-tag">Module 01 • Institutional Telemetry</span>
+      <h2 class="section-main-title">Classroom Intelligence & Administrative Dashboard</h2>
+      <p class="section-desc">
+        Comprehensive institutional overview delivering real-time telemetry on active courses, university attendance averages, and immediate defaulter identification for executive leadership.
+      </p>
+
+      <div class="image-frame-container">
+        <img src="/images/windows_dashboard.jpg" alt="VisionAttend Windows Dashboard" />
+      </div>
+
+      <div class="feature-bullets-grid">
+        <div class="bullet-item">
+          <i data-lucide="check-circle-2" class="bullet-dot" style="width: 18px; height: 18px;"></i>
+          <div>
+            <h4>Live University Metrics</h4>
+            <p>Monitors 2,500+ students across departments with 88.4% attendance telemetry.</p>
+          </div>
+        </div>
+
+        <div class="bullet-item">
+          <i data-lucide="check-circle-2" class="bullet-dot" style="width: 18px; height: 18px;"></i>
+          <div>
+            <h4>Weekly Trend Analysis</h4>
+            <p>Interactive day-wise attendance graphs with institutional threshold markers.</p>
+          </div>
+        </div>
+
+        <div class="bullet-item">
+          <i data-lucide="check-circle-2" class="bullet-dot" style="width: 18px; height: 18px;"></i>
+          <div>
+            <h4>Defaulter Radar</h4>
+            <p>Instant tracking of critical students (< 75%) with one-click parent notifications.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHOWCASE 2: CLASSROOM SCANNER -->
+    <section class="showcase-section">
+      <span class="section-header-tag">Module 02 • Biometric AI Engine</span>
+      <h2 class="section-main-title">Classroom AI Attendance Scanner (YOLOv8 + ArcFace)</h2>
+      <p class="section-desc">
+        High-precision facial recognition pipeline capable of scanning up to 60+ seated students in a single classroom frame. Features triple-layer verification for zero proxy tolerance.
+      </p>
+
+      <div class="image-frame-container">
+        <img src="/images/windows_scanner.jpg" alt="Classroom AI Attendance Scanner" />
+      </div>
+
+      <div class="feature-bullets-grid">
+        <div class="bullet-item">
+          <i data-lucide="check-circle-2" class="bullet-dot" style="width: 18px; height: 18px;"></i>
+          <div>
+            <h4>Multi-Angle Scanning</h4>
+            <p>Captures Left Wing, Center Hall, and Right Wing for 100% classroom visibility.</p>
+          </div>
+        </div>
+
+        <div class="bullet-item">
+          <i data-lucide="check-circle-2" class="bullet-dot" style="width: 18px; height: 18px;"></i>
+          <div>
+            <h4>MiniFASNet Anti-Spoofing</h4>
+            <p>Blocks photo, tablet, and printed paper proxy spoofing attempts in real time.</p>
+          </div>
+        </div>
+
+        <div class="bullet-item">
+          <i data-lucide="check-circle-2" class="bullet-dot" style="width: 18px; height: 18px;"></i>
+          <div>
+            <h4>Extra Lecture Candidates</h4>
+            <p>Auto-detects visiting students from other divisions and grants cross-class credits.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHOWCASE 3: COMPLIANCE & REPORTS -->
+    <section class="showcase-section">
+      <span class="section-header-tag">Module 03 • Compliance & Analytics</span>
+      <h2 class="section-main-title">Institutional Compliance & Defaulter Analytics</h2>
+      <p class="section-desc">
+        Regulatory-grade attendance audit logging compliant with university examination guidelines. Instant one-click export to multi-sheet Excel and official PDF transcripts.
+      </p>
+
+      <div class="image-frame-container">
+        <img src="/images/windows_reports.jpg" alt="Attendance Analytics and Defaulters Report" />
+      </div>
+
+      <div class="feature-bullets-grid">
+        <div class="bullet-item">
+          <i data-lucide="check-circle-2" class="bullet-dot" style="width: 18px; height: 18px;"></i>
+          <div>
+            <h4>Regulatory Compliance</h4>
+            <p>Enforces UGC/University 75% attendance threshold for exam hall ticket release.</p>
+          </div>
+        </div>
+
+        <div class="bullet-item">
+          <i data-lucide="check-circle-2" class="bullet-dot" style="width: 18px; height: 18px;"></i>
+          <div>
+            <h4>Multi-Format Export</h4>
+            <p>One-click export to official formatted Excel (.xlsx), CSV, and signed PDF sheets.</p>
+          </div>
+        </div>
+
+        <div class="bullet-item">
+          <i data-lucide="check-circle-2" class="bullet-dot" style="width: 18px; height: 18px;"></i>
+          <div>
+            <h4>Audit Trail Security</h4>
+            <p>Maintains immutable logs of faculty modifications and medical exemptions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARISON TABLE -->
+    <section class="showcase-section">
+      <span class="section-header-tag">ROI Analysis • Strategic Advantage</span>
+      <h2 class="section-main-title">Traditional Attendance vs. VisionAttend AI</h2>
+      
+      <div class="roi-table-container">
+        <table class="roi-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Traditional Paper Roll Call</th>
+              <th>Fingerprint Biometric Kiosk</th>
+              <th>VisionAttend AI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Attendance Time</b></td>
+              <td>12 - 15 minutes per lecture</td>
+              <td>8 - 10 minutes (Queue in hallway)</td>
+              <td><span class="badge-check">⚡ 10 - 15 seconds</span></td>
+            </tr>
+            <tr>
+              <td><b>Proxy / Fake Attendance</b></td>
+              <td><span class="badge-cross">✕ Rampant Proxy Calling</span></td>
+              <td>Buddy punching possible</td>
+              <td><span class="badge-check">✓ 0% Proxy (MiniFASNet)</span></td>
+            </tr>
+            <tr>
+              <td><b>Hardware Investment</b></td>
+              <td>None (Paper registers)</td>
+              <td>₹15,000 per machine per door</td>
+              <td><span class="badge-check">✓ Zero Hardware (Uses Mobile/PC)</span></td>
+            </tr>
+            <tr>
+              <td><b>Hygiene & Congestion</b></td>
+              <td>High paper handling</td>
+              <td>Physical contact (Germ transmission)</td>
+              <td><span class="badge-check">✓ 100% Contactless Optical</span></td>
+            </tr>
+            <tr>
+              <td><b>Annual Teaching Hours Saved</b></td>
+              <td>0 Hours Lost</td>
+              <td>~40 Hours Saved</td>
+              <td><span class="badge-check">✓ 150+ Teaching Hours Saved</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TECHNICAL SPECIFICATIONS & DEPLOYMENT -->
+    <div class="specs-grid">
+      <div class="spec-card">
+        <h3><i data-lucide="server" style="width: 20px; height: 20px; color: #4f46e5;"></i> Technical Infrastructure</h3>
+        <ul class="spec-list">
+          <li><span>Face Detection Model</span> <b>YOLOv8-Face (ONNX)</b></li>
+          <li><span>Biometric Vector Dimension</span> <b>ArcFace 512-D Normalized</b></li>
+          <li><span>Anti-Spoofing Architecture</span> <b>MiniFASNetV2 Optical Filter</b></li>
+          <li><span>Matching Latency</span> <b>< 2 ms per 2,500 vectors</b></li>
+          <li><span>Backend Framework</span> <b>FastAPI (Async Python 3.10)</b></li>
+          <li><span>Storage Footprint (2,500 Students)</span> <b>80 - 100 GB NVMe SSD</b></li>
+        </ul>
+      </div>
+
+      <div class="spec-card">
+        <h3><i data-lucide="cloud" style="width: 20px; height: 20px; color: #4f46e5;"></i> Deployment & Security</h3>
+        <ul class="spec-list">
+          <li><span>Cloud VPS Option</span> <b>Hetzner / AWS / DigitalOcean</b></li>
+          <li><span>On-Premises Campus Option</span> <b>Campus Server (Zero Cloud Fees)</b></li>
+          <li><span>Mobile Client Architecture</span> <b>PWA (iOS Safari & Android Chrome)</b></li>
+          <li><span>Desktop Client Architecture</span> <b>Windows 10/11 & macOS Web Native</b></li>
+          <li><span>Disaster Recovery</span> <b>Automated Daily Encrypted Snapshots</b></li>
+          <li><span>Role-Based Access</span> <b>Granular (Admin, HOD, Faculty, Student)</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer CTA -->
+    <footer class="brochure-footer">
+      <div class="footer-left">
+        <h3>Deploy VisionAttend AI for Your Institution</h3>
+        <p>Ready for pilots, campus deployments, and enterprise white-label integration.</p>
+      </div>
+      <div class="footer-contact-pill">
+        <span>Commercial & Business Inquiries:</span>
+        <b>Product Engineering & Enterprise Sales</b>
+        <span style="opacity: 0.8; font-size: 0.74rem;">Confidential • All Rights Reserved</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
