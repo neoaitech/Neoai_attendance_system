@@ -54,7 +54,12 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str = ""
     SUPABASE_BUCKET: str = "attendance-media"
 
-    model_config = SettingsConfigDict(case_sensitive=True, extra="allow")
+    model_config = SettingsConfigDict(
+        env_file=(str(PROJECT_ROOT / ".env"), ".env"),
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="allow"
+    )
 
 settings = Settings()
 
