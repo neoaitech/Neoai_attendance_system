@@ -93,7 +93,7 @@ const Auth = {
             
             <!-- Brand Logo -->
             <div class="auth-logo-wrap">
-              <img src="/images/visionattend_logo.png" alt="VisionAttend Logo" class="auth-logo-img" onerror="this.style.display='none'" />
+              <img src="images/visionattend_logo.png" alt="VisionAttend Logo" class="auth-logo-img" onerror="this.style.display='none'" />
             </div>
 
             <!-- Platform Live Status -->
@@ -164,7 +164,7 @@ const Auth = {
           
           <!-- Mobile Branded Header (visible on mobile only) -->
           <div class="auth-mobile-header">
-            <img src="/images/visionattend_logo.png" alt="VisionAttend Logo" class="auth-mobile-logo" onerror="this.style.display='none'" />
+            <img src="images/visionattend_logo.png" alt="VisionAttend Logo" class="auth-mobile-logo" onerror="this.style.display='none'" />
             <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mt-1">Institutional Biometrics Portal</span>
           </div>
 

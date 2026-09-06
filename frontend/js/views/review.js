@@ -101,8 +101,8 @@ const ReviewView = {
       this.currentSessionData = session;
       this.rosterSearchQuery = "";
 
-      const photoUrl = session.processed_photo_path ? `/uploads/sessions/${session.processed_photo_path.split(/[\/\\]/).pop()}` : null;
-      const rawPhotoUrl = session.raw_photo_path ? `/uploads/sessions/${session.raw_photo_path.split(/[\/\\]/).pop()}` : null;
+      const photoUrl = session.processed_photo_path ? API.getFileUrl(`/uploads/sessions/${session.processed_photo_path.split(/[\/\\]/).pop()}`) : null;
+      const rawPhotoUrl = session.raw_photo_path ? API.getFileUrl(`/uploads/sessions/${session.raw_photo_path.split(/[\/\\]/).pop()}`) : null;
       const displayPhoto = photoUrl || rawPhotoUrl;
 
       const regularRecords = (session.records || []).filter(r => !r.is_extra_lecture && r.verification_type !== 'EXTRA_LECTURE' && r.attendance_type !== 'EXTRA_LECTURE');

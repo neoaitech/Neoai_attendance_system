@@ -1121,8 +1121,8 @@ const ClassesView = {
 
     return filtered.map(s => {
       const isChecked = selectedStudentIds.has(s.id);
-      const initials = (s.full_name || 'S').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-      const portraitUrl = s.photo_url || (s.photo_urls && s.photo_urls[0]) || null;
+      const rawPortrait = s.photo_url || (s.photo_urls && s.photo_urls[0]) || null;
+      const portraitUrl = API.getFileUrl(rawPortrait);
 
       return `
         <label class="roster-item-label" for="create-chk-${s.id}">
@@ -1363,8 +1363,8 @@ const ClassesView = {
 
     return filtered.map(s => {
       const isChecked = selectedStudentIds.has(s.id);
-      const initials = (s.full_name || 'S').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-      const portraitUrl = s.photo_url || (s.photo_urls && s.photo_urls[0]) || null;
+      const rawPortrait = s.photo_url || (s.photo_urls && s.photo_urls[0]) || null;
+      const portraitUrl = API.getFileUrl(rawPortrait);
 
       return `
         <label class="roster-item-label" for="edit-chk-${s.id}">

@@ -58,7 +58,8 @@ const UnknownFacesView = {
       container.innerHTML = `
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px;">
           ${faces.map(f => {
-            const cropUrl = f.cropped_image_path ? (f.cropped_image_path.startsWith('/uploads') ? f.cropped_image_path : `/uploads/unknown_faces/${f.cropped_image_path.split(/[\/\\]/).pop()}`) : '';
+            const rawCrop = f.cropped_image_path ? (f.cropped_image_path.startsWith('/uploads') ? f.cropped_image_path : `/uploads/unknown_faces/${f.cropped_image_path.split(/[\/\\]/).pop()}`) : '';
+            const cropUrl = API.getFileUrl(rawCrop);
             return `
               <div class="glass-panel p-4 flex flex-col justify-between" style="margin-bottom: 0;">
                 <div>

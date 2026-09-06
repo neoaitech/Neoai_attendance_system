@@ -1810,8 +1810,8 @@ const CaptureView = {
                         const isFrozen = isRecordFrozen(r);
                         const isPresent = !isFrozen && (r.status === "PRESENT" || r.status === "LATE");
                         const isOverridden = r.verification_type === "MANUAL_OVERRIDE";
-                        const matchPct = r.confidence_score ? Math.round(r.confidence_score * 100) / 100 : 0;
-                        const studentPhoto = r.student_photo_url ? (r.student_photo_url.startsWith('http') || r.student_photo_url.startsWith('/') ? r.student_photo_url : `/uploads/students/${r.student_photo_url.split(/[\/\\]/).pop()}`) : null;
+                        const rawStudentPhoto = r.student_photo_url ? (r.student_photo_url.startsWith('data:') || r.student_photo_url.startsWith('http') || r.student_photo_url.startsWith('/') ? r.student_photo_url : `/uploads/students/${r.student_photo_url.split(/[\/\\]/).pop()}`) : null;
+                        const studentPhoto = API.getFileUrl(rawStudentPhoto);
 
                         let cardClass = "is-absent";
                         let avatarClass = "absent";
@@ -1925,8 +1925,8 @@ const CaptureView = {
                     const isApproved = Boolean(c.is_approved || c.status === "APPROVED");
                     const isIgnored = Boolean(c.status === "IGNORED");
                     const isFrozen = Boolean(c.is_frozen || c.attendance_status === "FROZEN");
-                    const freezeUntilStr = c.freeze_until ? ` until ${new Date(c.freeze_until).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'})}` : '';
-                    const photo = c.student_photo_url ? (c.student_photo_url.startsWith('http') || c.student_photo_url.startsWith('/') ? c.student_photo_url : `/uploads/students/${c.student_photo_url.split(/[\/\\]/).pop()}`) : null;
+                    const rawStudentPhoto = c.student_photo_url ? (c.student_photo_url.startsWith('data:') || c.student_photo_url.startsWith('http') || c.student_photo_url.startsWith('/') ? c.student_photo_url : `/uploads/students/${c.student_photo_url.split(/[\/\\]/).pop()}`) : null;
+                    const photo = API.getFileUrl(rawStudentPhoto);
 
                     return `
                       <div class="extra-candidate-card ${isApproved ? 'is-approved' : (isIgnored ? 'is-ignored' : '')} ${isFrozen ? 'border-cyan-300' : ''}" id="extra-card-${c.student_id}" ${isFrozen ? 'style="border-color: #a5f3fc; background: rgba(236,254,255,0.35);"' : ''}>
@@ -2032,7 +2032,8 @@ const CaptureView = {
               <div class="unknown-faces-responsive-grid" id="unknowns-cards-container">
                 ${(this.showAllUnknowns || unknowns.length <= 18 ? unknowns : unknowns.slice(0, 18)).map((u, idx) => {
                   const rawPath = u.photo_url || u.crop_image_path || u.cropped_image_path || '';
-                  const cropUrl = rawPath ? (rawPath.startsWith('http') || rawPath.startsWith('/') ? rawPath : `/uploads/unknown_faces/${rawPath.split(/[\/\\]/).pop()}`) : '';
+                  const rawCrop = rawPath ? (rawPath.startsWith('http') || rawPath.startsWith('/') ? rawPath : `/uploads/unknown_faces/${rawPath.split(/[\/\\]/).pop()}`) : '';
+                  const cropUrl = API.getFileUrl(rawCrop);
 
                   return `
                     <div class="unknown-face-card" id="card-unk-${u.id}">
@@ -2177,7 +2178,8 @@ const CaptureView = {
 
     container.innerHTML = displayed.map((u, idx) => {
       const rawPath = u.photo_url || u.crop_image_path || u.cropped_image_path || '';
-      const cropUrl = rawPath ? (rawPath.startsWith('http') || rawPath.startsWith('/') ? rawPath : `/uploads/unknown_faces/${rawPath.split(/[\/\\]/).pop()}`) : '';
+      const rawCrop = rawPath ? (rawPath.startsWith('http') || rawPath.startsWith('/') ? rawPath : `/uploads/unknown_faces/${rawPath.split(/[\/\\]/).pop()}`) : '';
+      const cropUrl = API.getFileUrl(rawCrop);
 
       return `
         <div class="unknown-face-card" id="card-unk-${u.id}">
