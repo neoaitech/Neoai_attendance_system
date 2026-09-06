@@ -219,7 +219,7 @@ class User(Base):
     role_id = Column(Integer, ForeignKey("roles.id", ondelete="SET NULL"), nullable=True)
     department = Column(String(100), default="Computer Science & Engineering", nullable=True)
     status = Column(String(20), default="Active")  # "Active", "Suspended", "Deactivated"
-    photo_url = Column(String(255), nullable=True)
+    photo_url = Column(Text, nullable=True)
     _face_embedding = Column("face_embedding", Text, nullable=True)
     is_active = Column(Boolean, default=True)
     last_login_at = Column(DateTime, nullable=True)
@@ -362,7 +362,7 @@ class Student(Base):
     batch = Column(String(20), default="2023-2027")
     year = Column(Integer, default=3)
     section = Column(String(10), default="A")
-    photo_url = Column(String(255), nullable=True)
+    photo_url = Column(Text, nullable=True)
     _photo_urls = Column("photo_urls", Text, nullable=True)  # JSON list of multiple angle photos
     _face_embedding = Column("face_embedding", Text, nullable=True)  # JSON list or list of lists (multi-angle 128D vectors)
     attendance_status = Column(String(20), default="ACTIVE")  # "ACTIVE", "FROZEN"

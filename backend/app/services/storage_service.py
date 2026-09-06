@@ -93,7 +93,15 @@ class StorageService:
             except Exception as e:
                 logger.error(f"[StorageService] Supabase upload failed, falling back to local: {e}")
 
-        # Fallback / Local return
-        return f"/uploads/{folder}/{filename}", local_disk_path
+        # Fallback / Database-level Cloud Persistence:
+        # If no dedicated S3/Supabase storage token is provided, store as optimized Base64 data URL
+        # so images display permanently on any device directly from Supabase PostgreSQL!
+        try:
+            import base64
+            b64_str = base64.b64encode(image_bytes).decode("utf-8")
+            data_url = f"data:{content_type};base64,{b64_str}"
+            return data_url, local_disk_path
+        except Exception:
+            return f"/uploads/{folder}/{filename}", local_disk_path
 
 storage_service = StorageService()
