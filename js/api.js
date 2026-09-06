@@ -2,10 +2,34 @@
 // VisionAttend - Centralized API Client Layer
 // ===================================================================
 
+const DEFAULT_BACKEND_URL = "https://physicians-anderson-bumper-musical.trycloudflare.com/api";
+
 const API = {
-  baseUrl: (typeof window !== "undefined" && window.location.hostname.includes("github.io"))
-    ? (localStorage.getItem("visionattend_api_url") || "https://rights-utc-birthday-day.trycloudflare.com/api")
-    : "/api",
+  getBaseUrl() {
+    if (typeof window !== "undefined" && (window.location.hostname.includes("github.io") || window.location.protocol === "file:")) {
+      let stored = localStorage.getItem("visionattend_api_url");
+      if (stored && (stored.includes("rights-utc-birthday-day") || stored.includes("localhost"))) {
+        localStorage.removeItem("visionattend_api_url");
+        stored = null;
+      }
+      return (stored || DEFAULT_BACKEND_URL).replace(/\/+$/, "");
+    }
+    return "/api";
+  },
+
+  get baseUrl() {
+    return this.getBaseUrl();
+  },
+
+  set baseUrl(val) {
+    if (typeof window !== "undefined") {
+      if (val && val.trim()) {
+        localStorage.setItem("visionattend_api_url", val.trim().replace(/\/+$/, ""));
+      } else {
+        localStorage.removeItem("visionattend_api_url");
+      }
+    }
+  },
 
   getToken() {
     return localStorage.getItem("visionattend_token");
@@ -92,6 +116,9 @@ const API = {
       return await response.json();
     } catch (error) {
       console.warn(`[API] ${options.method || 'GET'} ${endpoint} failed:`, error.message);
+      if (error.message && (error.message.includes("Failed to fetch") || error.message.includes("NetworkError") || error.message.includes("Load failed"))) {
+        throw new Error(`Unable to connect to AI server at ${url}. Please ensure the server is active or click 'Change Backend URL' below.`);
+      }
       throw error;
     }
   },

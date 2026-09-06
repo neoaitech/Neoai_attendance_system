@@ -268,6 +268,13 @@ const Auth = {
             </div>
           </div>
 
+          <!-- Backend API Connection Indicator -->
+          <div class="text-center pt-2 text-[11px] text-slate-500 flex items-center justify-center gap-1.5 flex-wrap">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>API Server: <span class="font-mono text-slate-600">${API.baseUrl.replace(/^https?:\/\//, '').split('/')[0]}</span></span>
+            <button type="button" class="text-indigo-600 hover:text-indigo-800 font-semibold underline cursor-pointer ml-1" onclick="Auth.promptChangeApiUrl()">Change</button>
+          </div>
+
         </div>
 
       </div>
@@ -327,6 +334,16 @@ const Auth = {
         pInput.value = "";
       }
     }, 60);
+  },
+
+  promptChangeApiUrl() {
+    const current = API.baseUrl;
+    const newUrl = prompt("Enter VisionAttend Backend API URL:\n(e.g., https://physicians-anderson-bumper-musical.trycloudflare.com/api)", current);
+    if (newUrl && newUrl.trim() && newUrl.trim() !== current) {
+      API.baseUrl = newUrl.trim();
+      alert("Backend API URL updated to:\n" + API.baseUrl + "\n\nReloading interface...");
+      window.location.reload();
+    }
   },
 
   showForgotPasswordModal() {
