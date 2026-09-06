@@ -408,7 +408,8 @@ const StudentsView = {
             </thead>
             <tbody id="students-tbody">
               ${students.map(s => {
-                const portraitUrl = s.photo_url ? (s.photo_url.startsWith('/') ? s.photo_url : `/uploads/students/${s.photo_url.split(/[\/\\]/).pop()}`) : null;
+                const rawPortrait = s.photo_url ? (s.photo_url.startsWith('data:') ? s.photo_url : (s.photo_url.startsWith('/') ? s.photo_url : `/uploads/students/${s.photo_url.split(/[\/\\]/).pop()}`)) : null;
+                const portraitUrl = API.getFileUrl(rawPortrait);
                 const initials = (s.full_name || 'S').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                 const sampleCount = (Array.isArray(s.photo_urls) && s.photo_urls.length > 0) ? s.photo_urls.length : (s.photo_url ? 1 : 0);
                 const isSelected = this.selectedStudentIds.has(s.id);
@@ -547,7 +548,8 @@ const StudentsView = {
     target.innerHTML = `
       <div class="students-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
         ${students.map(s => {
-          const portraitUrl = s.photo_url ? (s.photo_url.startsWith('/') ? s.photo_url : `/uploads/students/${s.photo_url.split(/[\/\\]/).pop()}`) : null;
+          const rawPortrait = s.photo_url ? (s.photo_url.startsWith('data:') ? s.photo_url : (s.photo_url.startsWith('/') ? s.photo_url : `/uploads/students/${s.photo_url.split(/[\/\\]/).pop()}`)) : null;
+          const portraitUrl = API.getFileUrl(rawPortrait);
           const initials = (s.full_name || 'S').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
           const sampleCount = (Array.isArray(s.photo_urls) && s.photo_urls.length > 0) ? s.photo_urls.length : (s.photo_url ? 1 : 0);
           const isSelected = this.selectedStudentIds.has(s.id);
@@ -888,9 +890,11 @@ const StudentsView = {
       if (fresh) student = { ...student, ...fresh };
     } catch (e) {}
 
-    const portraitUrl = student.photo_url ? (student.photo_url.startsWith('/') ? student.photo_url : `/uploads/students/${student.photo_url.split(/[\/\\]/).pop()}`) : null;
+    const rawPortrait = student.photo_url ? (student.photo_url.startsWith('data:') ? student.photo_url : (student.photo_url.startsWith('/') ? student.photo_url : `/uploads/students/${student.photo_url.split(/[\/\\]/).pop()}`)) : null;
+    const portraitUrl = API.getFileUrl(rawPortrait);
     const initials = (student.full_name || 'S').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-    const photos = Array.isArray(student.photo_urls) && student.photo_urls.length > 0 ? student.photo_urls : (student.photo_url ? [student.photo_url] : []);
+    const rawPhotos = Array.isArray(student.photo_urls) && student.photo_urls.length > 0 ? student.photo_urls : (student.photo_url ? [student.photo_url] : []);
+    const photos = rawPhotos.map(p => API.getFileUrl(p));
     const enrolledCourses = student.enrolled_classes || student.classes || [];
     const canEdit = Auth.isAdmin() || Auth.hasPermission("student.edit");
     const canBiometrics = Auth.isAdmin() || Auth.hasPermission("student.upload_photos") || Auth.hasPermission("student.edit_biometric");

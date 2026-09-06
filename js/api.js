@@ -31,6 +31,20 @@ const API = {
     }
   },
 
+  getFileUrl(path) {
+    if (!path) return "";
+    if (typeof path !== "string") return "";
+    if (path.startsWith("data:") || path.startsWith("blob:") || path.startsWith("http://") || path.startsWith("https://")) {
+      return path;
+    }
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    if (typeof window !== "undefined" && (window.location.hostname.includes("github.io") || window.location.protocol === "file:")) {
+      const backendOrigin = this.baseUrl.replace(/\/api\/?$/, "");
+      return `${backendOrigin}${cleanPath}`;
+    }
+    return cleanPath;
+  },
+
   getToken() {
     return localStorage.getItem("visionattend_token");
   },
