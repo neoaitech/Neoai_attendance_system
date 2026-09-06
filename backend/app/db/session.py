@@ -2,10 +2,16 @@ from sqlalchemy import create_engine, text, event
 from sqlalchemy.orm import declarative_base, sessionmaker
 from backend.app.core.config import settings
 
-# SQLite connection with thread checking disabled for FastAPI async handlers
+# Database connection URL normalization
+db_url = str(settings.DATABASE_URL)
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+# SQLAlchemy engine
 engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args={"check_same_thread": False, "timeout": 30} if "sqlite" in settings.DATABASE_URL else {},
+    db_url,
+    connect_args={"check_same_thread": False, "timeout": 30} if "sqlite" in db_url else {},
+    pool_pre_ping=True,
     echo=False
 )
 

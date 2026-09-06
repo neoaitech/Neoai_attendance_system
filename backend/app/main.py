@@ -30,6 +30,18 @@ async def lifespan(app: FastAPI):
     import asyncio
     from datetime import datetime
 
+    # Startup: Ensure AI model files are available
+    try:
+        arc_path = settings.ARCFACE_MODEL_PATH
+        if not arc_path.exists() or arc_path.stat().st_size < 1000000:
+            import urllib.request
+            arc_path.parent.mkdir(parents=True, exist_ok=True)
+            print(f"[ModelDownloader] Downloading ArcFace ONNX model to {arc_path}...")
+            urllib.request.urlretrieve("https://huggingface.co/public-data/insightface/resolve/main/models/buffalo_l/w600k_r50.onnx", arc_path)
+            print("[ModelDownloader] ArcFace ONNX downloaded successfully.")
+    except Exception as e:
+        print(f"[ModelDownloader] Warning: {e}")
+
     # Startup: Ensure tables exist, apply migrations & seed initial data
     Base.metadata.create_all(bind=engine)
     run_auto_migrations()
