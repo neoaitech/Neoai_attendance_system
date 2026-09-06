@@ -269,10 +269,10 @@ const Auth = {
           </div>
 
           <!-- Backend API Connection Indicator -->
-          <div class="text-center pt-2 text-[11px] text-slate-500 flex items-center justify-center gap-1.5 flex-wrap">
-            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>API Server: <span class="font-mono text-slate-600">${API.baseUrl.replace(/^https?:\/\//, '').split('/')[0]}</span></span>
-            <button type="button" class="text-indigo-600 hover:text-indigo-800 font-semibold underline cursor-pointer ml-1" onclick="Auth.promptChangeApiUrl()">Change</button>
+          <div class="text-center pt-2 flex items-center justify-center gap-1.5 flex-wrap" style="font-size: 0.72rem; color: #64748b;">
+            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span>
+            <span>AI Server: <span class="font-mono" style="color: #334155; font-weight: 600;">${API.baseUrl.replace(/^https?:\/\//, '').split('/')[0]}</span></span>
+            <button type="button" style="background: none; border: none; padding: 0; color: #6366f1; text-decoration: underline; font-weight: 600; cursor: pointer; font-size: inherit; margin-left: 2px;" onclick="Auth.promptChangeApiUrl()">Change</button>
           </div>
 
         </div>
