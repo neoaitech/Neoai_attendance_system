@@ -3,7 +3,9 @@
 // ===================================================================
 
 const API = {
-  baseUrl: "/api",
+  baseUrl: (typeof window !== "undefined" && window.location.hostname.includes("github.io"))
+    ? (localStorage.getItem("visionattend_api_url") || "https://rights-utc-birthday-day.trycloudflare.com/api")
+    : "/api",
 
   getToken() {
     return localStorage.getItem("visionattend_token");
