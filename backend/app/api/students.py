@@ -14,6 +14,7 @@ from backend.app.db.session import get_db
 from backend.app.db.models import Student, ClassCourse, User, AuditLog, AcademicDepartment, AcademicProgram, StudentFreezeLog
 from backend.app.schemas.student import StudentCreate, StudentUpdate, StudentResponse, StudentFreezeRequest
 from backend.app.services.face_engine import face_engine
+from backend.app.services.storage_service import storage_service
 
 router = APIRouter(prefix="/students", tags=["Students"])
 
@@ -237,13 +238,11 @@ async def register_student_with_photo(
     for idx, p in enumerate(upload_list, 1):
         extension = p.filename.split(".")[-1] if "." in p.filename else "jpg"
         filename = f"portrait_{roll_number}_angle{idx}_{uuid.uuid4().hex[:6]}.{extension}"
-        filepath = settings.STUDENT_PHOTOS_DIR / filename
         content = await p.read()
         if content:
-            with open(filepath, "wb") as f:
-                f.write(content)
-            saved_photo_paths.append(f"/uploads/students/{filename}")
-            saved_file_disk_paths.append(str(filepath))
+            url_path, disk_path = storage_service.save_image(content, filename, folder="students")
+            saved_photo_paths.append(url_path)
+            saved_file_disk_paths.append(disk_path)
 
     # 3. Handle Webcam Snapshots
     if parsed_snapshots:
@@ -252,21 +251,17 @@ async def register_student_with_photo(
                 snap_str = snap_str.split(",")[1]
             img_data = base64.b64decode(snap_str)
             filename = f"portrait_{roll_number}_cam{idx}_{uuid.uuid4().hex[:6]}.jpg"
-            filepath = settings.STUDENT_PHOTOS_DIR / filename
-            with open(filepath, "wb") as f:
-                f.write(img_data)
-            saved_photo_paths.append(f"/uploads/students/{filename}")
-            saved_file_disk_paths.append(str(filepath))
+            url_path, disk_path = storage_service.save_image(img_data, filename, folder="students")
+            saved_photo_paths.append(url_path)
+            saved_file_disk_paths.append(disk_path)
     elif webcam_base64:
         if "," in webcam_base64:
             webcam_base64 = webcam_base64.split(",")[1]
         img_data = base64.b64decode(webcam_base64)
         filename = f"portrait_{roll_number}_{uuid.uuid4().hex[:6]}.jpg"
-        filepath = settings.STUDENT_PHOTOS_DIR / filename
-        with open(filepath, "wb") as f:
-            f.write(img_data)
-        saved_photo_paths.append(f"/uploads/students/{filename}")
-        saved_file_disk_paths.append(str(filepath))
+        url_path, disk_path = storage_service.save_image(img_data, filename, folder="students")
+        saved_photo_paths.append(url_path)
+        saved_file_disk_paths.append(disk_path)
 
     # 4. Extract Multi-Angle Biometric Embeddings (512-D ArcFace)
     multi_embeddings = []

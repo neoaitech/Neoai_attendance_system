@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     SPOOF_CONFIDENCE_THRESHOLD: float = 0.65
     DEFAULTER_THRESHOLD_PERCENT: float = 75.0
 
+    # Supabase Cloud Storage & Database (Optional - falls back to local SQLite & Disk)
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
+    SUPABASE_BUCKET: str = "attendance-media"
+
     model_config = SettingsConfigDict(case_sensitive=True, extra="allow")
 
 settings = Settings()

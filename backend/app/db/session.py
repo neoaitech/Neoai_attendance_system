@@ -28,7 +28,11 @@ Base = declarative_base()
 def run_auto_migrations():
     """
     Ensures new schema columns and association tables are added to SQLite database without losing data.
+    On PostgreSQL / Supabase, schema is automatically managed by Base.metadata.create_all.
     """
+    if "sqlite" not in str(settings.DATABASE_URL).lower():
+        return
+
     try:
         with engine.connect() as conn:
             # 1. student_class_association table migration
