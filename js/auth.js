@@ -492,7 +492,14 @@ const Auth = {
   },
 
   async quickSwitchAccount() {
-    // Only available to Administrator for developer testing
+    const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+    if (!isLocal) {
+      if (window.App && window.App.showToast) {
+        window.App.showToast("Account switching is disabled on public production domain for security.", "warning");
+      }
+      return;
+    }
+    // Only available on local development environment
     if (this.currentUser && (this.isAdmin() || this.isSuperAdmin())) {
       App.showToast("Switching to Course Faculty (Dr. Rajesh Sharma)...", "info");
       await this.login("dr_sharma", "teacher123");
