@@ -1835,7 +1835,7 @@ const CaptureView = {
                               <!-- Face Avatar / Registered Student Photo -->
                               <div class="student-avatar-box ${avatarClass}" style="${isFrozen ? 'border: 2px solid #0891b2; background: #ecfeff;' : ''}">
                                 ${studentPhoto ? `
-                                  <img src="${studentPhoto}" alt="${r.student_name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                  <img src="${studentPhoto}" alt="${r.student_name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display='none'; if(this.nextElementSibling){ this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.style.display='flex'; }" />
                                   <span class="avatar-letter hidden">${(r.student_name || 'S').charAt(0)}</span>
                                 ` : `
                                   <span class="avatar-letter" style="${isFrozen ? 'color:#0891b2; font-weight:800;' : ''}">${isFrozen ? '❄️' : (r.student_name || 'S').charAt(0)}</span>
@@ -1939,7 +1939,7 @@ const CaptureView = {
                         <div class="flex items-start gap-3">
                           <div class="extra-avatar-box" ${isFrozen ? 'style="border-color: #67e8f9;"' : ''}>
                             ${photo ? `
-                              <img src="${photo}" alt="${c.student_name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                              <img src="${photo}" alt="${c.student_name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; if(this.nextElementSibling){ this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.style.display='flex'; }" />
                               <span class="avatar-letter hidden">${(c.student_name || 'S').charAt(0)}</span>
                             ` : `
                               <span class="avatar-letter ${isFrozen ? 'text-cyan-800' : 'text-amber-800'} font-bold">${(c.student_name || 'S').charAt(0)}</span>
