@@ -1810,6 +1810,7 @@ const CaptureView = {
                         const isFrozen = isRecordFrozen(r);
                         const isPresent = !isFrozen && (r.status === "PRESENT" || r.status === "LATE");
                         const isOverridden = r.verification_type === "MANUAL_OVERRIDE";
+                        const matchPct = Math.round(r.confidence_score || 0);
                         const rawStudentPhoto = r.student_photo_url ? (r.student_photo_url.startsWith('data:') || r.student_photo_url.startsWith('http') || r.student_photo_url.startsWith('/') ? r.student_photo_url : `/uploads/students/${r.student_photo_url.split(/[\/\\]/).pop()}`) : null;
                         const studentPhoto = API.getFileUrl(rawStudentPhoto);
 
@@ -1925,6 +1926,7 @@ const CaptureView = {
                     const isApproved = Boolean(c.is_approved || c.status === "APPROVED");
                     const isIgnored = Boolean(c.status === "IGNORED");
                     const isFrozen = Boolean(c.is_frozen || c.attendance_status === "FROZEN");
+                    const freezeUntilStr = c.freeze_until ? ` (until ${c.freeze_until})` : '';
                     const rawStudentPhoto = c.student_photo_url ? (c.student_photo_url.startsWith('data:') || c.student_photo_url.startsWith('http') || c.student_photo_url.startsWith('/') ? c.student_photo_url : `/uploads/students/${c.student_photo_url.split(/[\/\\]/).pop()}`) : null;
                     const photo = API.getFileUrl(rawStudentPhoto);
 
