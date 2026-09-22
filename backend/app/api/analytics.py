@@ -20,13 +20,24 @@ def get_dashboard_analytics(
 ):
     total_students = db.query(Student).filter(Student.is_active == True).count()
     total_classes = db.query(ClassCourse).count()
-    total_sessions = db.query(AttendanceSession).count()
+    total_sessions = db.query(AttendanceSession).filter(AttendanceSession.finalized_at.isnot(None)).count()
     
     today = date.today()
-    today_sessions_count = db.query(AttendanceSession).filter(AttendanceSession.session_date == today).count()
+    today_sessions_count = db.query(AttendanceSession).filter(
+        AttendanceSession.session_date == today,
+        AttendanceSession.finalized_at.isnot(None)
+    ).count()
 
-    total_records = db.query(AttendanceRecord).count()
-    present_records = db.query(AttendanceRecord).filter(AttendanceRecord.status.in_(["PRESENT", "LATE"])).count()
+    total_records = db.query(AttendanceRecord).join(
+        AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id
+    ).filter(AttendanceSession.finalized_at.isnot(None)).count()
+
+    present_records = db.query(AttendanceRecord).join(
+        AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id
+    ).filter(
+        AttendanceSession.finalized_at.isnot(None),
+        AttendanceRecord.status.in_(["PRESENT", "LATE"])
+    ).count()
     overall_attendance_rate = round((present_records / total_records) * 100.0, 1) if total_records > 0 else 0.0
 
     pending_unknown = db.query(UnknownFace).filter(UnknownFace.status == "PENDING").count()
@@ -35,15 +46,19 @@ def get_dashboard_analytics(
     all_defaulters = report_service.get_all_defaulters(db)
     total_defaulters_count = len(all_defaulters)
 
-    # Recent sessions
-    recent_sessions = db.query(AttendanceSession).order_by(AttendanceSession.created_at.desc()).limit(5).all()
+    # Recent sessions (Finalized only)
+    recent_sessions = db.query(AttendanceSession).filter(
+        AttendanceSession.finalized_at.isnot(None)
+    ).order_by(AttendanceSession.created_at.desc()).limit(5).all()
     recent_sessions_data = []
     for s in recent_sessions:
         data = s.to_dict()
         recent_sessions_data.append(data)
 
-    # Weekly Attendance Trend (Last 7 dates with sessions)
-    sessions = db.query(AttendanceSession).order_by(AttendanceSession.session_date.asc()).all()
+    # Weekly Attendance Trend (Last 7 dates with finalized sessions)
+    sessions = db.query(AttendanceSession).filter(
+        AttendanceSession.finalized_at.isnot(None)
+    ).order_by(AttendanceSession.session_date.asc()).all()
     date_map = {}
     for s in sessions:
         d_str = s.session_date.strftime("%b %d") if s.session_date else "N/A"

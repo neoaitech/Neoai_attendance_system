@@ -73,8 +73,8 @@ class AttendanceService:
         if course_id and course_id in enrolled_course_ids:
             enrolled_course_ids = [course_id]
 
-        # 1. Query Normal Sessions for enrolled courses
-        session_query = db.query(AttendanceSession)
+        # 1. Query Normal Sessions for enrolled courses (STRICTLY FINALIZED SESSIONS ONLY)
+        session_query = db.query(AttendanceSession).filter(AttendanceSession.finalized_at.isnot(None))
         if enrolled_course_ids:
             session_query = session_query.filter(AttendanceSession.class_id.in_(enrolled_course_ids))
         else:
@@ -116,8 +116,9 @@ class AttendanceService:
         normal_absent_count = max(0, normal_eligible_sessions - normal_present_count)
         normal_percentage = round((normal_present_count / normal_eligible_sessions) * 100.0, 2) if normal_eligible_sessions > 0 else 0.0
 
-        # 3. Query Approved Extra Lecture Records for this student (deduplicated by session)
+        # 3. Query Approved Extra Lecture Records for this student (STRICTLY FINALIZED SESSIONS ONLY)
         extra_query = db.query(AttendanceRecord).join(AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id).filter(
+            AttendanceSession.finalized_at.isnot(None),
             AttendanceRecord.student_id == student.id,
             (AttendanceRecord.is_extra_lecture == True) |
             (AttendanceRecord.verification_type == "EXTRA_LECTURE") |
@@ -270,7 +271,8 @@ class AttendanceService:
             end_time=scheduled_end,
             raw_photo_path=primary_raw,
             notes=notes,
-            status="CONFIRMED",
+            status="DRAFT",
+            finalized_at=None,
             created_at=now_utc
         )
         session.photo_paths = paths_to_process

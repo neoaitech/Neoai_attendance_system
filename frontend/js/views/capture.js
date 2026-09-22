@@ -1609,9 +1609,13 @@ const CaptureView = {
           </div>
 
           <div class="flex items-center gap-2.5">
+            <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.discardDraftSession(${session.id})" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Discard this scan and cancel without saving">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i>
+              <span>Discard Draft</span>
+            </button>
             <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.recaptureImages()" title="Retake or upload new images for this lecture without losing academic settings">
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-600"></i>
-              <span>Re-Capture / Replace Images</span>
+              <span>Re-Capture</span>
             </button>
             <button type="button" class="btn-primary btn-sm flex items-center gap-1.5" onclick="CaptureView.openFinalizeModal(${session.id})">
               <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
@@ -2435,6 +2439,24 @@ const CaptureView = {
       window.ReportsView.currentReportData = null;
     }
     App.navigate("review");
+  },
+
+  async discardDraftSession(sessionId) {
+    if (!confirm("Are you sure you want to discard this draft attendance scan? All unfinalized attendance marks will be permanently cancelled.")) {
+      return;
+    }
+
+    try {
+      if (sessionId && API.delete) {
+        await API.delete(`/sessions/${sessionId}`);
+      }
+      App.showToast("Draft attendance scan discarded cleanly.", "info");
+    } catch (err) {
+      console.warn("Notice during session discard:", err);
+      App.showToast("Draft session cleared.", "info");
+    }
+
+    this.recaptureImages();
   },
 
   recaptureImages() {

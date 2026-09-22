@@ -98,7 +98,7 @@ class ReportService:
         """
         courses = db.query(ClassCourse).all()
         students = db.query(Student).all()
-        sessions = db.query(AttendanceSession).all()
+        sessions = db.query(AttendanceSession).filter(AttendanceSession.finalized_at.isnot(None)).all()
 
         default_programs = ["BCA", "MCA", "MBA", "BBA", "BA", "MA", "B.Tech", "M.Tech"]
         existing_programs = {getattr(c, "program", None) for c in courses if getattr(c, "program", None)} | {getattr(s, "program", None) for s in students if getattr(s, "program", None)}
@@ -205,8 +205,8 @@ class ReportService:
         target_courses = course_query.all()
         target_course_ids = [c.id for c in target_courses]
 
-        # 2. Fetch Matching Attendance Sessions in Date Range
-        session_query = db.query(AttendanceSession)
+        # 2. Fetch Matching Attendance Sessions in Date Range (STRICTLY FINALIZED SESSIONS ONLY)
+        session_query = db.query(AttendanceSession).filter(AttendanceSession.finalized_at.isnot(None))
         has_specific_filter = bool(c_ids_list or (dept_val and dept_val.upper() != "ALL") or programs_list or semesters_list or divisions_list)
         if target_course_ids:
             session_query = session_query.filter(AttendanceSession.class_id.in_(target_course_ids))
@@ -321,8 +321,9 @@ class ReportService:
                         AttendanceRecord.attendance_type != "EXTRA_LECTURE"
                     ).all()
 
-                # 2. Extra Lecture Attendance Records (Student attended outside classes or flagged Extra Lecture, deduplicated by session)
+                # 2. Extra Lecture Attendance Records (STRICTLY FINALIZED SESSIONS ONLY)
                 extra_records_query = db.query(AttendanceRecord).join(AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id).filter(
+                    AttendanceSession.finalized_at.isnot(None),
                     AttendanceRecord.student_id == s.id,
                     AttendanceRecord.status.in_(["PRESENT", "LATE"]),
                     (AttendanceRecord.is_extra_lecture == True) | 
@@ -560,8 +561,8 @@ class ReportService:
         enrolled_courses = s_enrolled if s_enrolled else batch_courses
         enrolled_course_ids = [c.id for c in enrolled_courses]
 
-        # 2. Fetch Normal Sessions for Enrolled Courses
-        normal_session_query = db.query(AttendanceSession)
+        # 2. Fetch Normal Sessions for Enrolled Courses (STRICTLY FINALIZED ONLY)
+        normal_session_query = db.query(AttendanceSession).filter(AttendanceSession.finalized_at.isnot(None))
         if enrolled_course_ids:
             normal_session_query = normal_session_query.filter(AttendanceSession.class_id.in_(enrolled_course_ids))
         else:
@@ -575,8 +576,9 @@ class ReportService:
         normal_sessions = normal_session_query.order_by(AttendanceSession.session_date.desc(), AttendanceSession.id.desc()).all()
         normal_session_ids = [s.id for s in normal_sessions]
 
-        # 3. Fetch ALL attendance records for this student across ALL sessions in DB
+        # 3. Fetch ALL attendance records for this student across ALL sessions in DB (STRICTLY FINALIZED ONLY)
         all_records_query = db.query(AttendanceRecord).join(AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id).filter(
+            AttendanceSession.finalized_at.isnot(None),
             AttendanceRecord.student_id == student.id
         )
         if start_date:
@@ -695,8 +697,9 @@ class ReportService:
                 "verification_method": verified_by
             })
 
-        # 6. Process Outside / Extra Lecture Records strictly from approved EXTRA_LECTURE records or outside normal sessions
+        # 6. Process Outside / Extra Lecture Records strictly from approved EXTRA_LECTURE records or outside normal sessions (STRICTLY FINALIZED ONLY)
         extra_records_query = db.query(AttendanceRecord).join(AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id).filter(
+            AttendanceSession.finalized_at.isnot(None),
             AttendanceRecord.student_id == student.id,
             AttendanceRecord.status.in_(["PRESENT", "LATE"]),
             (AttendanceRecord.is_extra_lecture == True) | 
@@ -1475,8 +1478,9 @@ class ReportService:
             for c_idx in range(16, len(headers) + 1):
                 ws.column_dimensions[get_column_letter(c_idx)].width = 12
 
-        # Dedicated Sheet for Extra Lecture Records (if any)
+        # Dedicated Sheet for Extra Lecture Records (if any) (STRICTLY FINALIZED ONLY)
         extra_records_query = db.query(AttendanceRecord).join(AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id).join(Student, AttendanceRecord.student_id == Student.id).filter(
+            AttendanceSession.finalized_at.isnot(None),
             (AttendanceRecord.is_extra_lecture == True) | 
             (AttendanceRecord.verification_type == "EXTRA_LECTURE") | 
             (AttendanceRecord.attendance_type == "EXTRA_LECTURE")
@@ -1752,7 +1756,10 @@ class ReportService:
         if not course:
             return {}
 
-        session_query = db.query(AttendanceSession).filter(AttendanceSession.class_id == class_id)
+        session_query = db.query(AttendanceSession).filter(
+            AttendanceSession.finalized_at.isnot(None),
+            AttendanceSession.class_id == class_id
+        )
         if start_date:
             session_query = session_query.filter(AttendanceSession.session_date >= start_date)
         if end_date:
@@ -1784,8 +1791,9 @@ class ReportService:
             absent_count = max(0, total_sessions - present_count)
             normal_pct = round((present_count / total_sessions) * 100.0, 2) if total_sessions > 0 else 0.0
 
-            # Query extra lectures for student s
+            # Query extra lectures for student s (STRICTLY FINALIZED ONLY)
             extra_query = db.query(AttendanceRecord).join(AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id).filter(
+                AttendanceSession.finalized_at.isnot(None),
                 AttendanceRecord.student_id == s.id,
                 (AttendanceRecord.is_extra_lecture == True) | 
                 (AttendanceRecord.verification_type == "EXTRA_LECTURE") | 
