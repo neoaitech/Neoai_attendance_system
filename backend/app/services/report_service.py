@@ -787,7 +787,7 @@ class ReportService:
             pct = round((pr / tot) * 100.0, 2) if tot > 0 else 100.0
             s_info["attendance_percentage"] = pct
             s_info["is_defaulter"] = pct < settings.DEFAULTER_THRESHOLD_PERCENT if tot > 0 else False
-            if s_info["is_enrolled"] or s_info["total_lectures"] > 0 or s_info["extra_lecture_count"] > 0:
+            if s_info["is_enrolled"]:
                 subjects_list.append(s_info)
 
         normal_eligible = max(0, normal_total - normal_frozen)

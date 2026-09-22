@@ -12,7 +12,7 @@ const StudentAttendanceView = {
   capturedPhotoBase64: null,
   filters: {
     searchQuery: "",
-    type: "ALL", // "ALL" | "NORMAL" | "EXTRA"
+    type: "NORMAL", // Default to Regular Timetable lectures so Extra Lectures don't duplicate under Section 3
     status: "ALL", // "ALL" | "PRESENT" | "ABSENT"
     dateFrom: "",
     dateTo: ""
@@ -23,7 +23,7 @@ const StudentAttendanceView = {
     this.referrer = params.from || (App.currentParams && App.currentParams.from) || "reports";
     this.filters = {
       searchQuery: "",
-      type: "ALL",
+      type: "NORMAL",
       status: "ALL",
       dateFrom: "",
       dateTo: ""
@@ -648,14 +648,14 @@ const StudentAttendanceView = {
             <div>
               <h2 class="transcript-panel-title">
                 <i data-lucide="calendar-check" style="width: 16px; height: 16px; color: #4f46e5;"></i>
-                <span>3. Chronological Lecture-by-Lecture Timeline & Audit Log</span>
+                <span>3. Regular Classroom Lecture Timeline & Audit Log</span>
               </h2>
-              <p style="font-size: 0.72rem; color: #64748b; margin: 2px 0 0 0;">Official audit trail of individual classroom attendance events with actual session scan times.</p>
+              <p style="font-size: 0.72rem; color: #64748b; margin: 2px 0 0 0;">Official audit trail of regular timetable lectures (Extra lectures are separately tracked above in Section 2).</p>
             </div>
             
             <div>
               <span style="font-size: 0.75rem; color: #64748b; font-family: var(--font-mono, monospace); font-weight: 700;" id="timeline-count-badge">
-                Showing ${(d.lecture_history || []).length} Events
+                Showing Events
               </span>
             </div>
           </div>
@@ -679,8 +679,8 @@ const StudentAttendanceView = {
                       class="form-select" 
                       style="font-size: 0.75rem; width: 100%;"
                       onchange="StudentAttendanceView.onFilterChange('type', this.value)">
-                <option value="ALL" ${this.filters.type === 'ALL' ? 'selected' : ''}>All Lecture Types</option>
-                <option value="NORMAL" ${this.filters.type === 'NORMAL' ? 'selected' : ''}>Normal Courses Only</option>
+                <option value="NORMAL" ${this.filters.type === 'NORMAL' ? 'selected' : ''}>Regular Timetable Lectures (Default)</option>
+                <option value="ALL" ${this.filters.type === 'ALL' ? 'selected' : ''}>All Lectures (Regular + Extra)</option>
                 <option value="EXTRA" ${this.filters.type === 'EXTRA' ? 'selected' : ''}>Approved Extra Lectures Only</option>
               </select>
             </div>
@@ -755,6 +755,12 @@ const StudentAttendanceView = {
 
       return true;
     });
+
+    const countBadge = document.getElementById("timeline-count-badge");
+    if (countBadge) {
+      const typeLabel = typeFilter === "NORMAL" ? "Regular " : (typeFilter === "EXTRA" ? "Extra " : "");
+      countBadge.textContent = `Showing ${filtered.length} ${typeLabel}Events`;
+    }
 
     if (filtered.length === 0) {
       return `
