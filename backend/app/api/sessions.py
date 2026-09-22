@@ -3,13 +3,13 @@ import uuid
 import json
 import base64
 from typing import List, Optional
-from datetime import date
+from datetime import date, datetime
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from backend.app.core.config import settings
 from backend.app.db.session import get_db
-from backend.app.db.models import AttendanceSession, AttendanceRecord, UnknownFace, ClassCourse, User, SystemSetting, Student
+from backend.app.db.models import AttendanceSession, AttendanceRecord, UnknownFace, ClassCourse, User, SystemSetting, Student, AuditLog
 from backend.app.schemas.attendance import AttendanceSessionResponse
 from backend.app.services.attendance_service import attendance_service
 from backend.app.api.auth import get_current_user
@@ -242,6 +242,33 @@ async def create_and_process_session(
     data["records"] = [r.to_dict() for r in session.attendance_records]
     data["unknown_faces"] = [u.to_dict() for u in session.unknown_faces]
     return data
+
+@router.post("/{session_id}/finalize")
+def finalize_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    session = db.query(AttendanceSession).filter(AttendanceSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found.")
+    
+    session.finalized_at = datetime.utcnow()
+    audit = AuditLog(
+        user_id=current_user.id,
+        action="SESSION_FINALIZED",
+        entity="AttendanceSession",
+        entity_id=session.id,
+        details=f"Session '{session.session_name}' finalized and locked by {current_user.full_name}."
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(session)
+    return {
+        "success": True,
+        "message": f"Attendance session '{session.session_name}' finalized and permanently saved.",
+        "session": session.to_dict()
+    }
 
 @router.delete("/{session_id}")
 def delete_session(

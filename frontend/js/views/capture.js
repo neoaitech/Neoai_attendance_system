@@ -2421,6 +2421,14 @@ const CaptureView = {
       btn.innerHTML = `<span class="spinner-sm mr-2"></span> Finalizing...`;
     }
 
+    try {
+      if (sessionId && API.post) {
+        await API.post(`/sessions/${sessionId}/finalize`, {});
+      }
+    } catch (err) {
+      console.warn("Notice during session finalization:", err);
+    }
+
     App.closeModal();
     App.showToast("Attendance session finalized and permanently saved!", "success");
     if (window.ReportsView) {
