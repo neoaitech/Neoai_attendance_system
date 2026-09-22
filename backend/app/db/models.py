@@ -633,7 +633,14 @@ class AttendanceRecord(Base):
     @detection_bbox.setter
     def detection_bbox(self, value):
         if value is not None:
-            self._detection_bbox = json.dumps(value)
+            try:
+                if isinstance(value, (list, tuple)):
+                    clean_val = [int(v) if hasattr(v, "item") else int(v) if isinstance(v, (int, float)) else v for v in value]
+                    self._detection_bbox = json.dumps(clean_val)
+                else:
+                    self._detection_bbox = json.dumps(value, default=lambda o: int(o) if hasattr(o, "item") else str(o))
+            except Exception:
+                self._detection_bbox = str(value)
         else:
             self._detection_bbox = None
 
