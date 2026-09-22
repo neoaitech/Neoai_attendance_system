@@ -7,18 +7,33 @@ db_url = str(settings.DATABASE_URL)
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
-# SQLAlchemy engine
-engine = create_engine(
-    db_url,
-    connect_args={"check_same_thread": False, "timeout": 30} if "sqlite" in db_url else {},
-    pool_pre_ping=True,
-    echo=False
-)
+# Resilient Engine Initialization with Fallback
+try:
+    engine = create_engine(
+        db_url,
+        connect_args={"check_same_thread": False, "timeout": 30} if "sqlite" in db_url else {},
+        pool_pre_ping=True,
+        echo=False
+    )
+    if "sqlite" not in db_url:
+        with engine.connect() as _test_conn:
+            pass
+except Exception as _e:
+    sqlite_path = settings.PROJECT_ROOT / "database" / "attendance.db"
+    sqlite_url = f"sqlite:///{sqlite_path.as_posix()}"
+    print(f" [!] Warning: Database connection failed ({_e}). Falling back to local SQLite: {sqlite_url}")
+    db_url = sqlite_url
+    engine = create_engine(
+        db_url,
+        connect_args={"check_same_thread": False, "timeout": 30},
+        pool_pre_ping=True,
+        echo=False
+    )
 
 # High-Concurrency WAL Mode & Busy Timeout for simultaneous multi-user attendance & reports
 @event.listens_for(engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
-    if "sqlite" in settings.DATABASE_URL:
+    if "sqlite" in db_url.lower():
         cursor = dbapi_connection.cursor()
         try:
             cursor.execute("PRAGMA journal_mode=WAL;")
@@ -36,7 +51,7 @@ def run_auto_migrations():
     Ensures new schema columns and association tables are added to SQLite database without losing data.
     On PostgreSQL / Supabase, schema is automatically managed by Base.metadata.create_all.
     """
-    if "sqlite" not in str(settings.DATABASE_URL).lower():
+    if "sqlite" not in str(db_url).lower():
         return
 
     try:
