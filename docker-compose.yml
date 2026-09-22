@@ -8,13 +8,21 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./database:/app/database
-      - ./data:/app/data
+      - ./runtime/database:/app/database
+      - ./runtime/data:/app/data
       - ./models:/app/models
     environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONPATH=/app
-      - SECRET_KEY=super-secret-production-key-change-me
+      PYTHONUNBUFFERED: "1"
+      PYTHONPATH: "/app"
+      SECRET_KEY: "${SECRET_KEY:-super-secret-production-key-change-me}"
+      DATABASE_URL: "${DATABASE_URL:-sqlite:////app/database/attendance.db}"
+      DATA_DIR: "/app/data"
+      UPLOAD_DIR: "/app/data/uploads"
+      STUDENT_PHOTOS_DIR: "/app/data/uploads/students"
+      SESSION_PHOTOS_DIR: "/app/data/uploads/sessions"
+      UNKNOWN_FACES_DIR: "/app/data/uploads/unknown_faces"
+      REPORTS_DIR: "/app/data/reports_cache"
+      BACKUPS_DIR: "/app/database/backups"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/academic/metadata"]
       interval: 30s
