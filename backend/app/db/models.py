@@ -7,6 +7,19 @@ from sqlalchemy.orm import relationship
 from backend.app.db.session import Base
 from backend.app.core.datetime_utils import format_iso_utc, format_ist_time, format_ist_datetime, format_ist_date
 
+def safe_json_dumps(obj):
+    if obj is None:
+        return None
+    def default_handler(o):
+        if hasattr(o, "item"):
+            return o.item()
+        if hasattr(o, "tolist"):
+            return o.tolist()
+        if isinstance(o, (datetime, date)):
+            return o.isoformat()
+        return str(o)
+    return json.dumps(obj, default=default_handler)
+
 # Association Table: Student <-> ClassCourse (Many-to-Many with Status)
 student_class_association = Table(
     "student_class_association",
@@ -517,10 +530,7 @@ class AttendanceSession(Base):
 
     @extra_candidates.setter
     def extra_candidates(self, value):
-        if value is not None:
-            self._extra_candidates = json.dumps(value)
-        else:
-            self._extra_candidates = None
+        self._extra_candidates = safe_json_dumps(value)
 
     @property
     def photo_paths(self):
@@ -533,10 +543,7 @@ class AttendanceSession(Base):
 
     @photo_paths.setter
     def photo_paths(self, value):
-        if value is not None:
-            self._photo_paths = json.dumps(value)
-        else:
-            self._photo_paths = None
+        self._photo_paths = safe_json_dumps(value)
 
     @property
     def processed_photo_paths(self):
@@ -549,10 +556,7 @@ class AttendanceSession(Base):
 
     @processed_photo_paths.setter
     def processed_photo_paths(self, value):
-        if value is not None:
-            self._processed_photo_paths = json.dumps(value)
-        else:
-            self._processed_photo_paths = None
+        self._processed_photo_paths = safe_json_dumps(value)
 
     def to_dict(self, include_records=False):
         # Scheduled timetable info (from course offering)
@@ -632,17 +636,7 @@ class AttendanceRecord(Base):
 
     @detection_bbox.setter
     def detection_bbox(self, value):
-        if value is not None:
-            try:
-                if isinstance(value, (list, tuple)):
-                    clean_val = [int(v) if hasattr(v, "item") else int(v) if isinstance(v, (int, float)) else v for v in value]
-                    self._detection_bbox = json.dumps(clean_val)
-                else:
-                    self._detection_bbox = json.dumps(value, default=lambda o: int(o) if hasattr(o, "item") else str(o))
-            except Exception:
-                self._detection_bbox = str(value)
-        else:
-            self._detection_bbox = None
+        self._detection_bbox = safe_json_dumps(value)
 
     def to_dict(self):
         photo_url = None
@@ -708,10 +702,7 @@ class UnknownFace(Base):
 
     @bbox.setter
     def bbox(self, value):
-        if value is not None:
-            self._bbox = json.dumps(value)
-        else:
-            self._bbox = None
+        self._bbox = safe_json_dumps(value)
 
     def to_dict(self):
         photo_url = None

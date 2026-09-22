@@ -331,6 +331,27 @@ class AttendanceService:
             tolerance=tolerance if tolerance else 0.58
         )
 
+        # Ensure all bounding boxes and scores are Python primitives (no numpy int32/float32)
+        def _clean_val(v):
+            if hasattr(v, "item"):
+                return v.item()
+            return v
+
+        def _clean_bbox(b):
+            if b is None:
+                return None
+            return [int(_clean_val(x)) for x in b]
+
+        for rec in cv_result.get("recognized", []):
+            rec["bbox"] = _clean_bbox(rec.get("bbox"))
+            if "confidence" in rec:
+                rec["confidence"] = float(_clean_val(rec["confidence"]))
+
+        for unk in cv_result.get("unknown", []):
+            unk["bbox"] = _clean_bbox(unk.get("bbox"))
+            if "confidence" in unk:
+                unk["confidence"] = float(_clean_val(unk["confidence"]))
+
         recognized_student_ids = set()
         extra_lecture_candidates = []
         seen_extra_student_ids = set()
