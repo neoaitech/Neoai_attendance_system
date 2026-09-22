@@ -38,6 +38,17 @@ mkdir -p runtime/data/uploads/unknown_faces
 mkdir -p runtime/data/reports_cache
 mkdir -p runtime/database/backups
 
+# Seed initial database if runtime is empty
+if [ ! -f "runtime/database/attendance.db" ] && [ -f "database/attendance.db" ]; then
+    echo " [*] Seeding initial database to runtime/database/attendance.db..."
+    cp database/attendance.db runtime/database/attendance.db
+fi
+if [ -d "data/uploads" ]; then
+    echo " [*] Copying initial sample photos to runtime/data/uploads..."
+    cp -rn data/uploads/* runtime/data/uploads/ 2>/dev/null || true
+fi
+sudo chmod -R 777 runtime
+
 echo "------------------------------------------------------------------------------"
 echo " [*] Step 3: Generating secure production SECRET_KEY in .env..."
 echo "------------------------------------------------------------------------------"
