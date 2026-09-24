@@ -22,8 +22,6 @@ const RequisitionsView = {
   selectedStudent: null,
   selectedDate: null,
   dayLecturesData: null,
-  history: [],
-  filteredHistory: [],
   searchDebounceTimer: null,
 
   async render(container) {
@@ -134,200 +132,208 @@ const RequisitionsView = {
         <!-- Main Workspace: Focused Requisition Workflow Engine -->
         <div class="max-w-4xl mx-auto space-y-4">
           
-          <!-- Interactive Requisition Workflow (Engaging Wizard) -->
-          <div class="space-y-4">
-            
-            <!-- STEP 1: Student Finder with Academic Hierarchy & Live Search -->
-            <div class="glass-panel p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm" id="step1-container">
-              <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs">1</div>
-                  <div>
-                    <h3 class="text-sm font-bold text-slate-800">Select Student</h3>
-                    <p class="text-[11px] text-slate-400">Filter by Department, Degree, Sem, Div OR search Roll No / Name</p>
-                  </div>
-                </div>
-                <span class="text-[10px] font-mono text-slate-400" id="roster-count-badge">-- students loaded</span>
-              </div>
-
-              <!-- Hierarchy Filter Bar (Dept, Degree, Sem, Div) -->
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+          <!-- STEP 1: Student Finder with Academic Hierarchy & Systematic Cards -->
+          <div class="glass-panel p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm" id="step1-container">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs">1</div>
                 <div>
-                  <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Department</label>
-                  <select id="filter-dept" class="form-select text-xs w-full py-1.5 px-2 bg-slate-50" onchange="RequisitionsView.onFilterChange()">
-                    <option value="">All Depts</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Degree / Program</label>
-                  <select id="filter-prog" class="form-select text-xs w-full py-1.5 px-2 bg-slate-50" onchange="RequisitionsView.onFilterChange()">
-                    <option value="">All Degrees</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Semester</label>
-                  <select id="filter-sem" class="form-select text-xs w-full py-1.5 px-2 bg-slate-50" onchange="RequisitionsView.onFilterChange()">
-                    <option value="">All Semesters</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Division</label>
-                  <select id="filter-div" class="form-select text-xs w-full py-1.5 px-2 bg-slate-50" onchange="RequisitionsView.onFilterChange()">
-                    <option value="">All Divisions</option>
-                  </select>
+                  <h3 class="text-sm font-bold text-slate-800">Select Student</h3>
+                  <p class="text-[11px] text-slate-400">Filter by Department, Degree, Sem, Div OR search Roll No / Name</p>
                 </div>
               </div>
+              <span class="text-[10px] font-mono text-slate-400" id="roster-count-badge">-- students loaded</span>
+            </div>
 
-              <!-- Unified Instant Search Input (Roll No & Name) -->
-              <div class="relative mb-3">
-                <div class="relative">
-                  <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                  <input type="text" 
-                         id="student-search-input" 
-                         class="form-input w-full text-xs pl-9 pr-8 py-2 rounded-xl border-slate-200 focus:border-indigo-500" 
-                         placeholder="Type Student Name or Roll Number (e.g. Ananya, 2024CS01)..." 
-                         autocomplete="off" 
-                         oninput="RequisitionsView.onSearchInput(this.value)" />
-                  <button type="button" 
-                          id="search-clear-btn" 
-                          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden text-xs" 
-                          onclick="RequisitionsView.clearSearch()">
-                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                  </button>
-                </div>
-
-                <!-- Instant Search Dropdown Results -->
-                <div id="student-search-dropdown" class="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden"></div>
+            <!-- Hierarchy Filter Bar (Dept, Degree, Sem, Div) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+              <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Department</label>
+                <select id="filter-dept" class="form-select text-xs w-full py-1.5 px-2 bg-slate-50" onchange="RequisitionsView.onFilterChange()">
+                  <option value="">All Depts</option>
+                </select>
               </div>
+              <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Degree / Program</label>
+                <select id="filter-prog" class="form-select text-xs w-full py-1.5 px-2 bg-slate-50" onchange="RequisitionsView.onFilterChange()">
+                  <option value="">All Degrees</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Semester</label>
+                <select id="filter-sem" class="form-select text-xs w-full py-1.5 px-2 bg-slate-50" onchange="RequisitionsView.onFilterChange()">
+                  <option value="">All Semesters</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Division</label>
+                <select id="filter-div" class="form-select text-xs w-full py-1.5 px-2 bg-slate-50" onchange="RequisitionsView.onFilterChange()">
+                  <option value="">All Divisions</option>
+                </select>
+              </div>
+            </div>
 
-              <!-- Selected Student Profile Card (Appears when student selected) -->
-              <div id="selected-student-container">
-                <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
-                  <i data-lucide="user-search" class="w-6 h-6 text-slate-300 mx-auto mb-1"></i>
-                  Search by Roll No / Name or choose from the filters above to select a student
+            <!-- Unified Instant Search Input (Roll No & Name) -->
+            <div class="relative mb-3">
+              <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" 
+                       id="student-search-input" 
+                       class="form-input w-full text-xs pl-9 pr-8 py-2 rounded-xl border-slate-200 focus:border-indigo-500" 
+                       placeholder="Search by Student Name OR Roll Number (e.g. Pooja, BCA2302127)..." 
+                       autocomplete="off" 
+                       oninput="RequisitionsView.onSearchInput(this.value)" />
+                <button type="button" 
+                        id="search-clear-btn" 
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden text-xs" 
+                        onclick="RequisitionsView.clearSearch()">
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Systematic Student Cards Section (Replaces messy dropdown) -->
+            <div class="mb-3">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-600"></i>
+                  Matching Students in Roster
+                </span>
+                <span class="text-[10px] font-medium text-slate-400" id="student-cards-counter">
+                  Loading students...
+                </span>
+              </div>
+              <div id="student-cards-container" class="req-student-grid">
+                <!-- Systematic student cards injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Selected Student Profile Banner -->
+            <div id="selected-student-container">
+              <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
+                <i data-lucide="user-check" class="w-6 h-6 text-slate-300 mx-auto mb-1"></i>
+                Click on any student card above to select them for OD regularization
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: Date Selector & Timetable Lectures Inspector -->
+          <div class="glass-panel p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm" id="step2-container">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">2</div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-800">Event Date & Conducted Lectures</h3>
+                  <p class="text-[11px] text-slate-400">Pick date to inspect timetable lectures conducted for this student's class</p>
                 </div>
               </div>
             </div>
 
-            <!-- STEP 2: Date Selector & Timetable Lectures Inspector -->
-            <div class="glass-panel p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm" id="step2-container">
-              <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">2</div>
-                  <div>
-                    <h3 class="text-sm font-bold text-slate-800">Event Date & Conducted Lectures</h3>
-                    <p class="text-[11px] text-slate-400">Pick date to inspect timetable lectures conducted for this student's class</p>
-                  </div>
+            <!-- Date Picker + Quick Relative Presets -->
+            <div class="space-y-2 mb-4">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                <div class="relative flex-1">
+                  <input type="date" 
+                         id="req-event-date" 
+                         class="form-input w-full text-xs font-semibold" 
+                         value="${todayStr}" 
+                         max="${todayStr}" 
+                         onchange="RequisitionsView.onDateChange(this.value)" />
                 </div>
-              </div>
-
-              <!-- Date Picker + Quick Relative Presets -->
-              <div class="space-y-2 mb-4">
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                  <div class="relative flex-1">
-                    <input type="date" 
-                           id="req-event-date" 
-                           class="form-input w-full text-xs font-semibold" 
-                           value="${todayStr}" 
-                           max="${todayStr}" 
-                           onchange="RequisitionsView.onDateChange(this.value)" />
-                  </div>
-                  <!-- Quick Preset Pills (Since forms are often submitted 1-3 days later) -->
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2 font-bold" onclick="RequisitionsView.applyDatePreset(0)">Today</button>
-                    <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2 font-bold" onclick="RequisitionsView.applyDatePreset(1)">Yesterday</button>
-                    <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2 font-bold" onclick="RequisitionsView.applyDatePreset(2)">2 Days Ago</button>
-                    <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2 font-bold" onclick="RequisitionsView.applyDatePreset(3)">3 Days Ago</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Day Lectures Breakdown Container -->
-              <div id="day-lectures-container" class="space-y-3">
-                <div class="p-6 text-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-slate-200">
-                  <i data-lucide="calendar" class="w-7 h-7 text-slate-300 mx-auto mb-1.5"></i>
-                  Please select a student above to inspect conducted lectures for this date.
+                <!-- Quick Preset Pills (Since forms are often submitted 1-3 days later) -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2 font-bold" onclick="RequisitionsView.applyDatePreset(0)">Today</button>
+                  <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2 font-bold" onclick="RequisitionsView.applyDatePreset(1)">Yesterday</button>
+                  <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2 font-bold" onclick="RequisitionsView.applyDatePreset(2)">2 Days Ago</button>
+                  <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2 font-bold" onclick="RequisitionsView.applyDatePreset(3)">3 Days Ago</button>
                 </div>
               </div>
             </div>
 
-            <!-- STEP 3: Requisition Form Context & Authorization -->
-            <div class="glass-panel p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm" id="step3-container">
-              <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xs">3</div>
-                  <div>
-                    <h3 class="text-sm font-bold text-slate-800">Requisition Form & OD Approval</h3>
-                    <p class="text-[11px] text-slate-400">Institutional duty details & authorization record</p>
-                  </div>
+            <!-- Day Lectures Breakdown Container -->
+            <div id="day-lectures-container" class="space-y-3">
+              <div class="p-6 text-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-slate-200">
+                <i data-lucide="calendar" class="w-7 h-7 text-slate-300 mx-auto mb-1.5"></i>
+                Please select a student above to inspect conducted lectures for this date.
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Requisition Form Context & Authorization -->
+          <div class="glass-panel p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm" id="step3-container">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xs">3</div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-800">Requisition Form & OD Approval</h3>
+                  <p class="text-[11px] text-slate-400">Institutional duty details & authorization record</p>
+                </div>
+              </div>
+            </div>
+
+            <form id="requisition-submit-form" onsubmit="event.preventDefault(); RequisitionsView.submitRequisition();" class="space-y-3.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="form-label text-xs font-bold text-slate-700 block mb-1">
+                    Requisition / OD Form Ref No <span class="text-rose-500">*</span>
+                  </label>
+                  <input type="text" id="req-form-ref" class="form-input w-full text-xs font-mono" placeholder="e.g. OD-2026-FEST-042" required />
+                </div>
+                <div>
+                  <label class="form-label text-xs font-bold text-slate-700 block mb-1">
+                    Event / Activity Category <span class="text-rose-500">*</span>
+                  </label>
+                  <select id="req-category" class="form-select w-full text-xs font-medium">
+                    <option value="College Cultural / Tech Fest">Inter-College Fest / Tech Symposium</option>
+                    <option value="Sports Meet / Tournament">Sports Meet / Athletic Tournament</option>
+                    <option value="NSS / NCC / Social Duty">NSS / NCC / Community Service</option>
+                    <option value="Academic Seminar / Conference">Academic Conference / Presentation</option>
+                    <option value="Placement & Campus Drive">Placement / Campus Interview</option>
+                    <option value="Official Institutional Duty">Official Department Duty</option>
+                    <option value="Other Authorized Duty">Other Authorized Activity</option>
+                  </select>
                 </div>
               </div>
 
-              <form id="requisition-submit-form" onsubmit="event.preventDefault(); RequisitionsView.submitRequisition();" class="space-y-3.5">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label class="form-label text-xs font-bold text-slate-700 block mb-1">
-                      Requisition / OD Form Ref No <span class="text-rose-500">*</span>
-                    </label>
-                    <input type="text" id="req-form-ref" class="form-input w-full text-xs font-mono" placeholder="e.g. OD-2026-FEST-042" required />
-                  </div>
-                  <div>
-                    <label class="form-label text-xs font-bold text-slate-700 block mb-1">
-                      Event / Activity Category <span class="text-rose-500">*</span>
-                    </label>
-                    <select id="req-category" class="form-select w-full text-xs font-medium">
-                      <option value="College Cultural / Tech Fest">Inter-College Fest / Tech Symposium</option>
-                      <option value="Sports Meet / Tournament">Sports Meet / Athletic Tournament</option>
-                      <option value="NSS / NCC / Social Duty">NSS / NCC / Community Service</option>
-                      <option value="Academic Seminar / Conference">Academic Conference / Presentation</option>
-                      <option value="Placement & Campus Drive">Placement / Campus Interview</option>
-                      <option value="Official Institutional Duty">Official Department Duty</option>
-                      <option value="Other Authorized Duty">Other Authorized Activity</option>
-                    </select>
-                  </div>
-                </div>
+              <div>
+                <label class="form-label text-xs font-bold text-slate-700 block mb-1">
+                  Event / Activity Title <span class="text-rose-500">*</span>
+                </label>
+                <input type="text" id="req-event-title" class="form-input w-full text-xs" placeholder="e.g. State Inter-University Basketball Championship" required />
+              </div>
 
-                <div>
-                  <label class="form-label text-xs font-bold text-slate-700 block mb-1">
-                    Event / Activity Title <span class="text-rose-500">*</span>
-                  </label>
-                  <input type="text" id="req-event-title" class="form-input w-full text-xs" placeholder="e.g. State Inter-University Basketball Championship" required />
-                </div>
-
-                <div>
-                  <label class="form-label text-xs font-bold text-slate-700 block mb-1">
-                    Approving Administrative Officer
-                  </label>
-                  <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                      <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-[10px]">
-                        ${((Auth.currentUser && Auth.currentUser.username) || 'AD')[0].toUpperCase()}
-                      </div>
-                      <span class="font-bold text-slate-800">${(Auth.currentUser && (Auth.currentUser.full_name || Auth.currentUser.username)) || 'Administrator'}</span>
-                    </div>
-                    <span class="badge text-[10px] font-bold bg-purple-100 text-purple-800 uppercase tracking-wide">
-                      ${(Auth.currentUser && Auth.currentUser.role) ? Auth.currentUser.role.replace('_', ' ') : 'ADMIN'}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Live Impact Preview Box -->
-                <div id="req-impact-preview" class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
+              <div>
+                <label class="form-label text-xs font-bold text-slate-700 block mb-1">
+                  Approving Administrative Officer
+                </label>
+                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs flex items-center justify-between">
                   <div class="flex items-center gap-2">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
-                    <span id="req-impact-text">Select missed lectures above to preview attendance regularization</span>
+                    <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-[10px]">
+                      ${((Auth.currentUser && Auth.currentUser.username) || 'AD')[0].toUpperCase()}
+                    </div>
+                    <span class="font-bold text-slate-800">${(Auth.currentUser && (Auth.currentUser.full_name || Auth.currentUser.username)) || 'Administrator'}</span>
                   </div>
+                  <span class="badge text-[10px] font-bold bg-purple-100 text-purple-800 uppercase tracking-wide">
+                    ${(Auth.currentUser && Auth.currentUser.role) ? Auth.currentUser.role.replace('_', ' ') : 'ADMIN'}
+                  </span>
                 </div>
+              </div>
 
-                <div class="pt-2">
-                  <button type="submit" id="req-grant-btn" class="btn-primary w-full text-xs font-bold py-3 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all" style="background: linear-gradient(135deg, #059669, #047857); border: 1px solid #059669;">
-                    <i data-lucide="check-check" class="w-4 h-4"></i>
-                    <span>Approve & Grant OD Attendance</span>
-                  </button>
+              <!-- Live Impact Preview Box -->
+              <div id="req-impact-preview" class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="sparkles" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                  <span id="req-impact-text">Select missed lectures above to preview attendance regularization</span>
                 </div>
-              </form>
-            </div>
+              </div>
 
+              <div class="pt-2">
+                <button type="submit" id="req-grant-btn" class="btn-primary w-full text-xs font-bold py-3 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all" style="background: linear-gradient(135deg, #059669, #047857); border: 1px solid #059669;">
+                  <i data-lucide="check-check" class="w-4 h-4"></i>
+                  <span>Approve & Grant OD Attendance</span>
+                </button>
+              </div>
+            </form>
           </div>
 
         </div>
@@ -336,15 +342,6 @@ const RequisitionsView = {
     `;
 
     if (window.lucide) window.lucide.createIcons();
-
-    // Close search dropdown on click outside
-    document.addEventListener("click", (e) => {
-      const dropdown = document.getElementById("student-search-dropdown");
-      const searchInput = document.getElementById("student-search-input");
-      if (dropdown && !dropdown.contains(e.target) && e.target !== searchInput) {
-        dropdown.classList.add("hidden");
-      }
-    });
 
     // Load academic metadata, student list and history
     await this.initData();
@@ -365,7 +362,7 @@ const RequisitionsView = {
       // 2. Fetch full student list (support up to 2000 students)
       await this.loadStudents();
 
-      // 3. Fetch past OD regularizations history
+      // 3. Update KPI values
       await this.loadHistory();
 
     } catch (e) {
@@ -412,8 +409,10 @@ const RequisitionsView = {
 
       const countBadge = document.getElementById("roster-count-badge");
       if (countBadge) {
-        countBadge.textContent = `${this.studentsList.length} students matching`;
+        countBadge.textContent = `${this.studentsList.length} students loaded`;
       }
+
+      this.renderStudentsGrid();
     } catch (e) {
       console.error("Failed to load students:", e);
     }
@@ -426,7 +425,6 @@ const RequisitionsView = {
     this.filters.section = document.getElementById("filter-div")?.value || "";
 
     await this.loadStudents();
-    this.showMatchingStudentsDropdown();
   },
 
   onSearchInput(val) {
@@ -437,7 +435,6 @@ const RequisitionsView = {
     this.filters.search = (val || "").trim();
     this.searchDebounceTimer = setTimeout(async () => {
       await this.loadStudents();
-      this.showMatchingStudentsDropdown();
     }, 250);
   },
 
@@ -446,59 +443,78 @@ const RequisitionsView = {
     if (input) input.value = "";
     this.filters.search = "";
     document.getElementById("search-clear-btn")?.classList.add("hidden");
-    document.getElementById("student-search-dropdown")?.classList.add("hidden");
     this.loadStudents();
   },
 
-  showMatchingStudentsDropdown() {
-    const dropdown = document.getElementById("student-search-dropdown");
-    if (!dropdown) return;
+  renderStudentsGrid() {
+    const container = document.getElementById("student-cards-container");
+    const counterEl = document.getElementById("student-cards-counter");
+    if (!container) return;
 
-    if (this.studentsList.length === 0) {
-      dropdown.innerHTML = `
-        <div class="p-4 text-center text-slate-400 text-xs">
-          No students found matching current filters/search.
+    const count = this.studentsList.length;
+    if (counterEl) {
+      counterEl.textContent = `${count} ${count === 1 ? 'student' : 'students'} matching`;
+    }
+
+    if (count === 0) {
+      container.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: #94a3b8; font-size: 0.75rem; background: #f8fafc; border-radius: 12px; border: 1px dashed #e2e8f0;">
+          <i data-lucide="user-x" style="width: 24px; height: 24px; margin: 0 auto 6px; color: #cbd5e1;"></i>
+          No students found matching current filters or search term.
         </div>
       `;
-      dropdown.classList.remove("hidden");
+      if (window.lucide) window.lucide.createIcons();
       return;
     }
 
-    dropdown.innerHTML = `
-      <div class="p-2 border-b border-slate-100 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between">
-        <span>Matching Students (${this.studentsList.length})</span>
-        <span>Click to select</span>
-      </div>
-      <div class="divide-y divide-slate-100">
-        ${this.studentsList.slice(0, 50).map(s => `
-          <div class="p-2.5 hover:bg-indigo-50/60 cursor-pointer transition-colors flex items-center justify-between" onclick="RequisitionsView.selectStudent(${s.id})">
-            <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-full bg-slate-100 text-indigo-700 border border-slate-200 flex items-center justify-center font-bold text-xs">
-                ${s.full_name ? s.full_name[0].toUpperCase() : 'S'}
-              </div>
-              <div>
-                <div class="text-xs font-bold text-slate-900">${s.full_name}</div>
-                <div class="text-[10px] text-slate-400 font-mono">
-                  Roll: <span class="font-bold text-slate-700">${s.roll_number}</span> &bull; ${s.department || ''} &bull; ${s.program || ''}
-                </div>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="badge text-[10px] bg-slate-100 text-slate-700 font-medium">
-                ${s.semester || 'Sem'} - Div ${s.section || 'A'}
-              </span>
-            </div>
-          </div>
-        `).join("")}
-        ${this.studentsList.length > 50 ? `
-          <div class="p-2 text-center text-[11px] text-slate-400 bg-slate-50">
-            Showing first 50 of ${this.studentsList.length} students. Type more to narrow down.
-          </div>
-        ` : ''}
-      </div>
-    `;
+    container.innerHTML = this.studentsList.slice(0, 60).map(s => {
+      const isSelected = this.selectedStudent && this.selectedStudent.id === s.id;
+      const initial = (s.full_name || 'S').trim()[0].toUpperCase();
+      const rawPortrait = s.photo_url ? (s.photo_url.startsWith('data:') ? s.photo_url : (s.photo_url.startsWith('/') ? s.photo_url : `/uploads/students/${s.photo_url.split(/[\/\\]/).pop()}`)) : null;
+      const portraitUrl = rawPortrait ? API.getFileUrl(rawPortrait) : null;
 
-    dropdown.classList.remove("hidden");
+      return `
+        <div class="req-student-card ${isSelected ? 'selected' : ''}" 
+             id="req-student-card-${s.id}" 
+             onclick="RequisitionsView.selectStudent(${s.id})">
+          <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+            ${portraitUrl ? `
+              <img src="${portraitUrl}" class="req-avatar-photo" alt="${s.full_name}" />
+            ` : `
+              <div class="req-avatar">${initial}</div>
+            `}
+            <div class="req-student-info">
+              <div class="req-student-name" title="${s.full_name}">${s.full_name}</div>
+              <div class="req-student-meta">
+                <span class="req-roll-pill">${s.roll_number}</span>
+                <span class="req-tag-pill">${s.program || s.department || 'Course'}</span>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;">
+            <span class="req-div-badge">${s.semester || 'Sem'} &bull; Div ${s.section || 'A'}</span>
+            ${isSelected ? `
+              <span style="font-size: 0.65rem; font-weight: 700; color: #059669; display: flex; align-items: center; gap: 3px;">
+                <i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i> Selected
+              </span>
+            ` : `
+              <span style="font-size: 0.65rem; font-weight: 700; color: #6366f1;">
+                Select &rarr;
+              </span>
+            `}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    if (this.studentsList.length > 60) {
+      container.innerHTML += `
+        <div style="grid-column: 1 / -1; padding: 8px; text-align: center; color: #94a3b8; font-size: 0.72rem; background: #f8fafc; border-radius: 8px;">
+          Showing first 60 of ${this.studentsList.length} students. Use filters or search above to find a specific student.
+        </div>
+      `;
+    }
+
     if (window.lucide) window.lucide.createIcons();
   },
 
@@ -507,7 +523,15 @@ const RequisitionsView = {
     if (!student) return;
 
     this.selectedStudent = student;
-    document.getElementById("student-search-dropdown")?.classList.add("hidden");
+
+    // Highlight selected card in the grid
+    document.querySelectorAll(".req-student-card").forEach(c => {
+      c.classList.remove("selected");
+    });
+    const activeCard = document.getElementById(`req-student-card-${student.id}`);
+    if (activeCard) {
+      activeCard.classList.add("selected");
+    }
 
     // Populate search input with student info
     const searchInput = document.getElementById("student-search-input");
@@ -515,35 +539,38 @@ const RequisitionsView = {
       searchInput.value = `${student.roll_number} - ${student.full_name}`;
     }
 
-    // Render Selected Student Card
+    // Render Selected Student Banner
     const container = document.getElementById("selected-student-container");
     if (container) {
       container.innerHTML = `
-        <div class="p-3.5 bg-gradient-to-r from-indigo-50/80 via-white to-slate-50 rounded-xl border border-indigo-200/80 flex items-center justify-between gap-3 shadow-xs">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs flex-shrink-0">
+        <div style="padding: 14px 18px; border-radius: 14px; background: linear-gradient(135deg, rgba(99,102,241,0.06), #ffffff); border: 2px solid #6366f1; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 14px rgba(99,102,241,0.12);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; flex-shrink: 0; box-shadow: 0 2px 8px rgba(99,102,241,0.3);">
               ${student.full_name ? student.full_name[0].toUpperCase() : 'S'}
             </div>
             <div>
-              <div class="text-xs font-black text-slate-900 flex items-center gap-2">
+              <div style="font-size: 0.9rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
                 <span>${student.full_name}</span>
-                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold">${student.roll_number}</span>
+                <span class="req-roll-pill" style="background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; font-size: 0.72rem;">${student.roll_number}</span>
+                <span style="display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; font-weight: 700; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 4px;">
+                  <i data-lucide="check" style="width: 10px; height: 10px;"></i> Active Selected
+                </span>
               </div>
-              <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                <span class="font-semibold text-slate-700">${student.department || 'Academic Dept'}</span> &bull; 
+              <div style="font-size: 0.75rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span style="font-weight: 600; color: #334155;">${student.department || 'Academic Dept'}</span> &bull; 
                 <span>${student.program || 'Degree'}</span> &bull; 
                 <span>${student.semester || 'Semester'}</span> &bull; 
-                <span class="font-bold text-indigo-700">Div ${student.section || 'A'}</span>
+                <span style="font-weight: 700; color: #4338ca;">Division ${student.section || 'A'}</span>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2" onclick="App.navigate('student_attendance', { id: ${student.id}, from: 'requisitions' })" title="View Full Attendance Audit">
-              <i data-lucide="eye" class="w-3 h-3 mr-1"></i> Audit
+          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <button type="button" class="btn-secondary btn-xs" style="font-size: 0.68rem; padding: 4px 10px;" onclick="App.navigate('student_attendance', { id: ${student.id}, from: 'requisitions' })" title="View Full Attendance Audit">
+              <i data-lucide="eye" style="width: 12px; height: 12px; margin-right: 4px;"></i> Full Audit
             </button>
-            <button type="button" class="btn-secondary btn-xs text-[10px] py-1 px-2 text-rose-600 hover:bg-rose-50" onclick="RequisitionsView.clearSelectedStudent()">
-              Change
+            <button type="button" class="btn-secondary btn-xs" style="font-size: 0.68rem; padding: 4px 10px; color: #dc2626;" onclick="RequisitionsView.clearSelectedStudent()">
+              Change Student
             </button>
           </div>
         </div>
@@ -553,16 +580,20 @@ const RequisitionsView = {
 
     // Immediately fetch day lectures for the selected date
     this.loadDayLectures();
+
+    // Smooth scroll to Step 2
+    document.getElementById("step2-container")?.scrollIntoView({ behavior: "smooth", block: "start" });
   },
 
   clearSelectedStudent() {
     this.selectedStudent = null;
+    document.querySelectorAll(".req-student-card").forEach(c => c.classList.remove("selected"));
     const input = document.getElementById("student-search-input");
     if (input) input.value = "";
     document.getElementById("selected-student-container").innerHTML = `
       <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
-        <i data-lucide="user-search" class="w-6 h-6 text-slate-300 mx-auto mb-1"></i>
-        Search by Roll No / Name or choose from the filters above to select a student
+        <i data-lucide="user-check" class="w-6 h-6 text-slate-300 mx-auto mb-1"></i>
+        Click on any student card above to select them for OD regularization
       </div>
     `;
     document.getElementById("day-lectures-container").innerHTML = `
@@ -638,74 +669,75 @@ const RequisitionsView = {
 
       container.innerHTML = `
         <!-- Lecture Summary Pill Banner -->
-        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100/80 border border-slate-200">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
           <div>
-            <div class="text-xs font-black text-slate-900 flex items-center gap-1.5">
-              <i data-lucide="calendar-days" class="w-4 h-4 text-indigo-600"></i>
+            <div style="font-size: 0.85rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="calendar-days" style="width: 16px; height: 16px; color: #6366f1;"></i>
               <span>${totalLec} Lectures Conducted on ${this.selectedDate}</span>
             </div>
-            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-2">
-              <span class="text-emerald-700 font-bold">🟢 ${presentCount} Attended</span> &bull; 
-              <span class="text-rose-700 font-bold">🔴 ${absentCount} Missed (Needs OD)</span>
-              ${odCount > 0 ? `&bull; <span class="text-indigo-700 font-bold">✓ ${odCount} Already OD</span>` : ''}
+            <div style="font-size: 0.72rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="color: #059669; font-weight: 700;">🟢 ${presentCount} Attended</span> &bull; 
+              <span style="color: #dc2626; font-weight: 700;">🔴 ${absentCount} Missed (Needs OD)</span>
+              ${odCount > 0 ? `&bull; <span style="color: #6366f1; font-weight: 700;">✓ ${odCount} Already OD</span>` : ''}
             </div>
           </div>
 
-          <div class="text-[11px] space-x-2 flex items-center flex-shrink-0">
-            <button type="button" class="btn-secondary btn-xs text-[10px] font-bold text-emerald-700 hover:bg-emerald-50" onclick="RequisitionsView.toggleLectureSelection('MISSED')">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button type="button" class="btn-secondary btn-xs" style="font-weight: 700; color: #059669; font-size: 0.68rem; padding: 4px 10px;" onclick="RequisitionsView.toggleLectureSelection('MISSED')">
               Select Missed
             </button>
-            <button type="button" class="btn-secondary btn-xs text-[10px] font-bold" onclick="RequisitionsView.toggleLectureSelection('ALL')">
-              All
+            <button type="button" class="btn-secondary btn-xs" style="font-weight: 700; font-size: 0.68rem; padding: 4px 10px;" onclick="RequisitionsView.toggleLectureSelection('ALL')">
+              Select All
             </button>
-            <button type="button" class="btn-secondary btn-xs text-[10px] text-slate-500" onclick="RequisitionsView.toggleLectureSelection('NONE')">
+            <button type="button" class="btn-secondary btn-xs" style="font-size: 0.68rem; padding: 4px 10px; color: #64748b;" onclick="RequisitionsView.toggleLectureSelection('NONE')">
               Clear
             </button>
           </div>
         </div>
 
         <!-- Interactive Lectures Checklist -->
-        <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+        <div style="max-height: 320px; overflow-y: auto; padding-right: 2px;">
           ${lectures.map((lec, idx) => {
             const isPresent = lec.is_present;
             const isOD = lec.verification_type === "OD_REQUISITION";
-            const isAbsent = !isPresent;
+            const isMissed = !isPresent;
 
             return `
-              <label class="flex items-center justify-between p-3 rounded-xl border transition-all ${isAbsent ? 'border-amber-200 bg-amber-50/50 hover:bg-amber-50 cursor-pointer shadow-xs' : 'border-slate-200 bg-white opacity-85'}">
-                <div class="flex items-center gap-3">
+              <div class="req-lecture-item ${isMissed ? 'is-missed' : (isOD ? 'is-od' : 'is-present')}">
+                <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
                   <input type="checkbox" 
-                         class="day-lecture-cb rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer" 
+                         class="day-lecture-cb" 
                          data-session-id="${lec.session_id}" 
-                         ${isAbsent ? 'checked' : ''} 
+                         ${isMissed ? 'checked' : ''} 
+                         style="width: 18px; height: 18px; cursor: pointer; accent-color: #059669; flex-shrink: 0;"
                          onchange="RequisitionsView.updateImpactPreview()" />
-                  <div>
-                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <div style="min-width: 0;">
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                       <span>${lec.course_code}: ${lec.course_name}</span>
-                      <span class="text-[10px] text-slate-400 font-normal">(${lec.start_time} - ${lec.end_time})</span>
+                      <span style="font-size: 0.72rem; color: #64748b; font-weight: 500;">(${lec.start_time} - ${lec.end_time})</span>
                     </div>
-                    <div class="text-[11px] text-slate-500 mt-0.5">
+                    <div style="font-size: 0.72rem; color: #64748b; margin-top: 2px;">
                       Topic: <b>${lec.topic}</b> &bull; Faculty: ${lec.teacher_name}
                     </div>
                   </div>
                 </div>
 
-                <div class="flex-shrink-0">
+                <div style="flex-shrink: 0;">
                   ${isOD ? `
-                    <span class="badge text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">
+                    <span class="badge" style="background: #dcfce7; color: #166534; border: 1px solid #86efac; font-weight: 700; font-size: 0.7rem;">
                       🟢 OD Approved
                     </span>
                   ` : (isPresent ? `
-                    <span class="badge text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">
-                      ✓ Present (${lec.verification_type === 'AUTO_AI' ? 'AI' : 'Marked'})
+                    <span class="badge" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 700; font-size: 0.7rem;">
+                      ✓ Attended
                     </span>
                   ` : `
-                    <span class="badge text-[10px] bg-rose-100 text-rose-800 border border-rose-300 font-bold animate-pulse">
-                      ❌ Absent (Needs OD)
+                    <span class="badge" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-weight: 700; font-size: 0.7rem;">
+                      ❌ Missed (Needs OD)
                     </span>
                   `)}
                 </div>
-              </label>
+              </div>
             `;
           }).join("")}
         </div>
@@ -826,7 +858,7 @@ const RequisitionsView = {
       if (refInput) refInput.value = "";
       if (titleInput) titleInput.value = "";
 
-      // Refresh lectures & history
+      // Refresh lectures & history KPIs
       await this.loadDayLectures();
       await this.loadHistory();
 
@@ -849,7 +881,7 @@ const RequisitionsView = {
       if (kpiAudits) kpiAudits.textContent = res.total_audits || 0;
       if (kpiRecords) kpiRecords.textContent = res.total_od_records || 0;
     } catch (e) {
-      console.error("Failed to load history:", e);
+      console.error("Failed to load history KPIs:", e);
     }
   },
 
