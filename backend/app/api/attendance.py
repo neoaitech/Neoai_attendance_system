@@ -3,6 +3,7 @@ from datetime import datetime, date as dt_date
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Form, File, UploadFile
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from backend.app.db.session import get_db
 from backend.app.db.models import AttendanceRecord, AttendanceSession, Student, User, AuditLog, ClassCourse
@@ -295,12 +296,30 @@ def get_student_day_lectures(
 
     enrolled_course_ids = [c.id for c in s_enrolled]
 
-    # 2. Find all sessions on that date for those courses
-    sessions = db.query(AttendanceSession).filter(
-        AttendanceSession.class_id.in_(enrolled_course_ids) if enrolled_course_ids else AttendanceSession.id == -1,
-        AttendanceSession.session_date == query_date,
-        AttendanceSession.finalized_at.isnot(None)
-    ).order_by(AttendanceSession.created_at.asc(), AttendanceSession.id.asc()).all()
+    # 2. Find all sessions on that date for those courses OR where this student has existing attendance
+    student_rec_sess_ids = [
+        r[0] for r in db.query(AttendanceRecord.session_id).join(
+            AttendanceSession, AttendanceSession.id == AttendanceRecord.session_id
+        ).filter(
+            AttendanceRecord.student_id == student.id,
+            AttendanceSession.session_date == query_date
+        ).all()
+    ]
+
+    session_filters = []
+    if enrolled_course_ids:
+        session_filters.append(AttendanceSession.class_id.in_(enrolled_course_ids))
+    if student_rec_sess_ids:
+        session_filters.append(AttendanceSession.id.in_(student_rec_sess_ids))
+
+    if session_filters:
+        sessions = db.query(AttendanceSession).filter(
+            or_(*session_filters),
+            AttendanceSession.session_date == query_date,
+            AttendanceSession.finalized_at.isnot(None)
+        ).order_by(AttendanceSession.created_at.asc(), AttendanceSession.id.asc()).all()
+    else:
+        sessions = []
 
     # 3. Find existing attendance records for this student on those sessions
     session_ids = [s.id for s in sessions]
