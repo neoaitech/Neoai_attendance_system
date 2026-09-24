@@ -26,51 +26,57 @@ const FacultyView = {
 
     container.innerHTML = `
       <div class="faculty-directory-page">
-        <!-- Top KPI Telemetry Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div class="kpi-card">
-            <div class="flex items-center justify-between">
-              <span class="kpi-title">Total Faculty & Staff</span>
-              <div class="p-2 rounded-lg bg-indigo-50 text-indigo-600">
-                <i data-lucide="users" class="w-4 h-4"></i>
+        <!-- Top KPI Telemetry Cards (Compact 1-Line Row) -->
+        <div class="kpi-grid mb-5" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+          
+          <!-- 1. Total Faculty & Staff -->
+          <div class="kpi-card" style="padding: 14px 16px; min-height: auto;">
+            <div class="kpi-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span class="kpi-title" style="font-size: 0.68rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em;">TOTAL FACULTY &amp; STAFF</span>
+              <div class="kpi-icon-wrap" style="width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: rgba(99, 102, 241, 0.08); color: #4f46e5;">
+                <i data-lucide="users" class="w-3.5 h-3.5"></i>
               </div>
             </div>
-            <div class="kpi-value mt-2" id="faculty-stat-total">-</div>
-            <span class="kpi-caption">Registered institutional personnel</span>
+            <div class="kpi-value" id="faculty-stat-total" style="font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 3px;">-</div>
+            <div class="kpi-caption" style="font-size: 0.7rem; color: #94a3b8;">Registered institutional personnel</div>
           </div>
 
-          <div class="kpi-card">
-            <div class="flex items-center justify-between">
-              <span class="kpi-title">System Administrators</span>
-              <div class="p-2 rounded-lg bg-purple-50 text-purple-600">
-                <i data-lucide="shield" class="w-4 h-4"></i>
+          <!-- 2. System Administrators -->
+          <div class="kpi-card" style="padding: 14px 16px; min-height: auto;">
+            <div class="kpi-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span class="kpi-title" style="font-size: 0.68rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em;">SYSTEM ADMINISTRATORS</span>
+              <div class="kpi-icon-wrap" style="width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: rgba(139, 92, 246, 0.08); color: #7c3aed;">
+                <i data-lucide="shield" class="w-3.5 h-3.5"></i>
               </div>
             </div>
-            <div class="kpi-value mt-2 text-purple-600" id="faculty-stat-admins">-</div>
-            <span class="kpi-caption">Full administrative & security access</span>
+            <div class="kpi-value" id="faculty-stat-admins" style="font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 3px; color: #7c3aed;">-</div>
+            <div class="kpi-caption" style="font-size: 0.7rem; color: #94a3b8;">Full administrative &amp; security access</div>
           </div>
 
-          <div class="kpi-card">
-            <div class="flex items-center justify-between">
-              <span class="kpi-title">Course Instructors</span>
-              <div class="p-2 rounded-lg bg-emerald-50 text-emerald-600">
-                <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+          <!-- 3. Course Instructors -->
+          <div class="kpi-card" style="padding: 14px 16px; min-height: auto;">
+            <div class="kpi-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span class="kpi-title" style="font-size: 0.68rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em;">COURSE INSTRUCTORS</span>
+              <div class="kpi-icon-wrap" style="width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: rgba(16, 185, 129, 0.08); color: #10b981;">
+                <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
               </div>
             </div>
-            <div class="kpi-value mt-2 text-emerald-600" id="faculty-stat-teachers">-</div>
-            <span class="kpi-caption">Academic teaching & roster faculty</span>
+            <div class="kpi-value" id="faculty-stat-teachers" style="font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 3px; color: #10b981;">-</div>
+            <div class="kpi-caption" style="font-size: 0.7rem; color: #94a3b8;">Academic teaching &amp; roster faculty</div>
           </div>
 
-          <div class="kpi-card">
-            <div class="flex items-center justify-between">
-              <span class="kpi-title">Active Accounts</span>
-              <div class="p-2 rounded-lg bg-blue-50 text-blue-600">
-                <i data-lucide="user-check" class="w-4 h-4"></i>
+          <!-- 4. Active Accounts -->
+          <div class="kpi-card" style="padding: 14px 16px; min-height: auto;">
+            <div class="kpi-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span class="kpi-title" style="font-size: 0.68rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em;">ACTIVE ACCOUNTS</span>
+              <div class="kpi-icon-wrap" style="width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.08); color: #2563eb;">
+                <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
               </div>
             </div>
-            <div class="kpi-value mt-2 text-blue-600" id="faculty-stat-active">-</div>
-            <span class="kpi-caption">Authorized to sign in to portal</span>
+            <div class="kpi-value" id="faculty-stat-active" style="font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 3px; color: #2563eb;">-</div>
+            <div class="kpi-caption" style="font-size: 0.7rem; color: #94a3b8;">Authorized to sign in to portal</div>
           </div>
+
         </div>
 
         <!-- Main Directory Glass Panel -->
