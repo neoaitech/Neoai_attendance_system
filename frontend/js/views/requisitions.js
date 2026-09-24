@@ -121,20 +121,20 @@ const RequisitionsView = {
 
           <div class="kpi-card" style="border-top: 3px solid #8b5cf6; padding: 14px 16px;">
             <div class="kpi-card-header">
-              <span class="kpi-title">AUDIT SECURITY</span>
+              <span class="kpi-title">APPROVAL STATUS</span>
               <div class="kpi-icon-wrap" style="background: rgba(139, 92, 246, 0.1); color: #7c3aed;">
-                <i data-lucide="file-text" class="w-4 h-4"></i>
+                <i data-lucide="award" class="w-4 h-4"></i>
               </div>
             </div>
-            <div class="kpi-value" style="font-size: 1.25rem; color: #7c3aed; margin-bottom: 2px;">100% Tracked</div>
-            <div class="kpi-caption">Logged to Security Trail</div>
+            <div class="kpi-value" style="font-size: 1.15rem; color: #7c3aed; margin-bottom: 2px;">Active Portal</div>
+            <div class="kpi-caption">Institutional OD Authorization</div>
           </div>
         </div>
 
-        <!-- Main Workspace Grid: Requisition Engine (Left) + Audit Trail (Right) -->
-        <div class="requisitions-workspace-grid">
+        <!-- Main Workspace: Focused Requisition Workflow Engine -->
+        <div class="max-w-4xl mx-auto space-y-4">
           
-          <!-- Column 1: Interactive Requisition Workflow (Engaging Wizard) -->
+          <!-- Interactive Requisition Workflow (Engaging Wizard) -->
           <div class="space-y-4">
             
             <!-- STEP 1: Student Finder with Academic Hierarchy & Live Search -->
@@ -328,54 +328,6 @@ const RequisitionsView = {
               </form>
             </div>
 
-          </div>
-
-          <!-- Column 2: Audit Trail & Historical Log (Right Column) -->
-          <div class="space-y-4">
-            <div class="glass-panel p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm sticky top-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                    <i data-lucide="history" class="w-4 h-4"></i>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-bold text-slate-800">OD Regularization Audit Trail</h3>
-                    <p class="text-[11px] text-slate-400">Institutional log of all authorized attendance regularizations</p>
-                  </div>
-                </div>
-
-                <div class="relative w-full sm:w-52">
-                  <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
-                  <input type="text" 
-                         id="history-search-input" 
-                         class="form-input text-xs pl-8 pr-3 py-1.5 w-full rounded-lg" 
-                         placeholder="Search audit trail..." 
-                         oninput="RequisitionsView.handleHistorySearch(this.value)" />
-                </div>
-              </div>
-
-              <!-- History Table Container -->
-              <div class="overflow-x-auto min-h-[400px] max-h-[720px] overflow-y-auto">
-                <table class="w-full text-left text-xs">
-                  <thead class="sticky top-0 bg-white shadow-xs">
-                    <tr class="border-b border-slate-100 text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
-                      <th class="pb-2.5 pl-2">Timestamp</th>
-                      <th class="pb-2.5">Student</th>
-                      <th class="pb-2.5">Event & Ref Details</th>
-                      <th class="pb-2.5">Officer</th>
-                      <th class="pb-2.5 pr-2 text-right">Audit</th>
-                    </tr>
-                  </thead>
-                  <tbody id="history-table-body" class="divide-y divide-slate-100">
-                    <tr>
-                      <td colspan="5" class="py-12 text-center text-slate-400 text-xs">
-                        <span class="spinner-sm mr-2"></span> Loading regularization history...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
 
         </div>
@@ -892,88 +844,13 @@ const RequisitionsView = {
   async loadHistory() {
     try {
       const res = await API.get("/attendance/requisition-history");
-      this.history = res.history || [];
-      this.filteredHistory = [...this.history];
-
-      // Update KPI Cards
       const kpiAudits = document.getElementById("kpi-total-audits");
       const kpiRecords = document.getElementById("kpi-total-records");
-      if (kpiAudits) kpiAudits.textContent = res.total_audits || this.history.length;
+      if (kpiAudits) kpiAudits.textContent = res.total_audits || 0;
       if (kpiRecords) kpiRecords.textContent = res.total_od_records || 0;
-
-      this.renderHistoryTable();
     } catch (e) {
       console.error("Failed to load history:", e);
     }
-  },
-
-  handleHistorySearch(q) {
-    const query = (q || "").trim().toLowerCase();
-    if (!query) {
-      this.filteredHistory = [...this.history];
-    } else {
-      this.filteredHistory = this.history.filter(item => {
-        return (item.student_name && item.student_name.toLowerCase().includes(query)) ||
-               (item.roll_number && item.roll_number.toLowerCase().includes(query)) ||
-               (item.details && item.details.toLowerCase().includes(query)) ||
-               (item.admin_name && item.admin_name.toLowerCase().includes(query));
-      });
-    }
-    this.renderHistoryTable();
-  },
-
-  renderHistoryTable() {
-    const tbody = document.getElementById("history-table-body");
-    if (!tbody) return;
-
-    if (this.filteredHistory.length === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="5" class="py-12 text-center text-slate-400 text-xs">
-            <i data-lucide="inbox" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
-            No attendance regularization records found.
-          </td>
-        </tr>
-      `;
-      if (window.lucide) window.lucide.createIcons();
-      return;
-    }
-
-    tbody.innerHTML = this.filteredHistory.map(item => {
-      const dt = item.timestamp ? new Date(item.timestamp).toLocaleString("en-US", {
-        month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
-      }) : "Recently";
-
-      return `
-        <tr class="hover:bg-slate-50 transition-colors">
-          <td class="py-3 pl-2 text-slate-500 text-[11px] whitespace-nowrap">
-            ${dt}
-          </td>
-          <td class="py-3">
-            <div class="font-bold text-slate-800">${item.student_name}</div>
-            <div class="text-[10px] text-slate-400 font-mono">Roll: ${item.roll_number}</div>
-          </td>
-          <td class="py-3 pr-2">
-            <div class="text-[11px] text-slate-700 leading-snug font-medium">${item.details}</div>
-            <span class="inline-block mt-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">
-              🟢 OD Credit Granted
-            </span>
-          </td>
-          <td class="py-3 whitespace-nowrap">
-            <div class="font-medium text-slate-700">${item.admin_name}</div>
-            <div class="text-[9px] text-slate-400 uppercase font-bold">${item.admin_role}</div>
-          </td>
-          <td class="py-3 pr-2 text-right whitespace-nowrap">
-            <button type="button" class="btn-secondary btn-xs inline-flex items-center gap-1 text-[10px] py-1 px-2" onclick="App.navigate('student_attendance', { id: ${item.student_id}, from: 'requisitions' })">
-              <i data-lucide="eye" class="w-3 h-3"></i>
-              <span>Audit</span>
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join("");
-
-    if (window.lucide) window.lucide.createIcons();
   },
 
   focusStudentSearch() {
