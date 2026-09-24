@@ -87,84 +87,12 @@ const Auth = {
     loginContainer.innerHTML = `
       <div class="auth-portal-card">
         
-        <!-- LEFT COLUMN: Institutional AI Branding & Capability Highlights -->
-        <div class="auth-portal-hero">
-          <div class="auth-hero-content">
-            
-            <!-- Brand Logo -->
-            <div class="auth-logo-wrap">
-              <img src="images/visionattend_logo.png" alt="VisionAttend Logo" class="auth-logo-img" onerror="this.style.display='none'" />
-            </div>
-
-            <!-- Platform Live Status -->
-            <div class="auth-status-pill">
-              <span class="auth-status-dot"></span>
-              <span>AI Biometric Engine Online</span>
-            </div>
-
-            <!-- Headline & Vision Statement -->
-            <h1 class="auth-hero-headline">
-              Smarter Attendance,<br />
-              <span>Stronger Institutions</span>
-            </h1>
-
-            <p class="auth-hero-desc">
-              AI-driven attendance management with YOLO face detection, ArcFace facial recognition, real-time analytics, and secure institutional access.
-            </p>
-
-            <!-- Key Institutional Feature Highlights -->
-            <div class="auth-features-list">
-              
-              <div class="auth-feature-item">
-                <div class="auth-feature-icon">
-                  <i data-lucide="scan-face" class="w-4 h-4"></i>
-                </div>
-                <div class="auth-feature-text">
-                  <span class="auth-feature-title">YOLO & ArcFace AI Recognition</span>
-                  <span class="auth-feature-sub">High-density multi-angle face detection with 512-D biometric matching</span>
-                </div>
-              </div>
-
-              <div class="auth-feature-item">
-                <div class="auth-feature-icon">
-                  <i data-lucide="shield-check" class="w-4 h-4"></i>
-                </div>
-                <div class="auth-feature-text">
-                  <span class="auth-feature-title">MiniFASNetV2 Liveness Shield</span>
-                  <span class="auth-feature-sub">Anti-spoofing defense rejecting screen, photo, and 2D replay attacks</span>
-                </div>
-              </div>
-
-              <div class="auth-feature-item">
-                <div class="auth-feature-icon">
-                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                </div>
-                <div class="auth-feature-text">
-                  <span class="auth-feature-title">Curricular Compliance & Exports</span>
-                  <span class="auth-feature-sub">Defaulter tracking (&lt;75%), extra lecture credits, and PDF/Excel dossiers</span>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-          <!-- Bottom Telemetry Label -->
-          <div class="auth-hero-footer">
-            <span class="inline-flex items-center gap-1.5 font-semibold text-slate-700">
-              <i data-lucide="lock" class="w-3.5 h-3.5 text-emerald-600"></i>
-              <span>Role-Based Access Control</span>
-            </span>
-            <span class="font-mono text-slate-500 font-bold">v5.2 Production</span>
-          </div>
-        </div>
-
-        <!-- RIGHT COLUMN: Institutional Sign-In Form -->
+        <!-- Institutional Sign-In Form -->
         <div class="auth-portal-form">
           
-          <!-- Mobile Branded Header (visible on mobile only) -->
-          <div class="auth-mobile-header">
-            <img src="images/visionattend_logo.png" alt="VisionAttend Logo" class="auth-mobile-logo" onerror="this.style.display='none'" />
+          <!-- Branded Header -->
+          <div class="auth-brand-header">
+            <img src="images/visionattend_logo.png" alt="VisionAttend Logo" class="auth-brand-logo" onerror="this.style.display='none'" />
             <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mt-1">Institutional Biometrics Portal</span>
           </div>
 
