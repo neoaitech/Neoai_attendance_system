@@ -29,7 +29,7 @@ const FacultyNewView = {
         <div class="form-header-bar">
           <div>
             <div class="flex items-center gap-2 mb-1.5">
-              <button type="button" class="btn-secondary btn-sm" onclick="App.navigate('admin_panel')">
+              <button type="button" class="btn-secondary btn-sm" onclick="App.navigate('faculty')">
                 <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                 <span>Back to Faculty Directory</span>
               </button>
@@ -40,7 +40,7 @@ const FacultyNewView = {
             <p class="text-xs text-slate-500">Create an institutional faculty account, configure credentials, and assign teaching responsibilities.</p>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" class="btn-secondary btn-sm" onclick="App.navigate('admin_panel')">Cancel</button>
+            <button type="button" class="btn-secondary btn-sm" onclick="App.navigate('faculty')">Cancel</button>
             <button type="button" class="btn-primary btn-sm" onclick="FacultyNewView.submitForm()">
               <i data-lucide="user-plus" class="w-4 h-4"></i>
               <span>Create Faculty Account</span>
@@ -411,7 +411,7 @@ const FacultyNewView = {
 
       this.stopWebcam();
       App.showToast("Faculty account created successfully.", "success");
-      App.navigate("admin_panel");
+      App.navigate("faculty");
     } catch (err) {
       btn.disabled = false;
       btn.innerHTML = `<i data-lucide="user-plus" class="w-4 h-4 mr-1"></i><span>Create Faculty Account</span>`;

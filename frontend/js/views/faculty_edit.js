@@ -19,7 +19,7 @@ const FacultyEditView = {
       container.innerHTML = `
         <div class="glass-panel text-center py-12 text-slate-500">
           <p class="text-sm font-semibold">No faculty ID specified.</p>
-          <button class="btn-secondary btn-sm mt-3" onclick="App.navigate('admin_panel')">Return to Faculty Directory</button>
+          <button class="btn-secondary btn-sm mt-3" onclick="App.navigate('faculty')">Return to Faculty Directory</button>
         </div>
       `;
       return;
@@ -56,7 +56,7 @@ const FacultyEditView = {
 
       if (user.role === "admin" && Auth.isSuperAdmin()) {
         App.showToast("Access Denied: Super Administrators cannot edit Administrator profiles.", "error");
-        App.navigate("admin_panel");
+        App.navigate("faculty");
         return;
       }
 
@@ -69,7 +69,7 @@ const FacultyEditView = {
           <div class="form-header-bar">
             <div>
               <div class="flex items-center gap-2 mb-1.5">
-                <button type="button" class="btn-secondary btn-sm" onclick="App.navigate('admin_panel')">
+                <button type="button" class="btn-secondary btn-sm" onclick="App.navigate('faculty')">
                   <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                   <span>Back to Faculty Directory</span>
                 </button>
@@ -80,7 +80,7 @@ const FacultyEditView = {
               <p class="text-xs text-slate-500">Update personal profile, account status, security credentials, and teaching assignments.</p>
             </div>
             <div class="flex items-center gap-2">
-              <button type="button" class="btn-secondary btn-sm" onclick="App.navigate('admin_panel')">Cancel</button>
+              <button type="button" class="btn-secondary btn-sm" onclick="App.navigate('faculty')">Cancel</button>
               <button type="button" class="btn-primary btn-sm" onclick="FacultyEditView.submitForm()">
                 <i data-lucide="check" class="w-4 h-4"></i>
                 <span>Save Changes</span>
@@ -324,7 +324,7 @@ const FacultyEditView = {
       }
 
       App.showToast("Faculty account updated successfully.", "success");
-      App.navigate("admin_panel");
+      App.navigate("faculty");
     } catch (err) {
       btn.disabled = false;
       btn.innerHTML = `<i data-lucide="check" class="w-4 h-4 mr-1"></i><span>Save Changes</span>`;

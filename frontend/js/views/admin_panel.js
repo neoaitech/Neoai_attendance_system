@@ -78,9 +78,14 @@ const AdminPanelView = {
             <i data-lucide="users" class="w-4 h-4 text-indigo-600"></i>
             Faculty & Staff Access Directory
           </span>
-          <button class="btn-primary btn-sm" onclick="App.navigate('faculty_new')">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Faculty
-          </button>
+          <div class="flex items-center gap-2">
+            <button class="btn-secondary btn-sm" onclick="App.navigate('faculty')">
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Dedicated Tab
+            </button>
+            <button class="btn-primary btn-sm" onclick="App.navigate('faculty_new')">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Faculty
+            </button>
+          </div>
         </div>
         <div class="data-table-container">
           <table class="data-table">

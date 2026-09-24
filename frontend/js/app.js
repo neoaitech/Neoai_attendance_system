@@ -18,6 +18,7 @@ const App = {
     offering_new: OfferingNewView,
     offering_edit: OfferingEditView,
     roster_manage: RosterManageView,
+    faculty: FacultyView,
     faculty_new: FacultyNewView,
     faculty_edit: FacultyEditView,
     unknown_faces: UnknownFacesView,
@@ -95,6 +96,11 @@ const App = {
       title: "Manage Course Offering Roster",
       subtitle: "Review and update student enrollments for this specific course section"
     },
+    faculty: {
+      breadcrumb: "People / Faculty Directory",
+      title: "Faculty & Staff Access Directory",
+      subtitle: "Manage institutional faculty accounts, credentials, and access privileges"
+    },
     faculty_new: {
       breadcrumb: "People / Faculty / New Faculty",
       title: "Add New Faculty",
@@ -165,6 +171,14 @@ const App = {
       view: "students",
       keywords: ["students", "student directory", "biometrics", "enroll", "face profiles", "profiles", "roster", "roll number"],
       icon: "users"
+    },
+    {
+      title: "Faculty & Staff Directory",
+      category: "People & Rosters",
+      view: "faculty",
+      keywords: ["faculty", "staff", "teachers", "professors", "directory", "instructors", "user management", "admin accounts"],
+      icon: "user-check",
+      adminOnly: true
     },
     {
       title: "Courses & Classes",
@@ -1067,7 +1081,7 @@ const App = {
       }
     }
 
-    const adminOnlyViews = ["model_benchmark", "admin_panel", "faculty_new", "faculty_edit"];
+    const adminOnlyViews = ["model_benchmark", "admin_panel", "faculty", "faculty_new", "faculty_edit"];
     if (adminOnlyViews.includes(viewName)) {
       const isAdmin = Auth.isAdmin();
       if (!isAdmin) {
@@ -1122,8 +1136,8 @@ const App = {
       offering_new: "classes",
       offering_edit: "classes",
       roster_manage: "classes",
-      faculty_new: "admin_panel",
-      faculty_edit: "admin_panel"
+      faculty_new: "faculty",
+      faculty_edit: "faculty"
     };
     const activeNavKey = navMapping[viewName] || viewName;
 
