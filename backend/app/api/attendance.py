@@ -1,13 +1,14 @@
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date as dt_date
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Form, File, UploadFile
 from sqlalchemy.orm import Session
 
 from backend.app.db.session import get_db
-from backend.app.db.models import AttendanceRecord, AttendanceSession, Student, User, AuditLog
+from backend.app.db.models import AttendanceRecord, AttendanceSession, Student, User, AuditLog, ClassCourse
 from backend.app.schemas.attendance import BulkAttendanceUpdateRequest, AttendanceRecordResponse, AttendanceRecordUpdate
 from backend.app.services.attendance_service import attendance_service
-from backend.app.api.auth import get_current_user
+from backend.app.api.auth import get_current_user, require_admin
 
 router = APIRouter(prefix="/attendance", tags=["Attendance Records"])
 
@@ -239,4 +240,190 @@ async def quick_verify_student(
         user_id=current_user.id
     )
     return record.to_dict()
+
+# =========================================================================
+# ON-DUTY (OD) & ATTENDANCE REQUISITION REGULARIZATION ENDPOINTS
+# =========================================================================
+
+class AttendanceRequisitionPayload(BaseModel):
+    student_id: int
+    date: str
+    session_ids: List[int]
+    status: Optional[str] = "PRESENT"
+    reason: Optional[str] = "Attendance Requisition / OD Approval"
+    event_name: Optional[str] = "College Activity / Event Duty"
+    approved_by: Optional[str] = None
+
+@router.get("/student-day-lectures")
+def get_student_day_lectures(
+    student_id: int,
+    date: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Returns all lecture sessions conducted on a specific date for the student's enrolled courses,
+    along with the student's current attendance status for each session.
+    """
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found.")
+
+    try:
+        query_date = dt_date.fromisoformat(date)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+    # 1. Determine student's enrolled courses
+    s_prog = (getattr(student, "program", None) or "").strip().upper()
+    s_enrolled = [
+        c for c in student.enrolled_classes
+        if not s_prog or not getattr(c, "program", None) or c.program.strip().upper() in ["ALL", "*", "ANY", s_prog]
+    ] if getattr(student, "enrolled_classes", None) and len(student.enrolled_classes) > 0 else []
+
+    if not s_enrolled:
+        cq = db.query(ClassCourse)
+        if student.department and student.department.upper() != "ALL":
+            cq = cq.filter(ClassCourse.department == student.department)
+        if student.program:
+            cq = cq.filter(ClassCourse.program == student.program)
+        if student.semester:
+            cq = cq.filter(ClassCourse.semester == student.semester)
+        if student.section:
+            cq = cq.filter(ClassCourse.section.in_([student.section, "ALL", "BOTH", "*"]))
+        s_enrolled = cq.all()
+
+    enrolled_course_ids = [c.id for c in s_enrolled]
+
+    # 2. Find all sessions on that date for those courses
+    sessions = db.query(AttendanceSession).filter(
+        AttendanceSession.class_id.in_(enrolled_course_ids) if enrolled_course_ids else AttendanceSession.id == -1,
+        AttendanceSession.session_date == query_date,
+        AttendanceSession.finalized_at.isnot(None)
+    ).order_by(AttendanceSession.created_at.asc(), AttendanceSession.id.asc()).all()
+
+    # 3. Find existing attendance records for this student on those sessions
+    session_ids = [s.id for s in sessions]
+    records = db.query(AttendanceRecord).filter(
+        AttendanceRecord.session_id.in_(session_ids),
+        AttendanceRecord.student_id == student.id
+    ).all() if session_ids else []
+    record_map = {r.session_id: r for r in records}
+
+    result = []
+    course_map = {c.id: c for c in s_enrolled}
+    for sess in sessions:
+        rec = record_map.get(sess.id)
+        c = course_map.get(sess.class_id)
+        
+        c_code = c.code if c else (sess.class_code or "CRS")
+        c_name = c.name if c else (sess.class_name or "Classroom Course")
+        t_name = sess.teacher_name or (c.teacher.full_name if c and c.teacher else "Faculty Coordinator")
+        
+        status_val = rec.status if rec else "ABSENT"
+        is_present = status_val in ["PRESENT", "LATE"]
+        
+        result.append({
+            "session_id": sess.id,
+            "record_id": rec.id if rec else None,
+            "course_id": sess.class_id,
+            "course_code": c_code,
+            "course_name": c_name,
+            "topic": sess.session_name or "Classroom Lecture",
+            "start_time": sess.start_time or "09:00 AM",
+            "end_time": sess.end_time or "10:30 AM",
+            "teacher_name": t_name,
+            "current_status": status_val,
+            "is_present": is_present,
+            "verification_type": rec.verification_type if rec else "AUTO_ABSENT",
+            "notes": rec.notes if rec else None
+        })
+
+    return {
+        "student_id": student.id,
+        "student_name": student.full_name,
+        "roll_number": student.roll_number,
+        "date": date,
+        "total_lectures": len(result),
+        "present_count": sum(1 for item in result if item["is_present"]),
+        "absent_count": sum(1 for item in result if not item["is_present"]),
+        "lectures": result
+    }
+
+@router.post("/regularize-requisition")
+def regularize_attendance_requisition(
+    payload: AttendanceRequisitionPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)  # STRICTLY RESTRICTED TO ADMIN & SUPER ADMIN!
+):
+    """
+    Grants OD / Requisition Attendance for a student across selected lecture sessions conducted on a specific date.
+    Strictly restricted to Administrators and Super Administrators.
+    """
+    student = db.query(Student).filter(Student.id == payload.student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found.")
+
+    if not payload.session_ids:
+        raise HTTPException(status_code=400, detail="At least one lecture session must be selected.")
+
+    approver = payload.approved_by or current_user.full_name or current_user.username
+    reason_note = f"OD Approved: {payload.reason} | Event: {payload.event_name} | Approved by {approver} ({current_user.role.upper()})"
+
+    updated_count = 0
+    for sess_id in payload.session_ids:
+        session = db.query(AttendanceSession).filter(AttendanceSession.id == sess_id).first()
+        if not session:
+            continue
+
+        record = db.query(AttendanceRecord).filter(
+            AttendanceRecord.session_id == sess_id,
+            AttendanceRecord.student_id == student.id
+        ).first()
+
+        if record:
+            record.status = payload.status or "PRESENT"
+            record.verification_type = "OD_REQUISITION"
+            record.notes = reason_note
+            record.marked_at = datetime.utcnow()
+        else:
+            # Create attendance record if not existing in session
+            record = AttendanceRecord(
+                session_id=sess_id,
+                student_id=student.id,
+                status=payload.status or "PRESENT",
+                confidence_score=100.0,
+                verification_type="OD_REQUISITION",
+                attendance_type="REGULAR",
+                is_extra_lecture=False,
+                notes=reason_note,
+                marked_at=datetime.utcnow()
+            )
+            db.add(record)
+
+        updated_count += 1
+
+    # Log audit entry
+    audit = AuditLog(
+        user_id=current_user.id,
+        actor_name=current_user.full_name or current_user.username,
+        actor_role=current_user.role,
+        action="ATTENDANCE_OD_REQUISITION_GRANTED",
+        entity="Student",
+        entity_id=student.id,
+        target_user_id=None,
+        target_name=student.full_name,
+        details=f"Granted OD Attendance for {updated_count} lecture(s) on {payload.date}. Event: {payload.event_name}. Ref: {payload.reason}."
+    )
+    db.add(audit)
+    db.commit()
+
+    return {
+        "success": True,
+        "message": f"Successfully granted OD Attendance for {updated_count} lecture(s) on {payload.date}.",
+        "student_name": student.full_name,
+        "roll_number": student.roll_number,
+        "updated_lectures_count": updated_count
+    }
+
 

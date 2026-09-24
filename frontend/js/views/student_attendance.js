@@ -246,6 +246,12 @@ const StudentAttendanceView = {
           </div>
 
           <div class="student-topbar-right">
+            ${(Auth.isAdmin() || Auth.isSuperAdmin()) ? `
+              <button type="button" class="btn-primary btn-sm" style="font-weight: 700; background: linear-gradient(135deg, #059669, #047857); border: 1px solid #059669; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);" onclick="StudentAttendanceView.openRequisitionModal()" title="Authorize On-Duty (OD) / Event Requisition Attendance (Admin / Super Admin Only)">
+                <i data-lucide="file-check-2" style="width: 14px; height: 14px;"></i>
+                <span>Apply OD Requisition</span>
+              </button>
+            ` : ''}
             ${isFrozen ? `
               <button type="button" class="btn-secondary btn-sm" style="font-weight: 700; color: #0891b2; border-color: #a5f3fc; background: #ecfeff;" onclick="StudentAttendanceView.openFreezeModal(true)" title="Attendance is frozen. Click to reactivate.">
                 <i data-lucide="sun" style="width: 14px; height: 14px; margin-right: 6px;"></i>
@@ -653,7 +659,13 @@ const StudentAttendanceView = {
               <p style="font-size: 0.72rem; color: #64748b; margin: 2px 0 0 0;">Official audit trail of regular timetable lectures (Extra lectures are separately tracked above in Section 2).</p>
             </div>
             
-            <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              ${(Auth.isAdmin() || Auth.isSuperAdmin()) ? `
+                <button type="button" class="btn-secondary btn-sm not-printable" style="font-size: 0.72rem; font-weight: 700; color: #059669; border-color: #a7f3d0; background: #ecfdf5; display: inline-flex; align-items: center; gap: 4px;" onclick="StudentAttendanceView.openRequisitionModal()" title="Regularize missed lectures via OD Form">
+                  <i data-lucide="calendar-plus" style="width: 13px; height: 13px;"></i>
+                  <span>Regularize Date (OD Form)</span>
+                </button>
+              ` : ''}
               <span style="font-size: 0.75rem; color: #64748b; font-family: var(--font-mono, monospace); font-weight: 700;" id="timeline-count-badge">
                 Showing Events
               </span>
@@ -1387,6 +1399,271 @@ const StudentAttendanceView = {
     } catch (e) {
       App.showToast(e.message || "Failed to freeze attendance", "error");
     }
+  },
+
+  // =========================================================================
+  // ON-DUTY (OD) & ATTENDANCE REQUISITION REGULARIZATION
+  // Strictly restricted to Administrators and Super Administrators
+  // =========================================================================
+
+  openRequisitionModal(preselectedDate = null) {
+    if (!Auth.isAdmin() && !Auth.isSuperAdmin()) {
+      App.showToast("Access Denied: Attendance Requisition approval is strictly reserved for Administrators and Super Administrators.", "error");
+      return;
+    }
+
+    const student = this.data;
+    if (!student) return;
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    const initialDate = preselectedDate || todayStr;
+    const approverName = (Auth.currentUser && (Auth.currentUser.full_name || Auth.currentUser.username)) || "System Administrator";
+    const roleTitle = Auth.isSuperAdmin() ? "Super Administrator" : "Institutional Administrator";
+
+    const html = `
+      <div class="modal-card" style="max-width: 620px; width: 95vw;">
+        <div class="modal-header" style="padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.08);">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid #a7f3d0;">
+              📝
+            </div>
+            <div>
+              <span class="modal-title block" style="font-size: 1rem; font-weight: 800; color: #0f172a;">Student Attendance Requisition (OD Regularization)</span>
+              <span class="text-xs text-slate-500">Authorize On-Duty leave & event attendance for missed lectures</span>
+            </div>
+          </div>
+          <button class="btn-icon" onclick="App.closeModal()"><i data-lucide="x"></i></button>
+        </div>
+
+        <form onsubmit="event.preventDefault(); StudentAttendanceView.submitRequisition();">
+          <div class="modal-body space-y-4" style="max-height: 70vh; overflow-y: auto; padding: 16px;">
+            
+            <!-- Student Identity Chip & Admin Authority Notice -->
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-bold text-slate-900">${student.full_name}</div>
+                <div class="text-[11px] text-slate-500 font-mono">${student.roll_number} &bull; ${student.program || 'B.Tech'} ${student.department || ''}</div>
+              </div>
+              <div class="text-right">
+                <span class="badge text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">
+                  🛡️ ${roleTitle} Authority
+                </span>
+              </div>
+            </div>
+
+            <!-- Date Selector Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-bold text-slate-700">Event / Absence Date <span class="text-rose-500">*</span></label>
+                <input type="date" id="req-date-input" class="form-input text-xs" value="${initialDate}" max="${todayStr}" required onchange="StudentAttendanceView.loadDayLecturesForRequisition(this.value)" />
+              </div>
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-bold text-slate-700">Requisition / OD Form Ref No. <span class="text-rose-500">*</span></label>
+                <input type="text" id="req-ref-input" class="form-input text-xs" placeholder="e.g. OD-2026-412 / HOD-REQ-88" required />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-bold text-slate-700">Event / Activity Purpose <span class="text-rose-500">*</span></label>
+                <input type="text" id="req-event-input" class="form-input text-xs" placeholder="e.g. Tech Fest Volunteer, Sports Tournament, Hackathon" required />
+              </div>
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-bold text-slate-700">Approving Officer</label>
+                <input type="text" id="req-approver-input" class="form-input text-xs" value="${approverName} (${roleTitle})" readonly style="background: #f8fafc; color: #475569;" />
+              </div>
+            </div>
+
+            <!-- Dynamic Lecture Sessions on Selected Date -->
+            <div class="border border-slate-200 rounded-xl p-3 bg-white">
+              <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-600"></i>
+                  <span>Lectures Conducted on Selected Date:</span>
+                </span>
+                <div class="flex items-center gap-2 text-[11px]">
+                  <button type="button" class="text-indigo-600 hover:underline font-semibold" onclick="StudentAttendanceView.toggleAllReqCheckboxes(true)">Select All Absent</button>
+                  <span class="text-slate-300">|</span>
+                  <button type="button" class="text-slate-500 hover:underline" onclick="StudentAttendanceView.toggleAllReqCheckboxes(false)">Clear</button>
+                </div>
+              </div>
+
+              <!-- List Container populated via loadDayLecturesForRequisition -->
+              <div id="req-lectures-list" class="space-y-2" style="min-height: 120px;">
+                <div class="text-center py-8 text-slate-400 text-xs">
+                  <span class="spinner-sm mr-2"></span> Loading lecture sessions for selected date...
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800 leading-relaxed flex items-start gap-2">
+              <i data-lucide="info" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
+              <div>
+                <strong>Institutional Regularization Rule:</strong> Granting OD attendance marks the student as <b>PRESENT (OD / Requisition)</b> for the selected lectures. Attendance percentages, course totals, and eligibility calculations will automatically reflect the granted credit.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer flex items-center justify-between gap-2 pt-3 border-t border-slate-100 px-4 pb-3">
+            <button type="button" class="btn-secondary btn-sm" onclick="App.closeModal()">Cancel</button>
+            <button type="submit" class="btn-primary btn-sm" id="req-submit-btn" style="background: linear-gradient(135deg, #059669, #047857); border: 1px solid #059669; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+              <i data-lucide="check-check" class="w-4 h-4"></i>
+              <span>Approve & Grant OD Attendance</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    App.showCustomModal(html);
+    if (window.lucide) window.lucide.createIcons();
+    this.loadDayLecturesForRequisition(initialDate);
+  },
+
+  async loadDayLecturesForRequisition(dateStr) {
+    const listEl = document.getElementById("req-lectures-list");
+    if (!listEl) return;
+
+    listEl.innerHTML = `
+      <div class="text-center py-8 text-slate-400 text-xs">
+        <span class="spinner-sm mr-2"></span> Fetching timetable sessions for ${dateStr}...
+      </div>
+    `;
+
+    try {
+      const res = await API.get(`/attendance/student-day-lectures?student_id=${this.studentId}&date=${dateStr}`);
+      const lectures = res.lectures || [];
+
+      if (lectures.length === 0) {
+        listEl.innerHTML = `
+          <div class="p-6 text-center text-slate-500 text-xs bg-slate-50 rounded-lg border border-dashed border-slate-200">
+            <i data-lucide="calendar-x" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+            <p class="font-bold text-slate-700 mb-1">No Timetable Sessions Found on ${dateStr}</p>
+            <p class="text-slate-400 text-[11px]">No regular classes were recorded or finalized for this student's class on this calendar date.</p>
+          </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+        return;
+      }
+
+      listEl.innerHTML = lectures.map((lec) => {
+        const isPresent = lec.is_present;
+        const isOD = lec.verification_type === "OD_REQUISITION";
+        const isAbsent = !isPresent;
+
+        return `
+          <label class="flex items-center justify-between p-2.5 rounded-lg border ${isAbsent ? 'border-amber-200 bg-amber-50/40 hover:bg-amber-50 cursor-pointer' : 'border-slate-200 bg-slate-50/60'} transition-colors">
+            <div class="flex items-center gap-3">
+              <input type="checkbox" 
+                     class="req-session-checkbox rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer" 
+                     data-session-id="${lec.session_id}"
+                     ${isAbsent ? 'checked' : ''} />
+              <div>
+                <div class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                  <span>${lec.course_code}: ${lec.course_name}</span>
+                  <span class="text-[10px] text-slate-400 font-normal">(${lec.start_time} - ${lec.end_time})</span>
+                </div>
+                <div class="text-[11px] text-slate-500">
+                  Topic: <b>${lec.topic}</b> &bull; Faculty: ${lec.teacher_name}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              ${isOD ? `
+                <span class="badge text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">
+                  🟢 OD Approved
+                </span>
+              ` : (isPresent ? `
+                <span class="badge text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">
+                  ✓ Present (${lec.verification_type === 'AUTO_AI' ? 'AI' : 'Marked'})
+                </span>
+              ` : `
+                <span class="badge text-[10px] bg-rose-100 text-rose-800 border border-rose-300 font-bold">
+                  ❌ Absent (Needs OD)
+                </span>
+              `)}
+            </div>
+          </label>
+        `;
+      }).join("");
+
+      if (window.lucide) window.lucide.createIcons();
+
+    } catch (e) {
+      listEl.innerHTML = `
+        <div class="p-4 text-center text-rose-600 text-xs">
+          Failed to load lecture sessions: ${e.message}
+        </div>
+      `;
+    }
+  },
+
+  toggleAllReqCheckboxes(selectAbsentOnly) {
+    const boxes = document.querySelectorAll(".req-session-checkbox");
+    boxes.forEach(b => {
+      b.checked = Boolean(selectAbsentOnly);
+    });
+  },
+
+  async submitRequisition() {
+    if (!Auth.isAdmin() && !Auth.isSuperAdmin()) {
+      App.showToast("Access Denied: Only Administrators and Super Administrators can approve attendance requisitions.", "error");
+      return;
+    }
+
+    const dateVal = document.getElementById("req-date-input")?.value;
+    const refNo = document.getElementById("req-ref-input")?.value?.trim();
+    const eventName = document.getElementById("req-event-input")?.value?.trim();
+    const approver = document.getElementById("req-approver-input")?.value?.trim();
+
+    if (!dateVal || !refNo || !eventName) {
+      App.showToast("Please fill in Date, Requisition Ref No, and Event Name.", "error");
+      return;
+    }
+
+    const checkedBoxes = Array.from(document.querySelectorAll(".req-session-checkbox:checked"));
+    const sessionIds = checkedBoxes.map(b => parseInt(b.getAttribute("data-session-id"))).filter(Boolean);
+
+    if (sessionIds.length === 0) {
+      App.showToast("Please select at least one lecture session to grant OD attendance.", "warning");
+      return;
+    }
+
+    const btn = document.getElementById("req-submit-btn");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-sm mr-2"></span> Granting OD Attendance...`;
+    }
+
+    try {
+      const payload = {
+        student_id: parseInt(this.studentId),
+        date: dateVal,
+        session_ids: sessionIds,
+        status: "PRESENT",
+        reason: refNo,
+        event_name: eventName,
+        approved_by: approver
+      };
+
+      const res = await API.post("/attendance/regularize-requisition", payload);
+      App.showToast(res.message || `Granted OD Attendance for ${sessionIds.length} lecture(s)!`, "success");
+      App.closeModal();
+
+      // Refresh student attendance audit page
+      await this.loadStudentData(document.getElementById("view-container"));
+
+    } catch (e) {
+      App.showToast(e.message || "Failed to regularize attendance requisition", "error");
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="check-check" class="w-4 h-4"></i><span>Approve & Grant OD Attendance</span>`;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
   }
 };
+
 
