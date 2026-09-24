@@ -70,13 +70,13 @@ const CaptureView = {
             <h2 class="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight" style="letter-spacing: -0.02em;">Take Attendance</h2>
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="badge" style="background: rgba(99, 102, 241, 0.09); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.25); font-size: 0.68rem; font-weight: 700; padding: 2px 7px;">
-                ⚡ YOLOv8 Face
+                ⚡ Face Detection
               </span>
               <span class="badge" style="background: rgba(16, 185, 129, 0.09); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.68rem; font-weight: 700; padding: 2px 7px;">
-                🛡️ MiniFASNet
+                🛡️ Anti-Spoof
               </span>
               <span class="badge" style="background: rgba(139, 92, 246, 0.09); color: #7c3aed; border: 1px solid rgba(139, 92, 246, 0.25); font-size: 0.68rem; font-weight: 700; padding: 2px 7px;">
-                🎯 ArcFace 512-D
+                🎯 AI Biometrics
               </span>
             </div>
           </div>
@@ -355,7 +355,7 @@ const CaptureView = {
             <div class="flex items-center justify-between pt-4 border-t border-slate-100 mt-4 flex-wrap gap-3">
               <div class="flex items-center gap-2">
                 <div style="width: 7px; height: 7px; border-radius: 50%; background: #6366f1;"></div>
-                <span class="text-xs text-slate-500 font-semibold">Ready for YOLO detection & ArcFace embedding</span>
+                <span class="text-xs text-slate-500 font-semibold">Ready for AI attendance capture</span>
               </div>
               <button type="submit" class="btn-primary text-xs py-2.5 px-6 font-bold" id="multi-scan-btn" style="border-radius: 10px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35); display: inline-flex; align-items: center; gap: 8px;">
                 <i data-lucide="scan" class="w-4 h-4"></i>
@@ -1593,7 +1593,7 @@ const CaptureView = {
           <div>
             <div class="flex items-center gap-2 mb-1">
               <h3 class="text-lg font-bold text-slate-900">Biometrics Processed</h3>
-              <span class="badge badge-present text-xs">YOLO Face • MiniFASNetV2 • ArcFace</span>
+              <span class="badge badge-present text-xs">Face Detection • Anti-Spoof • Biometric Matching</span>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
               <span class="font-bold text-slate-800">${session.course_name || session.session_name}</span>
@@ -1743,7 +1743,7 @@ const CaptureView = {
             <span class="legend-box red"></span>
             <span>Red Box = Unidentified Face</span>
           </div>
-          <span class="text-[11px] font-mono text-slate-400 ml-auto">YOLOv8 Face &bull; ArcFace (Cosine Sim)</span>
+          <span class="text-[11px] font-mono text-slate-400 ml-auto">AI Face Detection &bull; Biometric Verification</span>
         </div>
 
         <!-- 5. ATTENDANCE VERIFICATION SECTION -->
@@ -2032,7 +2032,7 @@ const CaptureView = {
                   <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
                   <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Unidentified Face Crops (${unknowns.length})</h5>
                 </div>
-                <span class="text-xs text-slate-500">Faces detected by YOLO but not matched to any registered institutional student</span>
+                <span class="text-xs text-slate-500">Faces detected by camera but not matched to any registered institutional student</span>
               </div>
 
               <div class="unknown-faces-responsive-grid" id="unknowns-cards-container">
@@ -2092,7 +2092,7 @@ const CaptureView = {
                   <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                   <h5 class="text-xs font-bold text-amber-900 uppercase tracking-wider">Spoof Protection Rejections (${spoofRecords.length})</h5>
                 </div>
-                <span class="text-xs text-amber-800">MiniFASNetV2 Anti-Spoofing flagged these attempts as non-live presentations</span>
+                <span class="text-xs text-amber-800">Anti-Spoofing system flagged these attempts as non-live presentations</span>
               </div>
 
               <div class="space-y-2">
@@ -2104,7 +2104,7 @@ const CaptureView = {
                       </div>
                       <div>
                         <span class="font-bold text-amber-950 text-xs block">SPOOF REJECTED &bull; Liveness Verification Failed</span>
-                        <span class="text-[11px] text-amber-800">MiniFASNetV2: Photo Screen / Print Attack Detected &bull; Attendance Denied</span>
+                        <span class="text-[11px] text-amber-800">Anti-Spoof Guard: Photo Screen / Print Attack Detected &bull; Attendance Denied</span>
                       </div>
                     </div>
                     <span class="badge text-[10px] bg-amber-200 text-amber-900 font-bold border border-amber-300">
@@ -2718,7 +2718,7 @@ const CaptureView = {
               <span>Direct face toward the webcam</span>
             </span>
             <span class="font-mono text-emerald-600 font-bold" style="background: #ecfdf5; padding: 2px 6px; border-radius: 4px; border: 1px solid #a7f3d0;">
-              ArcFace 512-D
+              AI Biometrics
             </span>
           </div>
 

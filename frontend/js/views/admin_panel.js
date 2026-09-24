@@ -22,7 +22,7 @@ const AdminPanelView = {
           </button>
           <button class="btn-secondary text-xs" onclick="AdminPanelView.triggerBackup()">
             <i data-lucide="database" class="w-4 h-4 text-indigo-600"></i>
-            <span>SQLite Backup</span>
+            <span>Database Backup</span>
           </button>
           <button class="btn-secondary text-xs" onclick="AdminPanelView.exportJson()">
             <i data-lucide="download" class="w-4 h-4 text-indigo-600"></i>
@@ -45,7 +45,7 @@ const AdminPanelView = {
             <div class="status-live-dot"></div>
             <span class="font-bold text-base text-emerald-700" id="db-health-status">100% HEALTHY</span>
           </div>
-          <p class="text-xs text-slate-500" id="db-health-msg">SQLite PRAGMA foreign keys and constraints verified</p>
+          <p class="text-xs text-slate-500" id="db-health-msg">Relational schema integrity and constraints verified</p>
         </div>
 
         <div class="glass-panel" style="margin-bottom: 0;">
@@ -55,8 +55,8 @@ const AdminPanelView = {
               Security & RBAC
             </span>
           </div>
-          <div class="font-bold text-base text-indigo-600 mb-1">JWT HS256 + Bcrypt</div>
-          <p class="text-xs text-slate-500">Token Expiry: 24 Hours • Bcrypt Rounds: 12</p>
+          <div class="font-bold text-base text-indigo-600 mb-1">Encrypted Sessions + RBAC</div>
+          <p class="text-xs text-slate-500">Token Expiry: 24 Hours • Multi-Tier Access Control</p>
         </div>
 
         <div class="glass-panel" style="margin-bottom: 0;">
@@ -66,8 +66,8 @@ const AdminPanelView = {
               API & Engine
             </span>
           </div>
-          <div class="font-bold text-base text-purple-600 mb-1">FastAPI + PyTorch + ONNX</div>
-          <p class="text-xs text-slate-500">YOLOv8-Face • MiniFASNetV2 PAD • ArcFace 512-D</p>
+          <div class="font-bold text-base text-purple-600 mb-1">High-Speed Biometric Engine</div>
+          <p class="text-xs text-slate-500">Multi-Face Detection • Anti-Spoof Guard • Biometric Recognition</p>
         </div>
       </div>
 
@@ -108,7 +108,7 @@ const AdminPanelView = {
             <i data-lucide="hard-drive" class="w-4 h-4 text-indigo-600"></i>
             Database Table Statistics
           </span>
-          <span class="text-xs text-slate-500">SQLite Storage Engine</span>
+          <span class="text-xs text-slate-500">Relational Database Engine</span>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; text-align: center;" id="table-stats-grid">
           <div class="p-6 text-center text-slate-400 text-xs col-span-6">Loading table telemetry...</div>
@@ -578,7 +578,7 @@ const AdminPanelView = {
 
   async triggerBackup() {
     try {
-      App.showToast("Creating SQLite database backup snapshot...", "info");
+      App.showToast("Creating database backup snapshot...", "info");
       const res = await API.post("/admin/backup", {});
       App.showToast(`Backup created: ${res.backup_file}`, "success");
     } catch (e) {
@@ -689,7 +689,7 @@ const AdminPanelView = {
     try {
       const res = await API.get("/admin/system-settings/face-ai-architecture").catch(() => ({
         architecture: "STANDARD",
-        label: "Standard (YOLOv8-Face + MiniFASNetV2 + ArcFace ResNet-50)",
+        label: "Standard (High-Speed Detection + Anti-Spoof Guard + Deep Biometric Matching)",
         updated_by: "System Default",
         updated_at: null
       }));
@@ -745,7 +745,7 @@ const AdminPanelView = {
             <div style="font-size: 0.88rem; font-weight: 800; color: #0f172a;">
               ${isUnlocked 
                 ? `<span style="color: #b45309;">Editing System Face AI Architecture</span>` 
-                : `Active Institutional Setting: <span class="font-bold text-indigo-600">${currentArch === 'ADVANCED' ? 'Advanced' : 'Standard'}</span> (${config.label || (currentArch === 'ADVANCED' ? 'Quality Assessment + Robust Matching' : 'YOLOv8-Face + ArcFace')})`
+                : `Active Institutional Setting: <span class="font-bold text-indigo-600">${currentArch === 'ADVANCED' ? 'Advanced' : 'Standard'}</span> (${config.label || (currentArch === 'ADVANCED' ? 'Quality Assessment + Robust Matching' : 'High-Speed Detection + Biometric Matching')})`
               }
             </div>
             <div style="font-size: 0.72rem; color: #64748b; margin-top: 2px;">
@@ -792,11 +792,11 @@ const AdminPanelView = {
               </div>
               ${currentArch === 'STANDARD' ? `<span class="badge" style="background: #ecfdf5; color: #065f46; font-size: 0.65rem; font-weight: 800; border: 1px solid #a7f3d0;">ACTIVE</span>` : ''}
             </div>
-            <span class="font-semibold text-xs text-indigo-700">YOLOv8-Face + MiniFASNetV2 + ArcFace ResNet-50</span>
+            <span class="font-semibold text-xs text-indigo-700">High-Speed Detection + Anti-Spoof + Biometric Matching</span>
             <div class="text-[11px] text-slate-500 mt-2 space-y-1">
-              <div>• <b>Detector:</b> YOLOv8-Face (Direct detection)</div>
-              <div>• <b>Anti-Spoofing:</b> MiniFASNetV2 Liveness Evaluation</div>
-              <div>• <b>Embeddings:</b> ArcFace ResNet-50 (512-D)</div>
+              <div>• <b>Detector:</b> Ultra-Fast Face Localization</div>
+              <div>• <b>Anti-Spoofing:</b> Presentation Attack & Liveness Defense</div>
+              <div>• <b>Embeddings:</b> High-Dimensional Biometric Vectors</div>
               <div>• <b>Matching:</b> Cosine Similarity Matrix</div>
             </div>
           </div>
@@ -813,11 +813,11 @@ const AdminPanelView = {
               </div>
               ${currentArch === 'ADVANCED' ? `<span class="badge" style="background: #e0e7ff; color: #4338ca; font-size: 0.65rem; font-weight: 800; border: 1px solid #c7d2fe;">ACTIVE</span>` : ''}
             </div>
-            <span class="font-semibold text-xs text-indigo-700">YOLOv8-Face + Quality Check + MiniFASNet + ArcFace + Robust Match</span>
+            <span class="font-semibold text-xs text-indigo-700">Multi-Stage Quality Assessment + Anti-Spoof + Robust Matching</span>
             <div class="text-[11px] text-slate-500 mt-2 space-y-1">
-              <div>• <b>Detector:</b> YOLOv8-Face</div>
-              <div>• <b>Quality Assessment:</b> Laplacian Blur + Face Size (≥28px) + Lighting</div>
-              <div>• <b>Anti-Spoofing:</b> MiniFASNetV2 on Quality-Passed Faces</div>
+              <div>• <b>Detector:</b> Ultra-Fast Multi-Face Localization</div>
+              <div>• <b>Quality Assessment:</b> Blur Analysis + Face Size (≥28px) + Lighting</div>
+              <div>• <b>Anti-Spoofing:</b> Real-Time Liveness on Quality-Passed Faces</div>
               <div>• <b>Robust Match:</b> Top-1 / Top-2 Separation + Ambiguity Margin Check</div>
             </div>
           </div>

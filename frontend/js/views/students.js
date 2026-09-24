@@ -27,7 +27,7 @@ const StudentsView = {
             <span class="badge badge-neutral text-xs font-semibold" id="students-count-badge">Loading...</span>
             ${!isAdmin ? `<span class="badge" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-size: 0.70rem; font-weight: 700;">Faculty Directory</span>` : ''}
           </div>
-          <p class="text-xs text-slate-500">Manage academic enrollment, batch semester/division transfers, and ArcFace biometric profiles.</p>
+          <p class="text-xs text-slate-500">Manage academic enrollment, batch semester/division transfers, and facial biometric profiles.</p>
         </div>
         ${canCreate ? `
           <div class="flex items-center gap-2">
@@ -103,8 +103,8 @@ const StudentsView = {
           <div class="toolbar-filter-item">
             <select id="student-status-filter" class="form-select text-xs" onchange="StudentsView.applyFilters()">
               <option value="">All Biometric Status</option>
-              <option value="ENROLLED">Enrolled (ArcFace Active)</option>
-              <option value="MISSING">Missing Face Embedding</option>
+              <option value="ENROLLED">Enrolled (Biometrics Active)</option>
+              <option value="MISSING">Missing Face Profile</option>
             </select>
           </div>
 
@@ -1348,7 +1348,7 @@ const StudentsView = {
                 </span>
               </div>
               <p class="text-[11px] text-slate-500 mb-3 leading-relaxed">
-                Capture or upload <b>3 to 8 clear face photos</b> (Angles: Front, Left 45°, Right 45°, Slight Tilt Up, Slight Tilt Down, Expression/Smile) for 512-D ArcFace template creation.
+                Capture or upload <b>3 to 8 clear face photos</b> (Angles: Front, Left 45°, Right 45°, Slight Tilt Up, Slight Tilt Down, Expression/Smile) for biometric profile creation.
               </p>
               
               <div class="flex gap-2 mb-2.5">
@@ -1677,7 +1677,7 @@ const StudentsView = {
     const totalPhotos = (this.regPhotoFiles ? this.regPhotoFiles.length : 0) + (this.capturedRegistrationSnaps ? this.capturedRegistrationSnaps.length : 0);
 
     if (totalPhotos < 3) {
-      App.showToast(`Please provide at least 3 face photos (Received: ${totalPhotos}). Minimum 3 required for ArcFace enrollment gallery.`, "warning");
+      App.showToast(`Please provide at least 3 face photos (Received: ${totalPhotos}). Minimum 3 required for biometric enrollment gallery.`, "warning");
       return;
     }
 
@@ -1688,7 +1688,7 @@ const StudentsView = {
 
     const btn = document.getElementById("reg-submit-btn");
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-sm mr-2"></span> Extracting ArcFace embeddings...`;
+    btn.innerHTML = `<span class="spinner-sm mr-2"></span> Processing biometric profiles...`;
 
     const name = document.getElementById("reg-name").value.trim();
     const roll = document.getElementById("reg-roll").value.trim();
@@ -1863,7 +1863,7 @@ const StudentsView = {
   async submitBiometricUpdate() {
     const btn = document.getElementById("update-bio-submit-btn");
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-sm mr-2"></span> Updating ArcFace embeddings...`;
+    btn.innerHTML = `<span class="spinner-sm mr-2"></span> Updating biometric profiles...`;
 
     const fd = new FormData();
     const fileInput = document.getElementById("update-photos-input");

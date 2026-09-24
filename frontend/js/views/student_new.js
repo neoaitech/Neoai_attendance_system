@@ -285,7 +285,7 @@ const StudentNewView = {
                   <i data-lucide="scan-face" class="w-4 h-4 text-indigo-600"></i>
                   SECTION 4 — Biometric Face Enrollment (3–8 Photos)
                 </span>
-                <p class="form-section-desc">Capture or upload <b>3 to 8 multi-angle face photos</b> for ArcFace 512-D template creation.</p>
+                <p class="form-section-desc">Capture or upload <b>3 to 8 multi-angle face photos</b> for biometric profile creation.</p>
               </div>
               <span id="sn-photo-badge" class="badge badge-absent text-xs font-bold">0 / 8 Photos (Min 3 Required)</span>
             </div>
@@ -677,7 +677,7 @@ const StudentNewView = {
 
     const btn = document.getElementById("sn-submit-btn");
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-sm mr-2"></span> Extracting ArcFace embeddings...`;
+    btn.innerHTML = `<span class="spinner-sm mr-2"></span> Processing biometric profiles...`;
 
     const fd = new FormData();
     fd.append("full_name", name);

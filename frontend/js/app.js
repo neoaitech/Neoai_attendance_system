@@ -43,7 +43,7 @@ const App = {
     capture: {
       breadcrumb: "Attendance / AI Scanner",
       title: "Classroom Attendance Scanner",
-      subtitle: "YOLO multi-face detection, ArcFace identity matching & instant verification"
+      subtitle: "High-speed multi-face detection, biometric matching & instant verification"
     },
     review: {
       breadcrumb: "Attendance / History",
@@ -53,7 +53,7 @@ const App = {
     students: {
       breadcrumb: "People / Student Directory",
       title: "Students & Biometric Profiles",
-      subtitle: "Manage enrolled student registry and ArcFace multi-angle facial embeddings"
+      subtitle: "Manage enrolled student registry and multi-angle facial biometric profiles"
     },
     student_new: {
       breadcrumb: "People / Students / New Student",
@@ -128,7 +128,7 @@ const App = {
     admin_panel: {
       breadcrumb: "System / Admin Diagnostics",
       title: "System Administration & Diagnostics",
-      subtitle: "Monitor SQLite integrity, create database backups, and inspect security audit trail"
+      subtitle: "Monitor database integrity, create system backups, and inspect security audit trail"
     },
     permissions: {
       breadcrumb: "Admin & Database / Authority & Permissions",
@@ -149,7 +149,7 @@ const App = {
       title: "Take Attendance / AI Scanner",
       category: "Attendance Operations",
       view: "capture",
-      keywords: ["take attendance", "camera", "scanner", "scan", "capture", "yolo", "face detection", "arcface", "live", "session"],
+      keywords: ["take attendance", "camera", "scanner", "scan", "capture", "face detection", "recognition", "live", "session"],
       icon: "camera"
     },
     {
@@ -163,7 +163,7 @@ const App = {
       title: "Students & Biometrics",
       category: "People & Rosters",
       view: "students",
-      keywords: ["students", "student directory", "biometrics", "enroll", "face embeddings", "profiles", "roster", "roll number"],
+      keywords: ["students", "student directory", "biometrics", "enroll", "face profiles", "profiles", "roster", "roll number"],
       icon: "users"
     },
     {
@@ -198,7 +198,7 @@ const App = {
       title: "AI Model Benchmarks & Metrics",
       category: "AI & System",
       view: "model_benchmark",
-      keywords: ["benchmarks", "metrics", "yolo", "arcface", "minifasnet", "accuracy", "latency", "cv comparison"],
+      keywords: ["benchmarks", "metrics", "face detection", "biometrics", "anti-spoof", "accuracy", "latency"],
       icon: "cpu",
       adminOnly: true
     },
@@ -206,7 +206,7 @@ const App = {
       title: "System Administration & Diagnostics",
       category: "AI & System",
       view: "admin_panel",
-      keywords: ["admin", "database", "diagnostics", "backup", "export database", "integrity", "sqlite", "system", "audit log"],
+      keywords: ["admin", "database", "diagnostics", "backup", "export database", "integrity", "storage", "system", "audit log"],
       icon: "shield",
       adminOnly: true
     },

@@ -161,7 +161,7 @@ const FacultyNewView = {
               <img id="fn-preview-img" src="" alt="Faculty Photo" class="w-20 h-20 rounded-xl object-cover border-2 border-indigo-200 shadow-sm" />
               <div>
                 <span class="text-xs font-bold text-slate-800 block">Faculty Reference Photo Loaded</span>
-                <span class="text-[11px] text-slate-500 block mb-2">ArcFace facial vector will be extracted for faculty identity.</span>
+                <span class="text-[11px] text-slate-500 block mb-2">Biometric facial profile will be created for faculty identity.</span>
                 <button type="button" class="btn-danger btn-sm text-[10px] py-0.5 px-2" onclick="FacultyNewView.clearPhoto()">Remove Photo</button>
               </div>
             </div>

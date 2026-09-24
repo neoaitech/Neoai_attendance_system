@@ -244,7 +244,7 @@ const RosterManageView = {
           <td class="text-xs font-mono text-slate-600">${s.program || 'B.Tech'} &bull; ${s.semester} &bull; Div ${s.section}</td>
           <td>
             <span class="badge ${s.face_embedding ? 'badge-present' : 'badge-absent'} text-[10px]">
-              ${s.face_embedding ? 'ArcFace Enrolled' : 'Incomplete'}
+              ${s.face_embedding ? 'Biometrics Enrolled' : 'Incomplete'}
             </span>
           </td>
           <td>

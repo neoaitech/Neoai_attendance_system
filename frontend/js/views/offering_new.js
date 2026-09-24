@@ -558,7 +558,7 @@ const OfferingNewView = {
             </div>
           </div>
           <span class="badge ${s.face_embedding ? 'badge-present' : 'badge-absent'} text-[10px] flex-shrink-0">
-            ${s.face_embedding ? 'ArcFace Enrolled' : 'No Biometrics'}
+            ${s.face_embedding ? 'Biometrics Enrolled' : 'No Biometrics'}
           </span>
         </label>
       `;

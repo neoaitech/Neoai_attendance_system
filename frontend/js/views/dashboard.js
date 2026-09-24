@@ -22,7 +22,7 @@ const DashboardView = {
 
         <div class="dashboard-actions-group">
           <!-- AI Engine Online Status Pill -->
-          <div class="ai-engine-status-badge" title="YOLOv8 + ArcFace AI Recognition Pipeline Active">
+          <div class="ai-engine-status-badge" title="AI Biometric Recognition Pipeline Active">
             <span class="ai-engine-pulse-dot"></span>
             <span>AI Engine Online</span>
           </div>
@@ -155,9 +155,9 @@ const DashboardView = {
           </div>
         </div>
         <div class="operational-pipeline-tags">
-          <span class="pipeline-tag">YOLOv8 Detection: Active</span>
-          <span class="pipeline-tag">MiniFASNetV2: Active</span>
-          <span class="pipeline-tag">ArcFace 512-D: Active</span>
+          <span class="pipeline-tag">Face Detection: Active</span>
+          <span class="pipeline-tag">Anti-Spoof Guard: Active</span>
+          <span class="pipeline-tag">Biometric Matching: Active</span>
         </div>
       </div>
 

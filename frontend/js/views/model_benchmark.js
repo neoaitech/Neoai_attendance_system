@@ -35,8 +35,8 @@ const ModelBenchmarkView = {
         <div class="p-3.5 mb-6 rounded-xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-start gap-3">
           <i data-lucide="info" class="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5"></i>
           <div>
-            <span class="font-bold block">Active Production Pipeline: YOLOv8-Face (Detection) • MiniFASNetV2 (Anti-Spoofing) • ArcFace 512-D (Recognition)</span>
-            <span class="text-indigo-800 text-[11px]">1. <b>YOLOv8-Face</b> detects multi-face locations &rarr; 2. <b>MiniFASNetV2</b> verifies live human presentation (screen & paper attacks rejected immediately) &rarr; 3. <b>ArcFace ResNet-50</b> extracts 512-D unit vectors on live faces for cosine similarity matching.</span>
+            <span class="font-bold block">Active Production Pipeline: Multi-Face Detection • Anti-Spoof Guard • Biometric Recognition</span>
+            <span class="text-indigo-800 text-[11px]">1. <b>Ultra-Fast Detector</b> detects multi-face locations &rarr; 2. <b>Anti-Spoof Guard</b> verifies live human presentation (screen & paper attacks rejected immediately) &rarr; 3. <b>Biometric Feature Extractor</b> generates normalized unit vectors on live faces for cosine similarity matching.</span>
           </div>
         </div>
 
@@ -72,7 +72,7 @@ const ModelBenchmarkView = {
               </div>
             </div>
             <div class="kpi-value font-mono">512-D</div>
-            <div class="kpi-caption">ArcFace Angular Hypersphere Vectors</div>
+            <div class="kpi-caption">Normalized Biometric Feature Vectors</div>
           </div>
 
           <div class="kpi-card">
@@ -99,7 +99,7 @@ const ModelBenchmarkView = {
                   Institutional Biometric Matching Sensitivity (System-Wide Lock)
                 </h3>
                 <span style="font-size: 0.72rem; color: #64748b; font-weight: 500;">
-                  Set & lock the universal ArcFace cosine similarity threshold across all faculty attendance captures
+                  Set & lock the universal biometric cosine similarity threshold across all faculty attendance captures
                 </span>
               </div>
             </div>
@@ -351,7 +351,7 @@ const ModelBenchmarkView = {
               <input type="number" id="admin-custom-tolerance-input" min="0.20" max="0.90" step="0.01" value="${this.selectedTolerance.toFixed(2)}" class="form-input text-xs font-mono font-bold" style="height: 34px; border-radius: 8px; width: 100px; background: #ffffff;" ${!isUnlocked ? 'disabled' : ''} oninput="ModelBenchmarkView.onCustomToleranceInput(this.value)" />
               <span class="text-xs text-slate-500 font-medium">(0.20 – 0.90)</span>
             </div>
-            <p style="font-size: 0.70rem; color: #64748b; margin: 0;">Specify a custom ArcFace angular cutoff.</p>
+            <p style="font-size: 0.70rem; color: #64748b; margin: 0;">Specify a custom biometric similarity cutoff.</p>
           </div>
 
         </div>

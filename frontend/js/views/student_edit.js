@@ -244,9 +244,9 @@ const StudentEditView = {
                 <div>
                   <span class="form-section-title">
                     <i data-lucide="scan-face" class="w-4 h-4 text-indigo-600"></i>
-                    SECTION 4 — Biometric Profile & Face Embeddings
+                    SECTION 4 — Biometric Facial Profile
                   </span>
-                  <p class="form-section-desc">Existing ArcFace 512-D embedding is active. You can append additional reference angles.</p>
+                  <p class="form-section-desc">Existing biometric profile is active. You can append additional reference angles.</p>
                 </div>
                 <span class="badge ${student.face_embedding ? 'badge-present' : 'badge-absent'} text-xs font-bold">
                   ${student.face_embedding ? 'Biometrics Enrolled' : 'No Biometrics'}

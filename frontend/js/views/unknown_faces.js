@@ -11,7 +11,7 @@ const UnknownFacesView = {
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h2 class="text-xl font-bold text-slate-900">Unidentified Face Resolution Queue</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Review face crops detected by YOLO but not matched with registered students above the ArcFace recognition threshold</p>
+          <p class="text-xs text-slate-500 mt-0.5">Review face crops detected by camera but not matched with enrolled students above the biometric recognition threshold</p>
         </div>
         <div class="flex gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
           <button class="btn-secondary btn-sm ${this.currentFilter === 'PENDING' ? 'active' : ''}" onclick="UnknownFacesView.setFilter('PENDING')">Pending Queue</button>
