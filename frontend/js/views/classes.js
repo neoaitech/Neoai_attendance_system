@@ -1485,9 +1485,30 @@ const ClassesView = {
     }
 
     try {
-      const res = await API.delete(`/classes/${classId}`);
+      let idsToDelete = [classId];
+      if (groupKey && this.groupedCourses) {
+        const group = this.groupedCourses.find(g => g.key === groupKey);
+        if (group && group.sections) {
+          const collectedIds = [];
+          group.sections.forEach(s => {
+            if (s.allOfferings && s.allOfferings.length > 0) {
+              s.allOfferings.forEach(o => { if (o.id) collectedIds.push(o.id); });
+            } else if (s.id) {
+              collectedIds.push(s.id);
+            }
+          });
+          if (collectedIds.length > 0) {
+            idsToDelete = Array.from(new Set(collectedIds));
+          }
+        }
+      }
+
+      for (const id of idsToDelete) {
+        await API.delete(`/classes/${id}`).catch(e => console.warn(`Could not delete offering ${id}:`, e));
+      }
+
       App.closeModal();
-      App.showToast(res.message || "Course offering deleted successfully!", "success");
+      App.showToast("Course deleted successfully!", "success");
       await this.loadData();
     } catch (err) {
       if (btn) {
