@@ -11,7 +11,7 @@ from sqlalchemy import or_, func
 from backend.app.core.config import settings
 from backend.app.api.auth import get_current_user, require_admin
 from backend.app.db.session import get_db
-from backend.app.db.models import Student, ClassCourse, User, AuditLog, AcademicDepartment, AcademicProgram, StudentFreezeLog
+from backend.app.db.models import Student, ClassCourse, User, AuditLog, AcademicDepartment, AcademicProgram, StudentFreezeLog, EmailLog, AttendanceRecord
 from backend.app.schemas.student import StudentCreate, StudentUpdate, StudentResponse, StudentFreezeRequest
 from backend.app.services.face_engine import face_engine
 from backend.app.services.storage_service import storage_service
@@ -75,7 +75,15 @@ def create_student(
         (Student.roll_number == payload.roll_number) | (Student.email == payload.email)
     ).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Student with this Roll Number or Email already exists.")
+        if existing.is_active:
+            raise HTTPException(status_code=400, detail="Student with this Roll Number or Email already exists.")
+        else:
+            db.query(StudentFreezeLog).filter(StudentFreezeLog.student_id == existing.id).delete()
+            db.query(EmailLog).filter(EmailLog.student_id == existing.id).delete()
+            db.query(AttendanceRecord).filter(AttendanceRecord.student_id == existing.id).delete()
+            existing.enrolled_classes.clear()
+            db.delete(existing)
+            db.commit()
 
     prog = payload.program or "B.Tech"
     student = Student(
@@ -194,7 +202,15 @@ async def register_student_with_photo(
         (Student.roll_number == roll_number) | (Student.email == email)
     ).first()
     if existing:
-        raise HTTPException(status_code=400, detail=f"Student with Roll '{roll_number}' or Email '{email}' already exists.")
+        if existing.is_active:
+            raise HTTPException(status_code=400, detail=f"Student with Roll '{roll_number}' or Email '{email}' already exists.")
+        else:
+            db.query(StudentFreezeLog).filter(StudentFreezeLog.student_id == existing.id).delete()
+            db.query(EmailLog).filter(EmailLog.student_id == existing.id).delete()
+            db.query(AttendanceRecord).filter(AttendanceRecord.student_id == existing.id).delete()
+            existing.enrolled_classes.clear()
+            db.delete(existing)
+            db.commit()
 
     saved_photo_paths = []
     saved_file_disk_paths = []
@@ -615,7 +631,15 @@ async def enroll_from_crop(
 
     existing = db.query(Student).filter((Student.roll_number == roll_number) | (Student.email == email)).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Student with this Roll Number or Email already exists.")
+        if existing.is_active:
+            raise HTTPException(status_code=400, detail="Student with this Roll Number or Email already exists.")
+        else:
+            db.query(StudentFreezeLog).filter(StudentFreezeLog.student_id == existing.id).delete()
+            db.query(EmailLog).filter(EmailLog.student_id == existing.id).delete()
+            db.query(AttendanceRecord).filter(AttendanceRecord.student_id == existing.id).delete()
+            existing.enrolled_classes.clear()
+            db.delete(existing)
+            db.commit()
 
     if "," in crop_b64:
         crop_b64 = crop_b64.split(",")[1]
@@ -774,9 +798,14 @@ def delete_student(
             detail=f"Access Denied: You lack authority to delete students in scope [{student.department} • {student.program} • {student.semester} • Div {student.section}]."
         )
 
-    student.is_active = False
+    student_name = student.full_name
+    db.query(StudentFreezeLog).filter(StudentFreezeLog.student_id == student.id).delete()
+    db.query(EmailLog).filter(EmailLog.student_id == student.id).delete()
+    db.query(AttendanceRecord).filter(AttendanceRecord.student_id == student.id).delete()
+    student.enrolled_classes.clear()
+    db.delete(student)
     db.commit()
-    return {"message": f"Student '{student.full_name}' deactivated successfully."}
+    return {"message": f"Student '{student_name}' deleted successfully."}
 
 @router.post("/{student_id}/freeze")
 def freeze_student_attendance(
