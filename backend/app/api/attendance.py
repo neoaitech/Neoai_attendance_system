@@ -333,11 +333,16 @@ def get_student_day_lectures(
     course_map = {c.id: c for c in s_enrolled}
     for sess in sessions:
         rec = record_map.get(sess.id)
-        c = course_map.get(sess.class_id)
+        c = course_map.get(sess.class_id) or sess.course
         
-        c_code = c.code if c else (sess.class_code or "CRS")
-        c_name = c.name if c else (sess.class_name or "Classroom Course")
-        t_name = sess.teacher_name or (c.teacher.full_name if c and c.teacher else "Faculty Coordinator")
+        c_code = c.code if c else "CRS"
+        c_name = c.name if c else "Classroom Course"
+        if sess.teacher and getattr(sess.teacher, "full_name", None):
+            t_name = sess.teacher.full_name
+        elif c and getattr(c, "teacher", None) and getattr(c.teacher, "full_name", None):
+            t_name = c.teacher.full_name
+        else:
+            t_name = "Faculty Coordinator"
         
         status_val = rec.status if rec else "ABSENT"
         is_present = status_val in ["PRESENT", "LATE"]
