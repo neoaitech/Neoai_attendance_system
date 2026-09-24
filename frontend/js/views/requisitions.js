@@ -66,68 +66,60 @@ const RequisitionsView = {
           </div>
         </div>
 
-        <!-- KPI Telemetry Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="kpi-card" style="border-top: 3px solid #10b981;">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="kpi-title text-xs font-semibold text-slate-500 uppercase tracking-wider">OD Approvals Granted</div>
-                <div class="kpi-value text-2xl font-black text-slate-800 mt-1" id="kpi-total-audits">--</div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-                <i data-lucide="check-check" class="w-5 h-5"></i>
+        <!-- KPI Telemetry Cards (Compact Grid) -->
+        <div class="kpi-grid">
+          <div class="kpi-card" style="border-top: 3px solid #10b981; padding: 14px 16px;">
+            <div class="kpi-card-header">
+              <span class="kpi-title">OD APPROVALS</span>
+              <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.1); color: #059669;">
+                <i data-lucide="check-check" class="w-4 h-4"></i>
               </div>
             </div>
-            <div class="kpi-caption text-[11px] text-slate-400 mt-2">Institutional OD form regularizations</div>
+            <div class="kpi-value" id="kpi-total-audits" style="font-size: 1.55rem; margin-bottom: 2px;">--</div>
+            <div class="kpi-caption">Institutional regularizations</div>
           </div>
 
-          <div class="kpi-card" style="border-top: 3px solid #6366f1;">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="kpi-title text-xs font-semibold text-slate-500 uppercase tracking-wider">Lectures Regularized</div>
-                <div class="kpi-value text-2xl font-black text-slate-800 mt-1" id="kpi-total-records">--</div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-                <i data-lucide="calendar-check" class="w-5 h-5"></i>
+          <div class="kpi-card" style="border-top: 3px solid #6366f1; padding: 14px 16px;">
+            <div class="kpi-card-header">
+              <span class="kpi-title">LECTURES CREDITED</span>
+              <div class="kpi-icon-wrap" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5;">
+                <i data-lucide="calendar-check" class="w-4 h-4"></i>
               </div>
             </div>
-            <div class="kpi-caption text-[11px] text-slate-400 mt-2">Individual lecture sessions credited</div>
+            <div class="kpi-value" id="kpi-total-records" style="font-size: 1.55rem; margin-bottom: 2px;">--</div>
+            <div class="kpi-caption">Lecture sessions credited</div>
           </div>
 
-          <div class="kpi-card" style="border-top: 3px solid #f59e0b;">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="kpi-title text-xs font-semibold text-slate-500 uppercase tracking-wider">Authority Role</div>
-                <div class="kpi-value text-lg font-bold text-slate-800 mt-1 uppercase" id="kpi-authority-role">
-                  ${(Auth.currentUser && Auth.currentUser.role) ? Auth.currentUser.role.replace('_', ' ') : 'Administrator'}
-                </div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
-                <i data-lucide="shield" class="w-5 h-5"></i>
+          <div class="kpi-card" style="border-top: 3px solid #f59e0b; padding: 14px 16px;">
+            <div class="kpi-card-header">
+              <span class="kpi-title">AUTHORITY ROLE</span>
+              <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">
+                <i data-lucide="shield" class="w-4 h-4"></i>
               </div>
             </div>
-            <div class="kpi-caption text-[11px] text-slate-400 mt-2">Strictly Admin & Super Admin locked</div>
+            <div class="kpi-value" id="kpi-authority-role" style="font-size: 1.1rem; text-transform: uppercase; margin-bottom: 2px;">
+              ${(Auth.currentUser && Auth.currentUser.role) ? Auth.currentUser.role.replace('_', ' ') : 'Administrator'}
+            </div>
+            <div class="kpi-caption">Admin & Super Admin locked</div>
           </div>
 
-          <div class="kpi-card" style="border-top: 3px solid #8b5cf6;">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="kpi-title text-xs font-semibold text-slate-500 uppercase tracking-wider">Audit Security</div>
-                <div class="kpi-value text-lg font-bold text-purple-700 mt-1">100% Tracked</div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
-                <i data-lucide="file-text" class="w-5 h-5"></i>
+          <div class="kpi-card" style="border-top: 3px solid #8b5cf6; padding: 14px 16px;">
+            <div class="kpi-card-header">
+              <span class="kpi-title">AUDIT SECURITY</span>
+              <div class="kpi-icon-wrap" style="background: rgba(139, 92, 246, 0.1); color: #7c3aed;">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
               </div>
             </div>
-            <div class="kpi-caption text-[11px] text-slate-400 mt-2">All approvals logged to Security Trail</div>
+            <div class="kpi-value" style="font-size: 1.25rem; color: #7c3aed; margin-bottom: 2px;">100% Tracked</div>
+            <div class="kpi-caption">Logged to Security Trail</div>
           </div>
         </div>
 
         <!-- Main Workspace: Form & Audit Trail Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="requisitions-workspace-grid">
           
-          <!-- Column 1: Direct Regularization Engine (5 Cols) -->
-          <div class="lg:col-span-5 space-y-4">
+          <!-- Column 1: Direct Regularization Engine -->
+          <div class="space-y-4">
             <div class="glass-panel p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
               <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
                 <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -214,8 +206,8 @@ const RequisitionsView = {
             </div>
           </div>
 
-          <!-- Column 2: Audit Trail & Recent Approvals (7 Cols) -->
-          <div class="lg:col-span-7 space-y-4">
+          <!-- Column 2: Audit Trail & Recent Approvals -->
+          <div class="space-y-4">
             <div class="glass-panel p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-2">
