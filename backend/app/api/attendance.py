@@ -426,4 +426,53 @@ def regularize_attendance_requisition(
         "updated_lectures_count": updated_count
     }
 
+@router.get("/requisition-history")
+def get_requisition_history(
+    limit: int = 50,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)  # Strictly restricted to Admin & Super Admin
+):
+    """
+    Returns history of all OD requisitions granted along with student details.
+    """
+    audit_logs = db.query(AuditLog).filter(
+        AuditLog.action == "ATTENDANCE_OD_REQUISITION_GRANTED"
+    ).order_by(AuditLog.timestamp.desc()).offset(offset).limit(limit).all()
+
+    # Get student roll numbers map
+    student_ids = [log.entity_id for log in audit_logs if log.entity_id]
+    students = db.query(Student).filter(Student.id.in_(student_ids)).all() if student_ids else []
+    student_map = {s.id: s for s in students}
+
+    total_audits = db.query(AuditLog).filter(
+        AuditLog.action == "ATTENDANCE_OD_REQUISITION_GRANTED"
+    ).count()
+
+    total_od_records = db.query(AttendanceRecord).filter(
+        AttendanceRecord.verification_type == "OD_REQUISITION"
+    ).count()
+
+    items = []
+    for log in audit_logs:
+        stu = student_map.get(log.entity_id)
+        items.append({
+            "id": log.id,
+            "timestamp": log.timestamp.isoformat() if log.timestamp else None,
+            "admin_name": log.actor_name,
+            "admin_role": log.actor_role,
+            "student_id": log.entity_id,
+            "student_name": log.target_name or (stu.full_name if stu else "Unknown Student"),
+            "roll_number": stu.roll_number if stu else "N/A",
+            "department": stu.department if stu else "N/A",
+            "details": log.details
+        })
+
+    return {
+        "total_audits": total_audits,
+        "total_od_records": total_od_records,
+        "history": items
+    }
+
+
 

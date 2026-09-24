@@ -27,7 +27,8 @@ const App = {
     model_benchmark: ModelBenchmarkView,
     admin_panel: AdminPanelView,
     permissions: PermissionsView,
-    profile: ProfileView
+    profile: ProfileView,
+    requisitions: RequisitionsView
   },
 
   viewMetadata: {
@@ -140,6 +141,11 @@ const App = {
       breadcrumb: "Admin & Database / Authority & Permissions",
       title: "Authority, Roles & Permissions Manager",
       subtitle: "Configure granular permissions, multi-academic scopes, approval rules, and security audit trail"
+    },
+    requisitions: {
+      breadcrumb: "Attendance / OD Requisitions",
+      title: "Attendance Requisition & On-Duty (OD) Regularization",
+      subtitle: "Official institutional portal for event duty & retroactive attendance regularizations (Admin & Super Admin)"
     }
   },
 
@@ -164,6 +170,13 @@ const App = {
       view: "review",
       keywords: ["attendance history", "history", "past lectures", "review", "audit", "sessions", "inspector", "records"],
       icon: "calendar-check-2"
+    },
+    {
+      title: "OD Requisitions & Attendance Regularization",
+      category: "Attendance Operations",
+      view: "requisitions",
+      keywords: ["requisition", "od", "on duty", "event attendance", "leave regularize", "regularization", "requisition form", "missed lectures"],
+      icon: "file-check-2"
     },
     {
       title: "Students & Biometrics",

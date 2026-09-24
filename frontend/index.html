@@ -85,6 +85,11 @@
           <i data-lucide="calendar-check-2"></i>
           <span>Attendance History</span>
         </button>
+        <button class="nav-item" data-view="requisitions" data-admin-only="true" style="display:none;">
+          <i data-lucide="file-check-2"></i>
+          <span>OD Requisitions</span>
+          <span class="nav-badge-pill" style="background: rgba(16,185,129,0.15); color: #059669; font-weight:700;">Admin</span>
+        </button>
 
         <!-- SECTION 3: PEOPLE & ROSTERS -->
         <div class="nav-category">People & Rosters</div>
@@ -208,6 +213,10 @@
                   <i data-lucide="user" class="w-4 h-4 text-slate-500"></i>
                   <span>My Profile & Teaching</span>
                 </button>
+                <button class="profile-dropdown-item admin-only-item" data-admin-only="true" onclick="App.navigate('requisitions'); App.closeProfileDropdown();" style="display:none;">
+                  <i data-lucide="file-check-2" class="w-4 h-4 text-emerald-500"></i>
+                  <span>OD Requisitions</span>
+                </button>
                 <button class="profile-dropdown-item admin-only-item" data-admin-only="true" onclick="App.navigate('admin_panel'); App.closeProfileDropdown();" style="display:none;">
                   <i data-lucide="shield" class="w-4 h-4 text-indigo-500"></i>
                   <span>System Diagnostics</span>
@@ -300,6 +309,7 @@
   <script src="js/views/permissions.js?v=14.0"></script>
   <script src="js/views/profile.js?v=14.0"></script>
   <script src="js/views/student_attendance.js?v=14.0"></script>
+  <script src="js/views/requisitions.js?v=14.0"></script>
   <script src="js/app.js?v=14.0"></script>
 </body>
 </html>
