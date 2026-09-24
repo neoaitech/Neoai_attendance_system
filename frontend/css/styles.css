@@ -1640,6 +1640,31 @@
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
 }
 
+.req-student-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  background: #ffffff;
+  color: #ffffff;
+}
+
+.req-student-card:hover .req-student-checkbox {
+  border-color: #6366f1;
+}
+
+.req-student-card.selected .req-student-checkbox {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.4);
+}
+
 .req-avatar {
   width: 40px;
   height: 40px;

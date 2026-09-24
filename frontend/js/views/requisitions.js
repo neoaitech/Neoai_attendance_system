@@ -20,6 +20,7 @@ const RequisitionsView = {
   },
   studentsList: [],
   selectedStudent: null,
+  selectedStudents: [],
   selectedDate: null,
   dayLecturesData: null,
   searchDebounceTimer: null,
@@ -47,6 +48,7 @@ const RequisitionsView = {
     const todayStr = new Date().toISOString().split("T")[0];
     this.selectedDate = todayStr;
     this.selectedStudent = null;
+    this.selectedStudents = [];
     this.dayLecturesData = null;
 
     container.innerHTML = `
@@ -194,25 +196,41 @@ const RequisitionsView = {
 
             <!-- Systematic Student Cards Section (Replaces messy dropdown) -->
             <div class="mb-3">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-600"></i>
-                  Matching Students in Roster
-                </span>
-                <span class="text-[10px] font-medium text-slate-400" id="student-cards-counter">
-                  Loading students...
-                </span>
+              <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-600"></i>
+                    Matching Students in Roster
+                  </span>
+                  <span class="text-[10px] font-medium text-slate-400" id="student-cards-counter">
+                    Loading students...
+                  </span>
+                </div>
+                <!-- Batch Quick-Select Buttons -->
+                <div class="flex items-center gap-1.5">
+                  <button type="button" 
+                          id="select-all-matching-btn"
+                          class="btn-secondary btn-xs text-[10px] py-1 px-2.5 font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                          onclick="RequisitionsView.selectAllMatching()">
+                    <i data-lucide="check-square" class="w-3 h-3 inline mr-1"></i>Select All
+                  </button>
+                  <button type="button" 
+                          class="btn-secondary btn-xs text-[10px] py-1 px-2 text-slate-500 hover:text-rose-600"
+                          onclick="RequisitionsView.clearAllSelectedStudents()">
+                    Clear Selection
+                  </button>
+                </div>
               </div>
               <div id="student-cards-container" class="req-student-grid">
                 <!-- Systematic student cards injected dynamically -->
               </div>
             </div>
 
-            <!-- Selected Student Profile Banner -->
+            <!-- Selected Students Active Banner -->
             <div id="selected-student-container">
               <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
                 <i data-lucide="user-check" class="w-6 h-6 text-slate-300 mx-auto mb-1"></i>
-                Click on any student card above to select them for OD regularization
+                Click student card(s) above or use "Select All" to choose students for OD regularization
               </div>
             </div>
           </div>
@@ -446,14 +464,19 @@ const RequisitionsView = {
     this.loadStudents();
   },
 
+  isStudentSelected(id) {
+    return this.selectedStudents.some(s => s.id === id);
+  },
+
   renderStudentsGrid() {
     const container = document.getElementById("student-cards-container");
     const counterEl = document.getElementById("student-cards-counter");
     if (!container) return;
 
     const count = this.studentsList.length;
+    const selCount = this.selectedStudents.length;
     if (counterEl) {
-      counterEl.textContent = `${count} ${count === 1 ? 'student' : 'students'} matching`;
+      counterEl.textContent = `${count} ${count === 1 ? 'student' : 'students'} matching (${selCount} selected)`;
     }
 
     if (count === 0) {
@@ -468,16 +491,20 @@ const RequisitionsView = {
     }
 
     container.innerHTML = this.studentsList.slice(0, 60).map(s => {
-      const isSelected = this.selectedStudent && this.selectedStudent.id === s.id;
+      const isSelected = this.isStudentSelected(s.id);
       const initial = (s.full_name || 'S').trim()[0].toUpperCase();
       const rawPortrait = s.photo_url ? (s.photo_url.startsWith('data:') ? s.photo_url : (s.photo_url.startsWith('/') ? s.photo_url : `/uploads/students/${s.photo_url.split(/[\/\\]/).pop()}`)) : null;
       const portraitUrl = rawPortrait ? API.getFileUrl(rawPortrait) : null;
 
       return `
         <div class="req-student-card ${isSelected ? 'selected' : ''}" 
+             data-student-id="${s.id}"
              id="req-student-card-${s.id}" 
-             onclick="RequisitionsView.selectStudent(${s.id})">
+             onclick="RequisitionsView.toggleStudentSelection(${s.id})">
           <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+            <div class="req-student-checkbox">
+              ${isSelected ? `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
+            </div>
             ${portraitUrl ? `
               <img src="${portraitUrl}" class="req-avatar-photo" alt="${s.full_name}" />
             ` : `
@@ -493,15 +520,17 @@ const RequisitionsView = {
           </div>
           <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;">
             <span class="req-div-badge">${s.semester || 'Sem'} &bull; Div ${s.section || 'A'}</span>
-            ${isSelected ? `
-              <span style="font-size: 0.65rem; font-weight: 700; color: #059669; display: flex; align-items: center; gap: 3px;">
-                <i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i> Selected
-              </span>
-            ` : `
-              <span style="font-size: 0.65rem; font-weight: 700; color: #6366f1;">
-                Select &rarr;
-              </span>
-            `}
+            <div class="req-card-status-text">
+              ${isSelected ? `
+                <span style="font-size: 0.65rem; font-weight: 700; color: #059669; display: flex; align-items: center; gap: 3px;">
+                  <i data-lucide="check" style="width: 12px; height: 12px;"></i> Selected
+                </span>
+              ` : `
+                <span style="font-size: 0.65rem; font-weight: 700; color: #6366f1;">
+                  + Select
+                </span>
+              `}
+            </div>
           </div>
         </div>
       `;
@@ -518,91 +547,231 @@ const RequisitionsView = {
     if (window.lucide) window.lucide.createIcons();
   },
 
-  selectStudent(studentId) {
+  toggleStudentSelection(studentId) {
     const student = this.studentsList.find(s => s.id === studentId);
     if (!student) return;
 
-    this.selectedStudent = student;
+    const idx = this.selectedStudents.findIndex(s => s.id === studentId);
+    if (idx >= 0) {
+      this.selectedStudents.splice(idx, 1);
+    } else {
+      // Validate that student matches the class/sem/div of previously selected students
+      if (this.selectedStudents.length > 0) {
+        const first = this.selectedStudents[0];
+        const sameClass = (!student.program || !first.program || student.program === first.program) &&
+                          (!student.semester || !first.semester || student.semester === first.semester) &&
+                          (!student.section || !first.section || student.section === first.section);
+        if (!sameClass) {
+          App.showToast(`Selected student (${student.program || ''} ${student.semester || ''} Div ${student.section || ''}) differs from initial batch (${first.program || ''} ${first.semester || ''} Div ${first.section || ''}). Timetable sessions will match the first selected student's class.`, "warning");
+        }
+      }
+      this.selectedStudents.push(student);
+    }
 
-    // Highlight selected card in the grid
-    document.querySelectorAll(".req-student-card").forEach(c => {
-      c.classList.remove("selected");
+    this.selectedStudent = this.selectedStudents[0] || null;
+    this.updateSelectionUI();
+
+    // Smooth scroll down to Step 2 if this is the first selection
+    if (this.selectedStudents.length === 1) {
+      document.getElementById("step2-container")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  },
+
+  selectAllMatching() {
+    if (!this.studentsList || this.studentsList.length === 0) {
+      App.showToast("No students available in the current filter to select.", "warning");
+      return;
+    }
+
+    let toSelect = this.studentsList;
+    if (this.selectedStudents.length > 0) {
+      const first = this.selectedStudents[0];
+      const sameClassStudents = this.studentsList.filter(s => 
+        (!s.program || !first.program || s.program === first.program) &&
+        (!s.semester || !first.semester || s.semester === first.semester) &&
+        (!s.section || !first.section || s.section === first.section)
+      );
+      if (sameClassStudents.length > 0) {
+        toSelect = sameClassStudents;
+      }
+    }
+
+    const existingIds = new Set(this.selectedStudents.map(s => s.id));
+    for (const s of toSelect) {
+      if (!existingIds.has(s.id)) {
+        this.selectedStudents.push(s);
+        existingIds.add(s.id);
+      }
+    }
+
+    this.selectedStudent = this.selectedStudents[0] || null;
+    this.updateSelectionUI();
+    App.showToast(`Selected ${this.selectedStudents.length} student(s) for OD regularization.`, "info");
+    document.getElementById("step2-container")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  },
+
+  clearAllSelectedStudents() {
+    this.selectedStudents = [];
+    this.selectedStudent = null;
+    this.dayLecturesData = null;
+    this.updateSelectionUI();
+  },
+
+  clearSelectedStudent() {
+    this.clearAllSelectedStudents();
+  },
+
+  updateSelectionUI() {
+    // 1. Update card highlight classes in the grid
+    document.querySelectorAll(".req-student-card").forEach(card => {
+      const id = parseInt(card.getAttribute("data-student-id"));
+      const isSel = this.isStudentSelected(id);
+      card.classList.toggle("selected", isSel);
+      const chk = card.querySelector(".req-student-checkbox");
+      if (chk) {
+        chk.innerHTML = isSel ? `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ``;
+      }
+      const statusText = card.querySelector(".req-card-status-text");
+      if (statusText) {
+        statusText.innerHTML = isSel 
+          ? `<span style="font-size: 0.65rem; font-weight: 700; color: #059669; display: flex; align-items: center; gap: 3px;"><i data-lucide="check" style="width: 12px; height: 12px;"></i> Selected</span>`
+          : `<span style="font-size: 0.65rem; font-weight: 700; color: #6366f1;">+ Select</span>`;
+      }
     });
-    const activeCard = document.getElementById(`req-student-card-${student.id}`);
-    if (activeCard) {
-      activeCard.classList.add("selected");
+
+    // 2. Update live counter
+    const counterEl = document.getElementById("student-cards-counter");
+    if (counterEl) {
+      const count = this.studentsList.length;
+      const selCount = this.selectedStudents.length;
+      counterEl.textContent = `${count} ${count === 1 ? 'student' : 'students'} matching (${selCount} selected)`;
     }
 
-    // Populate search input with student info
-    const searchInput = document.getElementById("student-search-input");
-    if (searchInput) {
-      searchInput.value = `${student.roll_number} - ${student.full_name}`;
+    // 3. Render Active Selected Banner
+    this.renderSelectedStudentsBanner();
+
+    // 4. Update Step 2 lectures inspector
+    if (this.selectedStudents.length > 0) {
+      this.loadDayLectures();
+    } else {
+      const dayCont = document.getElementById("day-lectures-container");
+      if (dayCont) {
+        dayCont.innerHTML = `
+          <div class="p-6 text-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-slate-200">
+            <i data-lucide="calendar" class="w-7 h-7 text-slate-300 mx-auto mb-1.5"></i>
+            Please select at least one student above to inspect conducted lectures for this date.
+          </div>
+        `;
+      }
+      this.updateImpactPreview();
     }
 
-    // Render Selected Student Banner
+    // 5. Update Step 3 grant button text
+    const grantBtn = document.getElementById("req-grant-btn");
+    if (grantBtn) {
+      const n = this.selectedStudents.length;
+      const label = n <= 1 ? "Approve & Grant OD Attendance" : `Approve & Grant OD for ${n} Students`;
+      const span = grantBtn.querySelector("span");
+      if (span) span.textContent = label;
+      else grantBtn.textContent = label;
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  renderSelectedStudentsBanner() {
     const container = document.getElementById("selected-student-container");
-    if (container) {
+    if (!container) return;
+
+    const count = this.selectedStudents.length;
+    if (count === 0) {
       container.innerHTML = `
-        <div style="padding: 14px 18px; border-radius: 14px; background: linear-gradient(135deg, rgba(99,102,241,0.06), #ffffff); border: 2px solid #6366f1; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 14px rgba(99,102,241,0.12);">
-          <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
+          <i data-lucide="user-check" class="w-6 h-6 text-slate-300 mx-auto mb-1"></i>
+          Click student card(s) above or use "Select All" to choose students for OD regularization
+        </div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    const first = this.selectedStudents[0];
+
+    if (count === 1) {
+      container.innerHTML = `
+        <div style="padding: 14px 18px; border-radius: 14px; background: linear-gradient(135deg, rgba(99,102,241,0.06), #ffffff); border: 2px solid #6366f1; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 14px rgba(99,102,241,0.12); flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
             <div style="width: 42px; height: 42px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; flex-shrink: 0; box-shadow: 0 2px 8px rgba(99,102,241,0.3);">
-              ${student.full_name ? student.full_name[0].toUpperCase() : 'S'}
+              ${first.full_name ? first.full_name[0].toUpperCase() : 'S'}
             </div>
             <div>
-              <div style="font-size: 0.9rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                <span>${student.full_name}</span>
-                <span class="req-roll-pill" style="background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; font-size: 0.72rem;">${student.roll_number}</span>
+              <div style="font-size: 0.9rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span>${first.full_name}</span>
+                <span class="req-roll-pill" style="background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; font-size: 0.72rem;">${first.roll_number}</span>
                 <span style="display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; font-weight: 700; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 4px;">
-                  <i data-lucide="check" style="width: 10px; height: 10px;"></i> Active Selected
+                  <i data-lucide="check" style="width: 10px; height: 10px;"></i> 1 Student Selected
                 </span>
               </div>
               <div style="font-size: 0.75rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                <span style="font-weight: 600; color: #334155;">${student.department || 'Academic Dept'}</span> &bull; 
-                <span>${student.program || 'Degree'}</span> &bull; 
-                <span>${student.semester || 'Semester'}</span> &bull; 
-                <span style="font-weight: 700; color: #4338ca;">Division ${student.section || 'A'}</span>
+                <span style="font-weight: 600; color: #334155;">${first.department || 'Academic Dept'}</span> &bull; 
+                <span>${first.program || 'Degree'}</span> &bull; 
+                <span>${first.semester || 'Semester'}</span> &bull; 
+                <span style="font-weight: 700; color: #4338ca;">Division ${first.section || 'A'}</span>
               </div>
             </div>
           </div>
 
           <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <button type="button" class="btn-secondary btn-xs" style="font-size: 0.68rem; padding: 4px 10px;" onclick="App.navigate('student_attendance', { id: ${student.id}, from: 'requisitions' })" title="View Full Attendance Audit">
+            <button type="button" class="btn-secondary btn-xs" style="font-size: 0.68rem; padding: 4px 10px;" onclick="App.navigate('student_attendance', { id: ${first.id}, from: 'requisitions' })" title="View Full Attendance Audit">
               <i data-lucide="eye" style="width: 12px; height: 12px; margin-right: 4px;"></i> Full Audit
             </button>
-            <button type="button" class="btn-secondary btn-xs" style="font-size: 0.68rem; padding: 4px 10px; color: #dc2626;" onclick="RequisitionsView.clearSelectedStudent()">
-              Change Student
+            <button type="button" class="btn-secondary btn-xs" style="font-size: 0.68rem; padding: 4px 10px; color: #dc2626;" onclick="RequisitionsView.clearAllSelectedStudents()">
+              Deselect
             </button>
           </div>
         </div>
       `;
-      if (window.lucide) window.lucide.createIcons();
+    } else {
+      // Multiple students selected in same class/division
+      container.innerHTML = `
+        <div style="padding: 14px 18px; border-radius: 14px; background: linear-gradient(135deg, rgba(16,185,129,0.06), #ffffff); border: 2px solid #10b981; box-shadow: 0 4px 14px rgba(16,185,129,0.12);">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 0.88rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="users" style="width: 16px; height: 16px; color: #059669;"></i>
+                <span>Active Selected Batch: <b style="color: #059669;">${count} Students</b></span>
+              </span>
+              <span class="req-div-badge" style="background: #ecfdf5; border-color: #a7f3d0; color: #065f46; font-size: 0.72rem;">
+                ${first.department || ''} &bull; ${first.program || ''} ${first.semester || ''} Div ${first.section || ''}
+              </span>
+            </div>
+            <button type="button" class="btn-secondary btn-xs" style="font-size: 0.68rem; padding: 4px 10px; color: #dc2626;" onclick="RequisitionsView.clearAllSelectedStudents()">
+              Clear All (${count})
+            </button>
+          </div>
+
+          <!-- Student Chips Wrap -->
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow-y: auto; padding: 2px;">
+            ${this.selectedStudents.map(s => `
+              <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.75rem; color: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                <div style="width: 18px; height: 18px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700;">
+                  ${s.full_name ? s.full_name[0].toUpperCase() : 'S'}
+                </div>
+                <span style="font-weight: 700;">${s.full_name}</span>
+                <span class="req-roll-pill" style="font-size: 0.65rem; padding: 0 4px;">${s.roll_number}</span>
+                <button type="button" 
+                        style="background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 0.85rem; font-weight: 700; line-height: 1; padding: 0 2px; margin-left: 2px;"
+                        title="Remove student from selection"
+                        onclick="event.stopPropagation(); RequisitionsView.toggleStudentSelection(${s.id})">
+                  &times;
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
     }
 
-    // Immediately fetch day lectures for the selected date
-    this.loadDayLectures();
-
-    // Smooth scroll to Step 2
-    document.getElementById("step2-container")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  },
-
-  clearSelectedStudent() {
-    this.selectedStudent = null;
-    document.querySelectorAll(".req-student-card").forEach(c => c.classList.remove("selected"));
-    const input = document.getElementById("student-search-input");
-    if (input) input.value = "";
-    document.getElementById("selected-student-container").innerHTML = `
-      <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
-        <i data-lucide="user-check" class="w-6 h-6 text-slate-300 mx-auto mb-1"></i>
-        Click on any student card above to select them for OD regularization
-      </div>
-    `;
-    document.getElementById("day-lectures-container").innerHTML = `
-      <div class="p-6 text-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-slate-200">
-        <i data-lucide="calendar" class="w-7 h-7 text-slate-300 mx-auto mb-1.5"></i>
-        Please select a student above to inspect conducted lectures for this date.
-      </div>
-    `;
-    this.updateImpactPreview();
     if (window.lucide) window.lucide.createIcons();
   },
 
@@ -625,25 +794,29 @@ const RequisitionsView = {
     const container = document.getElementById("day-lectures-container");
     if (!container) return;
 
-    if (!this.selectedStudent) {
+    if (!this.selectedStudents || this.selectedStudents.length === 0) {
       container.innerHTML = `
         <div class="p-6 text-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-slate-200">
           <i data-lucide="calendar" class="w-7 h-7 text-slate-300 mx-auto mb-1.5"></i>
-          Please select a student above to inspect conducted lectures for this date.
+          Please select student(s) above to inspect conducted lectures for this date.
         </div>
       `;
       if (window.lucide) window.lucide.createIcons();
       return;
     }
 
+    const primaryStudent = this.selectedStudents[0];
+    const studentCount = this.selectedStudents.length;
+    const classInfo = `${primaryStudent.program || ''} Sem ${primaryStudent.semester || ''} Div ${primaryStudent.section || ''}`.trim();
+
     container.innerHTML = `
       <div class="text-center py-8 text-slate-400 text-xs">
-        <span class="spinner-sm mr-2"></span> Inspecting timetable lectures conducted on ${this.selectedDate}...
+        <span class="spinner-sm mr-2"></span> Inspecting timetable lectures conducted on ${this.selectedDate} for ${classInfo || 'selected batch'}...
       </div>
     `;
 
     try {
-      const res = await API.get(`/attendance/student-day-lectures?student_id=${this.selectedStudent.id}&date=${this.selectedDate}`);
+      const res = await API.get(`/attendance/student-day-lectures?student_id=${primaryStudent.id}&date=${this.selectedDate}`);
       this.dayLecturesData = res;
       const lectures = res.lectures || [];
 
@@ -653,7 +826,7 @@ const RequisitionsView = {
             <i data-lucide="calendar-x" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
             <p class="font-bold text-slate-700 text-sm mb-1">No Timetable Lectures Found on ${this.selectedDate}</p>
             <p class="text-slate-400 text-[11px] max-w-sm mx-auto">
-              No finalized classroom lectures were recorded in the system for this student's enrolled courses on this date.
+              No finalized classroom lectures were recorded in the system for ${classInfo || "this class"} on this date.
             </p>
           </div>
         `;
@@ -671,11 +844,13 @@ const RequisitionsView = {
         <!-- Lecture Summary Pill Banner -->
         <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
           <div>
-            <div style="font-size: 0.85rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+            <div style="font-size: 0.85rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
               <i data-lucide="calendar-days" style="width: 16px; height: 16px; color: #6366f1;"></i>
               <span>${totalLec} Lectures Conducted on ${this.selectedDate}</span>
+              ${classInfo ? `<span class="req-tag-pill" style="font-size: 0.72rem;">${classInfo}</span>` : ''}
             </div>
             <div style="font-size: 0.72rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="color: #4338ca; font-weight: 700;">👥 ${studentCount} student(s) selected</span> &bull; 
               <span style="color: #059669; font-weight: 700;">🟢 ${presentCount} Attended</span> &bull; 
               <span style="color: #dc2626; font-weight: 700;">🔴 ${absentCount} Missed (Needs OD)</span>
               ${odCount > 0 ? `&bull; <span style="color: #6366f1; font-weight: 700;">✓ ${odCount} Already OD</span>` : ''}
@@ -777,8 +952,8 @@ const RequisitionsView = {
     const impactEl = document.getElementById("req-impact-text");
     if (!impactEl) return;
 
-    if (!this.selectedStudent || !this.dayLecturesData) {
-      impactEl.textContent = "Select a student and date above to preview attendance regularization.";
+    if (!this.selectedStudents || this.selectedStudents.length === 0 || !this.dayLecturesData) {
+      impactEl.textContent = "Select student(s) and date above to preview attendance regularization.";
       return;
     }
 
@@ -786,19 +961,27 @@ const RequisitionsView = {
     const selectedCount = checkedBoxes.length;
     const totalLectures = this.dayLecturesData.total_lectures || 0;
     const alreadyPresent = this.dayLecturesData.present_count || 0;
+    const studentCount = this.selectedStudents.length;
 
     if (totalLectures === 0) {
       impactEl.textContent = "No conducted lectures on selected date.";
       return;
     }
 
-    const newPresent = Math.min(totalLectures, alreadyPresent + selectedCount);
-    const newPct = Math.round((newPresent / totalLectures) * 100);
-
-    impactEl.innerHTML = `
-      Selected <b>${selectedCount} lecture(s)</b> to grant OD credit. 
-      Resulting date attendance: <b class="text-emerald-700">${newPresent} / ${totalLectures} (${newPct}%)</b>.
-    `;
+    if (studentCount === 1) {
+      const newPresent = Math.min(totalLectures, alreadyPresent + selectedCount);
+      const newPct = Math.round((newPresent / totalLectures) * 100);
+      impactEl.innerHTML = `
+        Selected <b>${selectedCount} lecture(s)</b> to grant OD credit. 
+        Resulting date attendance: <b class="text-emerald-700">${newPresent} / ${totalLectures} (${newPct}%)</b>.
+      `;
+    } else {
+      const totalCredits = selectedCount * studentCount;
+      impactEl.innerHTML = `
+        Granting OD Attendance for <b>${selectedCount} lecture(s)</b> across <b>${studentCount} students</b> 
+        (<b class="text-emerald-700">${totalCredits} total attendance credits</b>).
+      `;
+    }
   },
 
   async submitRequisition() {
@@ -807,8 +990,8 @@ const RequisitionsView = {
       return;
     }
 
-    if (!this.selectedStudent) {
-      App.showToast("Please search and select a student first.", "error");
+    if (!this.selectedStudents || this.selectedStudents.length === 0) {
+      App.showToast("Please search and select at least one student first.", "error");
       return;
     }
 
@@ -829,10 +1012,11 @@ const RequisitionsView = {
       return;
     }
 
+    const studentCount = this.selectedStudents.length;
     const btn = document.getElementById("req-grant-btn");
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = `<span class="spinner-sm mr-2"></span> Granting Institutional OD Attendance...`;
+      btn.innerHTML = `<span class="spinner-sm mr-2"></span> Granting Institutional OD Attendance for ${studentCount} student(s)...`;
     }
 
     try {
@@ -840,7 +1024,8 @@ const RequisitionsView = {
       const approverName = (Auth.currentUser && (Auth.currentUser.full_name || Auth.currentUser.username)) || "Administrator";
 
       const payload = {
-        student_id: this.selectedStudent.id,
+        student_ids: this.selectedStudents.map(s => s.id),
+        student_id: this.selectedStudents[0].id,
         date: this.selectedDate,
         session_ids: sessionIds,
         status: "PRESENT",
@@ -850,24 +1035,20 @@ const RequisitionsView = {
       };
 
       const res = await API.post("/attendance/regularize-requisition", payload);
-      App.showToast(res.message || `Granted OD Attendance for ${sessionIds.length} lecture(s)!`, "success");
+      App.showToast(res.message || `Granted OD Attendance for ${studentCount} student(s)!`, "success");
 
-      // Reset form fields
-      const refInput = document.getElementById("req-form-ref");
-      const titleInput = document.getElementById("req-event-title");
-      if (refInput) refInput.value = "";
-      if (titleInput) titleInput.value = "";
-
-      // Refresh lectures & history KPIs
-      await this.loadDayLectures();
-      await this.loadHistory();
+      // Auto page refresh as requested:
+      setTimeout(() => {
+        window.location.reload();
+      }, 900);
 
     } catch (e) {
       App.showToast(e.message || "Failed to grant OD attendance", "error");
-    } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = `<i data-lucide="check-check" class="w-4 h-4"></i><span>Approve & Grant OD Attendance</span>`;
+        const n = this.selectedStudents.length;
+        const label = n <= 1 ? "Approve & Grant OD Attendance" : `Approve & Grant OD for ${n} Students`;
+        btn.innerHTML = `<i data-lucide="check-check" class="w-4 h-4"></i><span>${label}</span>`;
         if (window.lucide) window.lucide.createIcons();
       }
     }

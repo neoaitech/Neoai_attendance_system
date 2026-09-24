@@ -247,7 +247,8 @@ async def quick_verify_student(
 # =========================================================================
 
 class AttendanceRequisitionPayload(BaseModel):
-    student_id: int
+    student_id: Optional[int] = None
+    student_ids: Optional[List[int]] = None
     date: str
     session_ids: List[int]
     status: Optional[str] = "PRESENT"
@@ -381,12 +382,21 @@ def regularize_attendance_requisition(
     current_user: User = Depends(require_admin)  # STRICTLY RESTRICTED TO ADMIN & SUPER ADMIN!
 ):
     """
-    Grants OD / Requisition Attendance for a student across selected lecture sessions conducted on a specific date.
+    Grants OD / Requisition Attendance for single or multiple students across selected lecture sessions conducted on a specific date.
     Strictly restricted to Administrators and Super Administrators.
     """
-    student = db.query(Student).filter(Student.id == payload.student_id).first()
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found.")
+    target_student_ids = []
+    if payload.student_ids:
+        target_student_ids = [int(sid) for sid in payload.student_ids if sid]
+    elif payload.student_id:
+        target_student_ids = [int(payload.student_id)]
+
+    if not target_student_ids:
+        raise HTTPException(status_code=400, detail="Please select at least one student.")
+
+    students = db.query(Student).filter(Student.id.in_(target_student_ids)).all()
+    if not students:
+        raise HTTPException(status_code=404, detail="Selected student(s) not found.")
 
     if not payload.session_ids:
         raise HTTPException(status_code=400, detail="At least one lecture session must be selected.")
@@ -394,60 +404,69 @@ def regularize_attendance_requisition(
     approver = payload.approved_by or current_user.full_name or current_user.username
     reason_note = f"OD Approved: {payload.reason} | Event: {payload.event_name} | Approved by {approver} ({current_user.role.upper()})"
 
-    updated_count = 0
-    for sess_id in payload.session_ids:
-        session = db.query(AttendanceSession).filter(AttendanceSession.id == sess_id).first()
-        if not session:
-            continue
+    total_records_updated = 0
+    updated_students_info = []
 
-        record = db.query(AttendanceRecord).filter(
-            AttendanceRecord.session_id == sess_id,
-            AttendanceRecord.student_id == student.id
-        ).first()
+    for student in students:
+        updated_for_student = 0
+        for sess_id in payload.session_ids:
+            session = db.query(AttendanceSession).filter(AttendanceSession.id == sess_id).first()
+            if not session:
+                continue
 
-        if record:
-            record.status = payload.status or "PRESENT"
-            record.verification_type = "OD_REQUISITION"
-            record.notes = reason_note
-            record.marked_at = datetime.utcnow()
-        else:
-            # Create attendance record if not existing in session
-            record = AttendanceRecord(
-                session_id=sess_id,
-                student_id=student.id,
-                status=payload.status or "PRESENT",
-                confidence_score=100.0,
-                verification_type="OD_REQUISITION",
-                attendance_type="REGULAR",
-                is_extra_lecture=False,
-                notes=reason_note,
-                marked_at=datetime.utcnow()
-            )
-            db.add(record)
+            record = db.query(AttendanceRecord).filter(
+                AttendanceRecord.session_id == sess_id,
+                AttendanceRecord.student_id == student.id
+            ).first()
 
-        updated_count += 1
+            if record:
+                record.status = payload.status or "PRESENT"
+                record.verification_type = "OD_REQUISITION"
+                record.notes = reason_note
+                record.marked_at = datetime.utcnow()
+            else:
+                # Create attendance record if not existing in session
+                record = AttendanceRecord(
+                    session_id=sess_id,
+                    student_id=student.id,
+                    status=payload.status or "PRESENT",
+                    confidence_score=100.0,
+                    verification_type="OD_REQUISITION",
+                    attendance_type="REGULAR",
+                    is_extra_lecture=False,
+                    notes=reason_note,
+                    marked_at=datetime.utcnow()
+                )
+                db.add(record)
 
-    # Log audit entry
-    audit = AuditLog(
-        user_id=current_user.id,
-        actor_name=current_user.full_name or current_user.username,
-        actor_role=current_user.role,
-        action="ATTENDANCE_OD_REQUISITION_GRANTED",
-        entity="Student",
-        entity_id=student.id,
-        target_user_id=None,
-        target_name=student.full_name,
-        details=f"Granted OD Attendance for {updated_count} lecture(s) on {payload.date}. Event: {payload.event_name}. Ref: {payload.reason}."
-    )
-    db.add(audit)
+            updated_for_student += 1
+            total_records_updated += 1
+
+        updated_students_info.append(f"{student.full_name} ({student.roll_number})")
+
+        # Log audit entry per student
+        audit = AuditLog(
+            user_id=current_user.id,
+            actor_name=current_user.full_name or current_user.username,
+            actor_role=current_user.role,
+            action="ATTENDANCE_OD_REQUISITION_GRANTED",
+            entity="Student",
+            entity_id=student.id,
+            target_user_id=None,
+            target_name=student.full_name,
+            details=f"Granted OD Attendance for {updated_for_student} lecture(s) on {payload.date}. Event: {payload.event_name}. Ref: {payload.reason}."
+        )
+        db.add(audit)
+
     db.commit()
 
+    student_label = students[0].full_name if len(students) == 1 else f"{len(students)} students"
     return {
         "success": True,
-        "message": f"Successfully granted OD Attendance for {updated_count} lecture(s) on {payload.date}.",
-        "student_name": student.full_name,
-        "roll_number": student.roll_number,
-        "updated_lectures_count": updated_count
+        "message": f"Successfully granted OD Attendance for {student_label} across {len(payload.session_ids)} lecture(s) on {payload.date}.",
+        "updated_students_count": len(students),
+        "total_records_updated": total_records_updated,
+        "students": updated_students_info
     }
 
 @router.get("/requisition-history")
