@@ -118,33 +118,7 @@ const Auth = {
             <span id="login-error-text">Invalid credentials. Please try again.</span>
           </div>
 
-          <!-- Authorized Role Selection Cards -->
-          <div class="auth-role-selection-wrapper">
-            <span class="auth-role-label">Authorized Role:</span>
-            <div class="auth-role-grid">
-              
-              <div id="role-card-admin" class="auth-role-card active" onclick="Auth.selectRolePreset('admin')">
-                <div class="auth-role-icon">
-                  <i data-lucide="shield" class="w-3.5 h-3.5"></i>
-                </div>
-                <div class="auth-role-info truncate">
-                  <span class="auth-role-name truncate">Administrator</span>
-                  <span class="auth-role-id truncate">System Administrator</span>
-                </div>
-              </div>
-
-              <div id="role-card-teacher" class="auth-role-card" onclick="Auth.selectRolePreset('teacher')">
-                <div class="auth-role-icon">
-                  <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
-                </div>
-                <div class="auth-role-info truncate">
-                  <span class="auth-role-name truncate">Course Faculty</span>
-                  <span class="auth-role-id truncate">Authorized Faculty</span>
-                </div>
-              </div>
-
-            </div>
-          </div>
+          <!-- Unified Institutional Login Form -->
 
           <!-- Login Form -->
           <form id="portal-login-form" autocomplete="off" onsubmit="event.preventDefault(); Auth.submitLogin();">
