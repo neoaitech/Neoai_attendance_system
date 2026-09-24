@@ -748,7 +748,7 @@ const StudentsView = {
               <label class="form-label text-xs font-semibold">Department</label>
               <select id="bulk-dept-select" class="form-select text-xs">
                 <option value="" selected>-- Keep existing department (No change) --</option>
-                <option value="Computer Science">Computer Science</option>
+                <option value="Computer">Computer</option>
                 <option value="AI & Data Science">AI & Data Science</option>
                 <option value="Information Technology">Information Technology</option>
               </select>

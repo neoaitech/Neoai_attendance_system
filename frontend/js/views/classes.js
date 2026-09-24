@@ -786,7 +786,7 @@ const ClassesView = {
             <div class="form-group mb-0">
               <label class="form-label text-xs">Department</label>
               <select id="edit-sec-dept" class="form-select text-xs" required>
-                <option value="Computer Science" ${rawClass.department === "Computer Science" ? 'selected' : ''}>Computer Science</option>
+                <option value="Computer" ${rawClass.department === "Computer" ? 'selected' : ''}>Computer</option>
                 <option value="AI & Data Science" ${rawClass.department === "AI & Data Science" ? 'selected' : ''}>AI & Data Science</option>
                 <option value="Information Technology" ${rawClass.department === "Information Technology" ? 'selected' : ''}>Information Technology</option>
               </select>
@@ -907,7 +907,7 @@ const ClassesView = {
                 <div class="form-group mb-0">
                   <label class="form-label text-xs font-semibold">Department *</label>
                   <select id="create-class-dept" class="form-select text-xs" onchange="ClassesView.onCreateFilterChange()" required>
-                    <option value="Computer Science" selected>Computer Science & Engineering</option>
+                    <option value="Computer" selected>Computer</option>
                     <option value="AI & Data Science">Artificial Intelligence & Data Science</option>
                     <option value="Information Technology">Information Technology</option>
                     <option value="Electronics">Electronics & Telecommunication</option>

@@ -478,7 +478,7 @@ const CaptureView = {
         const dSel = document.getElementById("multi-dept-select");
         if (dSel && meta.departments && meta.departments.length > 0) {
           const depts = [...meta.departments];
-          const currVal = dSel.value || "Computer Science & Engineering";
+          const currVal = dSel.value || "Computer";
           dSel.innerHTML = `
             <option value="ALL" ${currVal === 'ALL' ? 'selected' : ''}>All Departments</option>
             ${depts.map(d => `<option value="${d}" ${d === currVal || (!currVal && d.toLowerCase().includes('computer')) ? 'selected' : ''}>${d}</option>`).join("")}
