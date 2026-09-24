@@ -1,5 +1,5 @@
-// VisionAttend Service Worker - PWA Offline Shell & Fast Asset Caching
-const CACHE_NAME = 'visionattend-v14.0';
+// NeoAI Tech Service Worker - PWA Offline Shell & Fast Asset Caching
+const CACHE_NAME = 'neoai-tech-v15.0';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

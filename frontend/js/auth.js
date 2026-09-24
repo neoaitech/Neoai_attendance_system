@@ -92,7 +92,7 @@ const Auth = {
           
           <!-- Branded Header -->
           <div class="auth-brand-header">
-            <img src="images/visionattend_logo.png" alt="VisionAttend Logo" class="auth-brand-logo" onerror="this.style.display='none'" />
+            <img src="images/visionattend_logo.png?v=2" alt="NeoAI Tech Logo" class="auth-brand-logo" onerror="this.style.display='none'" />
             <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mt-1">Institutional Biometrics Portal</span>
           </div>
 

@@ -1,7 +1,7 @@
 {
-  "name": "VisionAttend AI",
-  "short_name": "VisionAttend",
-  "description": "Enterprise AI Biometric Classroom Attendance System",
+  "name": "NeoAI Tech Attendance System",
+  "short_name": "NeoAI Tech",
+  "description": "Enterprise AI Biometric Attendance System",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
