@@ -143,11 +143,30 @@
   margin: 0 auto;
 }
 
-/* Camera Overlay Indicators */
-.camera-status-overlay {
+/* Camera Overlay Indicators & Mobile Fullscreen HUD */
+.camera-hud-top {
   position: absolute;
   top: 12px;
   left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.camera-hud-top > * {
+  pointer-events: auto;
+}
+
+.camera-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.camera-status-overlay {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -155,10 +174,10 @@
   border-radius: var(--radius-full);
   background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   color: #ffffff;
   font-size: 0.72rem;
   font-weight: 600;
-  z-index: 5;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
@@ -188,9 +207,6 @@
 }
 
 .camera-count-overlay {
-  position: absolute;
-  top: 12px;
-  right: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -198,13 +214,124 @@
   border-radius: var(--radius-full);
   background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   color: #ffffff;
   font-size: 0.72rem;
   font-weight: 600;
-  z-index: 5;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+.camera-hud-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.camera-hud-btn:hover {
+  background: rgba(99, 102, 241, 0.9);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.08);
+}
+
+.camera-hud-btn:active {
+  transform: scale(0.92);
+}
+
+/* Fullscreen Close Button */
+.camera-fullscreen-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 30;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.camera-fullscreen-close-btn:hover {
+  background: rgba(239, 68, 68, 0.9);
+  transform: scale(1.08);
+}
+
+.camera-fullscreen-close-btn:active {
+  transform: scale(0.92);
+}
+
+/* DSLR Focus Brackets */
+.camera-focus-brackets {
+  position: absolute;
+  top: 15%;
+  left: 14%;
+  right: 14%;
+  bottom: 18%;
+  pointer-events: none;
+  z-index: 5;
+  transition: all 0.3s ease;
+}
+
+.camera-focus-brackets .bracket-tl,
+.camera-focus-brackets .bracket-tr,
+.camera-focus-brackets .bracket-bl,
+.camera-focus-brackets .bracket-br {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: rgba(255, 255, 255, 0.4);
+  border-style: solid;
+  transition: border-color 0.2s;
+}
+
+.camera-focus-brackets .bracket-tl {
+  top: 0;
+  left: 0;
+  border-width: 2.5px 0 0 2.5px;
+  border-top-left-radius: 6px;
+}
+
+.camera-focus-brackets .bracket-tr {
+  top: 0;
+  right: 0;
+  border-width: 2.5px 2.5px 0 0;
+  border-top-right-radius: 6px;
+}
+
+.camera-focus-brackets .bracket-bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 2.5px 2.5px;
+  border-bottom-left-radius: 6px;
+}
+
+.camera-focus-brackets .bracket-br {
+  bottom: 0;
+  right: 0;
+  border-width: 0 2.5px 2.5px 0;
+  border-bottom-right-radius: 6px;
+}
+
+/* Floating Camera Flip Button */
 .camera-flip-overlay-btn {
   position: absolute;
   bottom: 14px;
@@ -235,6 +362,215 @@
 
 .camera-flip-overlay-btn:active {
   transform: scale(0.92) rotate(180deg);
+}
+
+/* Bottom Native Smartphone Shutter Bar */
+.camera-shutter-bar-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 20px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  display: none; /* Shown on mobile & in fullscreen */
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
+  z-index: 20;
+  pointer-events: auto;
+}
+
+/* Snaps Mini-Preview Thumbnail */
+.shutter-thumbnail-preview {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.shutter-thumbnail-preview:active {
+  transform: scale(0.92);
+}
+
+.thumbnail-img-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.thumbnail-img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #6366f1;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+/* Iconic Central Native Shutter Button */
+.native-shutter-button {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  outline: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.native-shutter-button .shutter-ring {
+  position: absolute;
+  inset: 0;
+  border: 3.5px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.45), inset 0 0 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.native-shutter-button .shutter-inner {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.native-shutter-button:hover .shutter-ring {
+  transform: scale(1.04);
+  border-color: #ffffff;
+}
+
+.native-shutter-button:active {
+  transform: scale(0.92);
+}
+
+.native-shutter-button:active .shutter-inner {
+  transform: scale(0.85);
+  background: #cbd5e1;
+}
+
+/* Native Done Button */
+.native-done-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.9);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.native-done-button:hover {
+  background: #10b981;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
+}
+
+.native-done-button:active {
+  transform: scale(0.95);
+}
+
+/* Visual Flash Effect on Capture */
+.camera-shutter-flash {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.camera-shutter-flash.flash-active,
+.camera-shutter-flash.active {
+  animation: cameraShutterFlashAnim 0.3s ease-out;
+}
+
+@keyframes cameraShutterFlashAnim {
+  0% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+/* Fullscreen Camera Mode Overrides */
+.camera-feed-container.is-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+  z-index: 99999 !important;
+  margin: 0 !important;
+  background: #000000 !important;
+  box-shadow: none !important;
+}
+
+.camera-feed-container.is-fullscreen video {
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  object-fit: cover !important;
+}
+
+.camera-feed-container.is-fullscreen .camera-shutter-bar-overlay {
+  display: flex !important;
+}
+
+.camera-feed-container.is-fullscreen .camera-flip-overlay-btn {
+  bottom: 96px !important;
+  right: 18px !important;
+}
+
+body.camera-fullscreen-open {
+  overflow: hidden !important;
+  touch-action: none !important;
 }
 
 /* Camera Controls Bar Below Viewport */
@@ -1610,15 +1946,40 @@
 
   /* Camera Viewport on Mobile */
   .camera-viewport-card {
-    padding: 14px !important;
+    padding: 10px !important;
     border-radius: 16px !important;
   }
 
   .camera-feed-container {
-    min-height: 220px !important;
-    max-height: 48vh !important;
-    border-radius: 14px !important;
-    aspect-ratio: 4 / 3 !important;
+    min-height: 380px !important;
+    height: 58vh !important;
+    max-height: 540px !important;
+    border-radius: 18px !important;
+    aspect-ratio: auto !important;
+    background: #000000 !important;
+  }
+
+  .camera-feed-container video {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  .camera-shutter-bar-overlay {
+    display: flex !important;
+  }
+
+  .camera-flip-overlay-btn {
+    bottom: 96px !important;
+    right: 16px !important;
+  }
+
+  .camera-focus-brackets {
+    top: 12% !important;
+    bottom: 20% !important;
+    left: 10% !important;
+    right: 10% !important;
   }
 
   .upload-dropzone {

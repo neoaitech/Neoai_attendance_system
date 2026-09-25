@@ -318,33 +318,88 @@ const CaptureView = {
 
             <!-- Source 2: Live Camera Viewport Box -->
             <div id="src-camera-box" class="hidden">
-              <div class="camera-feed-container">
+              <div class="camera-feed-container" id="camera-feed-container">
                 <video id="multi-webcam-video" autoplay playsinline></video>
-                <div class="camera-status-overlay">
-                  <span class="camera-status-dot scanning" id="cam-status-dot"></span>
-                  <span id="cam-status-text">Camera Active</span>
+                
+                <!-- Viewfinder DSLR Focus Brackets -->
+                <div class="camera-focus-brackets">
+                  <div class="bracket-tl"></div>
+                  <div class="bracket-tr"></div>
+                  <div class="bracket-bl"></div>
+                  <div class="bracket-br"></div>
                 </div>
-                <div class="camera-count-overlay">
-                  <span id="cam-snap-counter" class="font-mono text-emerald-400">0 Angles Snapped</span>
+
+                <!-- Top Camera HUD (Status + Angles count + Fullscreen toggle) -->
+                <div class="camera-hud-top">
+                  <div class="camera-status-overlay">
+                    <span class="camera-status-dot scanning" id="cam-status-dot"></span>
+                    <span id="cam-status-text">Camera Active</span>
+                  </div>
+                  
+                  <div class="camera-hud-actions">
+                    <div class="camera-count-overlay">
+                      <span id="cam-snap-counter" class="font-mono text-emerald-400">0 / 8 Angles</span>
+                    </div>
+
+                    <button type="button" class="camera-hud-btn" id="cam-fullscreen-toggle-btn" onclick="CaptureView.toggleFullscreenCamera()" title="Open Mobile Full Screen Camera View" aria-label="Toggle Fullscreen">
+                      <i data-lucide="maximize-2" class="w-4 h-4" id="cam-fullscreen-icon"></i>
+                    </button>
+                  </div>
                 </div>
+
                 <!-- Touch-friendly Floating Camera Flip Button -->
                 <button type="button" class="camera-flip-overlay-btn" id="cam-flip-overlay-btn" onclick="CaptureView.switchCamera()" title="Switch Front / Back Camera" aria-label="Switch Camera">
                   <i data-lucide="switch-camera" class="w-4 h-4"></i>
                 </button>
+
+                <!-- Fullscreen Overlay Close Button (Shown in Fullscreen Mode) -->
+                <button type="button" class="camera-fullscreen-close-btn hidden" id="cam-fullscreen-close-btn" onclick="CaptureView.exitFullscreenCamera()" title="Exit Fullscreen">
+                  <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+
+                <!-- Bottom Native Smartphone Shutter Bar (Shown on Mobile & in Fullscreen) -->
+                <div class="camera-shutter-bar-overlay" id="cam-shutter-bar-overlay">
+                  <!-- Snaps Mini-Preview Thumbnail on Left -->
+                  <div class="shutter-thumbnail-preview" id="shutter-thumbnail-preview" onclick="CaptureView.finishCameraAngles()" title="View Snapped Angles">
+                    <span class="thumbnail-count" id="shutter-thumb-count">0</span>
+                    <div class="thumbnail-img-box" id="shutter-thumb-img-box">
+                      <i data-lucide="image" class="w-4 h-4 text-white opacity-60"></i>
+                    </div>
+                  </div>
+
+                  <!-- Central Native Shutter Button -->
+                  <button type="button" class="native-shutter-button" id="native-shutter-btn" onclick="CaptureView.takeClassroomSnap()" title="Snap Angle" aria-label="Capture Angle">
+                    <span class="shutter-ring"></span>
+                    <span class="shutter-inner"></span>
+                  </button>
+
+                  <!-- Right Action: Done Button -->
+                  <button type="button" class="native-done-button" id="native-done-btn" onclick="CaptureView.finishCameraAngles()" title="Done Snapping">
+                    <span id="native-done-text">Done</span>
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                  </button>
+                </div>
+
+                <!-- Shutter Flash Effect -->
+                <div class="camera-shutter-flash" id="camera-shutter-flash"></div>
               </div>
 
-              <!-- Controls bar below webcam -->
+              <!-- Controls bar below webcam (Inline desktop & tablet mode) -->
               <div class="camera-controls-bar">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <button type="button" class="btn-primary btn-sm" onclick="CaptureView.takeClassroomSnap()">
+                  <button type="button" class="btn-primary btn-sm flex items-center gap-1.5" onclick="CaptureView.takeClassroomSnap()">
                     <i data-lucide="camera" class="w-3.5 h-3.5"></i>
                     <span>Snap Angle</span>
                   </button>
-                  <button type="button" class="btn-secondary btn-sm" onclick="CaptureView.switchCamera()" id="cam-facing-btn" title="Switch Front / Back Camera">
+                  <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.toggleFullscreenCamera()" id="btn-fullscreen-inline">
+                    <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-indigo-600"></i>
+                    <span>Full Screen</span>
+                  </button>
+                  <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.switchCamera()" id="cam-facing-btn" title="Switch Front / Back Camera">
                     <i data-lucide="switch-camera" class="w-3.5 h-3.5 text-indigo-600"></i>
                     <span id="cam-facing-label">Back Cam</span>
                   </button>
-                  <button type="button" class="btn-secondary btn-sm" onclick="CaptureView.startCamera()" title="Restart Camera Stream">
+                  <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.startCamera()" title="Restart Camera Stream">
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                     <span>Restart</span>
                   </button>
@@ -1258,11 +1313,17 @@ const CaptureView = {
       if (label) {
         label.textContent = (mode === "environment") ? "Back Cam" : "Front Cam";
       }
+      if (window.innerWidth <= 768) {
+        this.enterFullscreenCamera();
+      }
     } catch (e) {
       console.warn("Webcam access error with ideal constraints, trying fallback:", e);
       try {
         this.webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = this.webcamStream;
+        if (window.innerWidth <= 768) {
+          this.enterFullscreenCamera();
+        }
       } catch (err) {
         App.showToast("Camera streaming unavailable. Please use 'Upload / Take Photo' button.", "warning");
         this.setSourceMode("upload");
@@ -1271,9 +1332,58 @@ const CaptureView = {
   },
 
   stopCamera() {
+    this.exitFullscreenCamera();
     if (this.webcamStream) {
       this.webcamStream.getTracks().forEach(t => t.stop());
       this.webcamStream = null;
+    }
+  },
+
+  toggleFullscreenCamera() {
+    const container = document.getElementById("camera-feed-container");
+    if (!container) return;
+    if (container.classList.contains("is-fullscreen")) {
+      this.exitFullscreenCamera();
+    } else {
+      this.enterFullscreenCamera();
+    }
+  },
+
+  enterFullscreenCamera() {
+    const container = document.getElementById("camera-feed-container");
+    if (!container) return;
+    container.classList.add("is-fullscreen");
+    document.body.classList.add("camera-fullscreen-open");
+    const closeBtn = document.getElementById("cam-fullscreen-close-btn");
+    if (closeBtn) closeBtn.classList.remove("hidden");
+    const fsIcon = document.getElementById("cam-fullscreen-icon");
+    if (fsIcon) fsIcon.setAttribute("data-lucide", "minimize-2");
+    if (window.lucide) window.lucide.createIcons();
+    App.showToast("Full Screen Camera active. Tap white shutter button to snap.", "info");
+  },
+
+  exitFullscreenCamera() {
+    const container = document.getElementById("camera-feed-container");
+    if (!container) return;
+    container.classList.remove("is-fullscreen");
+    document.body.classList.remove("camera-fullscreen-open");
+    const closeBtn = document.getElementById("cam-fullscreen-close-btn");
+    if (closeBtn) closeBtn.classList.add("hidden");
+    const fsIcon = document.getElementById("cam-fullscreen-icon");
+    if (fsIcon) fsIcon.setAttribute("data-lucide", "maximize-2");
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  finishCameraAngles() {
+    this.exitFullscreenCamera();
+    const scanBtn = document.getElementById("multi-scan-btn");
+    if (scanBtn && typeof scanBtn.scrollIntoView === 'function') {
+      scanBtn.scrollIntoView({ behavior: "smooth" });
+    }
+    if (this.stagedCameraSnaps.length > 0) {
+      App.showToast(`${this.stagedCameraSnaps.length} angle(s) snapped. Ready for Biometric Scan!`, "success");
+    } else {
+      App.showToast("No angles snapped yet. Tap shutter to take photos.", "info");
     }
   },
 
@@ -1331,6 +1441,19 @@ const CaptureView = {
       return;
     }
 
+    // Trigger visual camera shutter flash animation
+    const flash = document.getElementById("camera-shutter-flash");
+    if (flash) {
+      flash.classList.remove("flash-active");
+      void flash.offsetWidth;
+      flash.classList.add("flash-active");
+    }
+
+    // Trigger phone haptic tap vibration if supported
+    if (navigator.vibrate) {
+      try { navigator.vibrate(45); } catch (e) {}
+    }
+
     // Scale canvas so max dimension <= 1280px to accelerate AI inference and prevent mobile timeouts
     const maxDim = 1280;
     let w = video.videoWidth;
@@ -1370,12 +1493,30 @@ const CaptureView = {
 
     this.renderCameraSnapStrip();
     this.uploadSessionPhotoToStaging(item, "camera");
-    App.showToast(`Angle #${this.stagedCameraSnaps.length} captured & pre-uploading!`, "success");
+    App.showToast(`Angle #${this.stagedCameraSnaps.length} captured!`, "success");
   },
 
   renderCameraSnapStrip() {
     const counter = document.getElementById("cam-snap-counter");
-    if (counter) counter.textContent = `${this.stagedCameraSnaps.length} Angle(s) Snapped (Max 8)`;
+    if (counter) counter.textContent = `${this.stagedCameraSnaps.length} / 8 Angles`;
+
+    const thumbCount = document.getElementById("shutter-thumb-count");
+    if (thumbCount) thumbCount.textContent = this.stagedCameraSnaps.length;
+
+    const thumbBox = document.getElementById("shutter-thumb-img-box");
+    if (thumbBox) {
+      if (this.stagedCameraSnaps.length > 0) {
+        const last = this.stagedCameraSnaps[this.stagedCameraSnaps.length - 1];
+        thumbBox.innerHTML = `<img src="${last.dataUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" />`;
+      } else {
+        thumbBox.innerHTML = `<i data-lucide="image" class="w-4 h-4 text-white opacity-60"></i>`;
+      }
+    }
+
+    const doneText = document.getElementById("native-done-text");
+    if (doneText) {
+      doneText.textContent = this.stagedCameraSnaps.length > 0 ? `Done (${this.stagedCameraSnaps.length})` : "Done";
+    }
 
     const strip = document.getElementById("cam-snap-strip");
     if (!strip) return;
@@ -1390,6 +1531,7 @@ const CaptureView = {
         <button type="button" class="snap-thumb-remove" onclick="CaptureView.removeCameraSnap('${item.id}')" title="Retake / Remove this angle">&times;</button>
       </div>
     `).join("");
+    if (window.lucide) window.lucide.createIcons();
   },
 
   removeCameraSnap(itemId) {
