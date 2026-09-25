@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VisionAttend Mobile UI Studio (Visual Customizer)</title>
+  <title>VisionAttend Mobile UI Studio (Pro Visual Customizer)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -20,7 +20,7 @@
     }
 
     /* Custom Scrollbars */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #0f172a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
@@ -168,7 +168,7 @@
     [data-edit="true"] {
       cursor: pointer;
       position: relative;
-      transition: all 0.15s ease;
+      transition: all 0.1s ease;
       outline: 1.5px dashed transparent;
     }
     [data-edit="true"]:hover {
@@ -180,12 +180,56 @@
       background-color: rgba(79, 70, 229, 0.08) !important;
       box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25) !important;
     }
+
+    /* Floating Quick Bar above element */
+    #floating-quick-bar {
+      position: absolute;
+      z-index: 9999;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 4px 8px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+      font-size: 11px;
+      color: white;
+      white-space: nowrap;
+    }
+    #floating-quick-bar button {
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #1e293b;
+      color: #f8fafc;
+      font-weight: 700;
+      font-size: 11px;
+      transition: all 0.15s;
+    }
+    #floating-quick-bar button:hover {
+      background: #4f46e5;
+      color: white;
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
+  <!-- Floating In-Screen Quick Action Toolbar -->
+  <div id="floating-quick-bar">
+    <button onclick="quickAction('bold')" title="Toggle Bold"><b>B</b></button>
+    <button onclick="quickAction('italic')" title="Toggle Italic"><i>I</i></button>
+    <button onclick="quickAction('size-down')" title="Font Chota Karein (Smaller)">A-</button>
+    <button onclick="quickAction('size-up')" title="Font Bada Karein (Larger)">A+</button>
+    <button onclick="quickAction('next-line')" title="Next Line me Shift Karein (Break Line)">↵ Next Line</button>
+    <button onclick="quickAction('stack-toggle')" title="Row ya Column me badlein">↕ Stack</button>
+    <button onclick="quickAction('move-up')" title="Upar Karein">▲</button>
+    <button onclick="quickAction('move-down')" title="Niche Karein">▼</button>
+    <button onclick="quickAction('duplicate')" title="Duplicate / Copy">⎘</button>
+    <button onclick="quickAction('delete')" class="!bg-rose-900/60 hover:!bg-rose-600 text-rose-200" title="Delete / Hide">🗑</button>
+  </div>
+
   <!-- Top Workbench Navigation Header -->
-  <header class="bg-slate-800/90 border-b border-slate-700 px-4 py-3 sticky top-0 z-50 backdrop-blur">
+  <header class="bg-slate-800/95 border-b border-slate-700 px-4 py-3 sticky top-0 z-50 backdrop-blur">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       
       <div class="flex items-center gap-3">
@@ -194,22 +238,22 @@
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="font-extrabold text-sm text-white">VisionAttend UI Studio</span>
-            <span class="bg-indigo-500/20 text-indigo-300 text-[10px] px-2 py-0.5 rounded-full font-bold border border-indigo-500/30">Dedicated Full Page</span>
+            <span class="font-extrabold text-sm text-white">VisionAttend UI Pro Studio</span>
+            <span class="bg-indigo-500/20 text-indigo-300 text-[10px] px-2 py-0.5 rounded-full font-bold border border-indigo-500/30">Fully Flexible Builder</span>
           </div>
-          <p class="text-[11px] text-slate-400">Mobile screen par kisi bhi cheez par click karke customize karein</p>
+          <p class="text-[11px] text-slate-400">Next Line, Font Size (5px to 36px), Bold, Naye Filters & Features sab kuch available hai!</p>
         </div>
       </div>
 
       <div class="flex items-center gap-2.5">
         <a href="/" class="px-3 py-1.5 text-xs text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition font-medium">
-          ← Back to Main App
+          ← Back to App
         </a>
         <button onclick="resetToInitial()" class="px-3 py-1.5 text-xs text-slate-300 bg-slate-700 hover:bg-slate-600 rounded-lg transition font-medium">
           ↺ Reset
         </button>
-        <button onclick="showExportDialog()" class="px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-md transition flex items-center gap-1.5">
-          <span>💾 Save & Export Design</span>
+        <button onclick="showExportDialog()" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-lg shadow-indigo-600/30 transition flex items-center gap-1.5">
+          <span>💾 Save & Apply Design</span>
         </button>
       </div>
 
@@ -220,11 +264,14 @@
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
     
     <!-- LEFT: High-Fidelity Smartphone Shell (5 Cols) -->
-    <div class="lg:col-span-5 flex flex-col items-center justify-center bg-slate-950/60 p-4 rounded-3xl border border-slate-800">
+    <div class="lg:col-span-5 flex flex-col items-center justify-center bg-slate-950/70 p-4 rounded-3xl border border-slate-800">
       
-      <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        Mobile Screen Preview (Click to Edit)
+      <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between w-full px-2">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Live Screen Preview (Click to Edit)</span>
+        </div>
+        <span class="text-[10px] text-indigo-400 bg-indigo-950 px-2 py-0.5 rounded border border-indigo-800">Direct Click & Edit</span>
       </div>
 
       <!-- Phone Simulator Frame -->
@@ -278,7 +325,7 @@
         <div class="app-screen-scroll" id="screen-content-area">
 
           <!-- Page Header & Subtitle Block -->
-          <div class="space-y-2" id="block-header-title" data-edit="true" data-name="Page Header & Subtitle Block">
+          <div class="space-y-2" id="block-header-title" data-edit="true" data-name="Page Header & Dropdown Block">
             <div class="flex items-center gap-2">
               <h2 class="text-base font-extrabold text-slate-900" id="txt-page-title" data-edit="true" data-name="Page Main Title">Attendance History</h2>
               <span class="bg-slate-100 text-slate-600 text-[9px] font-semibold px-2 py-0.5 rounded-full border border-slate-200" id="ui-audit-badge" data-edit="true" data-name="Audit Badge">Audit & Biometric Inspector</span>
@@ -313,13 +360,13 @@
             <div class="pt-2 border-t border-slate-100 flex flex-col gap-2" id="block-stat-counters" data-edit="true" data-name="Stats Counters & Save Changes Block">
               
               <div class="text-[11px] text-slate-700 flex flex-wrap items-center gap-x-2.5 gap-y-1" id="ui-stats-line" data-edit="true" data-name="Stat Counters Line">
-                <span>Detected <b class="font-mono text-slate-900 font-bold">41</b></span>
-                <span>Normal Present <b class="font-mono text-slate-900 font-bold">1</b></span>
-                <span>Normal Absent <b class="font-mono text-slate-900 font-bold">2</b></span>
+                <span id="stat-detected-box" data-edit="true" data-name="Detected Pill">Detected <b class="font-mono text-slate-900 font-bold">41</b></span>
+                <span id="stat-present-box" data-edit="true" data-name="Present Pill">Normal Present <b class="font-mono text-slate-900 font-bold">1</b></span>
+                <span id="stat-absent-box" data-edit="true" data-name="Absent Pill">Normal Absent <b class="font-mono text-slate-900 font-bold">2</b></span>
               </div>
 
               <div class="flex items-center justify-between gap-2" id="row-unknown-save" data-edit="true" data-name="Unknown Stat & Save Button Row">
-                <span class="text-[11px] text-slate-700">Unknown <b class="font-mono text-slate-900 font-bold">35</b></span>
+                <span class="text-[11px] text-slate-700" id="stat-unknown-box" data-edit="true" data-name="Unknown Pill">Unknown <b class="font-mono text-slate-900 font-bold">35</b></span>
                 <button class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold flex items-center gap-1.5 shadow-sm transition" id="btn-save-changes" data-edit="true" data-name="Save Changes Button">
                   <span>✓</span>
                   <span id="txt-save-btn">Save Changes</span>
@@ -340,7 +387,7 @@
             </div>
 
             <div class="flex items-center justify-between text-[11px]" id="row-lightbox-bar" data-edit="true" data-name="Lightbox Actions Bar">
-              <span class="text-slate-500 text-[10px]">Click image to enlarge</span>
+              <span class="text-slate-500 text-[10px]" id="txt-lightbox-hint" data-edit="true" data-name="Lightbox Hint Text">Click image to enlarge</span>
               <button class="px-2 py-0.5 bg-white border border-slate-300 rounded text-[10px] font-semibold text-slate-700 flex items-center gap-1 shadow-xs" id="btn-lightbox" data-edit="true" data-name="Lightbox Button">
                 <span>⛶</span> Lightbox
               </button>
@@ -348,7 +395,7 @@
 
             <!-- Angle Switcher Tabs -->
             <div class="flex items-center gap-1.5 flex-wrap pt-1" id="row-angle-tabs" data-edit="true" data-name="Captured Angle Tabs">
-              <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
+              <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1" id="txt-angle-tabs-label" data-edit="true" data-name="Angle Tabs Label">
                 <span>📚</span> Captured Angles:
               </span>
               <button class="px-2.5 py-1 rounded-md bg-indigo-600 text-white font-bold text-[10px] flex items-center gap-1 shadow-xs" id="tab-angle-1" onclick="switchAngle(1)">
@@ -397,8 +444,8 @@
             </div>
 
             <div class="flex gap-2" id="row-roster-all-btns" data-edit="true" data-name="All Present & Absent Action Buttons">
-              <button class="px-2.5 py-1 text-[10px] font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded">All Present</button>
-              <button class="px-2.5 py-1 text-[10px] font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded">All Absent</button>
+              <button class="px-2.5 py-1 text-[10px] font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded" id="btn-all-present" data-edit="true" data-name="All Present Button">All Present</button>
+              <button class="px-2.5 py-1 text-[10px] font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded" id="btn-all-absent" data-edit="true" data-name="All Absent Button">All Absent</button>
             </div>
 
             <!-- Search input -->
@@ -409,7 +456,7 @@
             <!-- Student Table -->
             <div class="border border-slate-200 rounded-lg overflow-hidden text-[10px]" id="ui-roster-table" data-edit="true" data-name="Student Attendance Table">
               
-              <div class="bg-slate-50 font-bold text-[9px] text-slate-500 uppercase px-2 py-1.5 border-b border-slate-200 grid grid-cols-12 gap-1">
+              <div class="bg-slate-50 font-bold text-[9px] text-slate-500 uppercase px-2 py-1.5 border-b border-slate-200 grid grid-cols-12 gap-1" id="roster-table-header" data-edit="true" data-name="Table Column Header">
                 <div class="col-span-6">STUDENT & ROLL NUMBER</div>
                 <div class="col-span-3 text-center">MATCH SCORE</div>
                 <div class="col-span-3 text-center">ATTENDANCE</div>
@@ -506,66 +553,109 @@
 
     </div>
 
-    <!-- RIGHT: Full Visual Customizer Inspector (7 Cols) -->
+    <!-- RIGHT: Super Pro Visual Inspector (7 Cols) -->
     <div class="lg:col-span-7 space-y-4">
       
-      <!-- Selected Component Inspector Card -->
-      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
+      <!-- Studio Tabs Header -->
+      <div class="flex items-center gap-1 bg-slate-800 p-1.5 rounded-2xl border border-slate-700">
+        <button onclick="switchInspectorTab('style')" id="tab-btn-style" class="flex-1 py-2 px-3 text-xs font-bold rounded-xl bg-indigo-600 text-white transition flex items-center justify-center gap-1.5 shadow-sm">
+          <span>🎨</span> Styling & Text
+        </button>
+        <button onclick="switchInspectorTab('add')" id="tab-btn-add" class="flex-1 py-2 px-3 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+          <span>➕</span> Add New Filters / Elements
+        </button>
+        <button onclick="switchInspectorTab('layout')" id="tab-btn-layout" class="flex-1 py-2 px-3 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+          <span>📐</span> Layout & Order
+        </button>
+      </div>
+
+      <!-- TAB 1: STYLING & TEXT -->
+      <div id="inspector-tab-style" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md space-y-4">
         
-        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-700">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-700">
           <div class="flex items-center gap-2.5">
             <span class="w-3.5 h-3.5 rounded-full bg-indigo-500 animate-pulse"></span>
             <div>
-              <h3 class="font-bold text-sm text-white" id="ins-element-name">Click Any Element in Phone Screen</h3>
+              <h3 class="font-bold text-sm text-white" id="ins-element-name">Select Any Element in Phone Screen</h3>
               <span class="text-[10px] text-slate-400 font-mono" id="ins-element-id">#click-to-inspect</span>
             </div>
           </div>
-          <span class="text-[11px] bg-indigo-500/20 text-indigo-400 px-2.5 py-0.5 rounded-full font-bold border border-indigo-500/30">Active Inspector</span>
+          <div class="flex items-center gap-1">
+            <button onclick="quickAction('bold')" class="px-2.5 py-1 text-xs font-extrabold bg-slate-700 hover:bg-slate-600 rounded text-white" title="Make Bold">B</button>
+            <button onclick="quickAction('italic')" class="px-2.5 py-1 text-xs italic font-bold bg-slate-700 hover:bg-slate-600 rounded text-white" title="Make Italic">I</button>
+            <button onclick="quickAction('next-line')" class="px-2.5 py-1 text-xs font-bold bg-indigo-900/60 text-indigo-300 hover:bg-indigo-600 hover:text-white rounded border border-indigo-700" title="Move to Next Line">↵ Next Line</button>
+          </div>
         </div>
 
-        <!-- Controls Form -->
         <div id="ins-controls" class="space-y-4 opacity-40 pointer-events-none transition-all">
           
           <!-- 1. Text & Label Edit -->
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">Text Content (Label / Naam)</label>
-            <input type="text" id="prop-text-input" oninput="applyChange('text', this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-600 rounded-xl text-white outline-none focus:border-indigo-500 font-medium" placeholder="Change label or text..." />
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-bold text-slate-300">Text Content (Naam / Label / Heading)</label>
+              <button onclick="insertLineBreakInText()" class="text-[10px] text-indigo-400 hover:underline">+ Add Line Break (&lt;br&gt;)</button>
+            </div>
+            <textarea id="prop-text-input" rows="2" oninput="applyChange('text', this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-600 rounded-xl text-white outline-none focus:border-indigo-500 font-medium" placeholder="Change label or text..."></textarea>
           </div>
 
-          <!-- 2. Font Size & Weight -->
+          <!-- 2. Font Size (Slider + Inputs from 5px to 36px) -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-bold text-slate-300">Font Size (Exact Size 5px se 36px tak)</label>
+              <div class="flex items-center gap-2">
+                <input type="number" id="prop-size-number" min="5" max="36" value="11" oninput="applyChange('fontSizeNum', this.value)" class="w-14 text-xs p-1 bg-slate-900 border border-slate-600 rounded text-white text-center font-mono font-bold" />
+                <span class="text-xs font-mono text-indigo-400 font-bold" id="font-size-live-label">11px</span>
+              </div>
+            </div>
+            
+            <input type="range" id="prop-size-slider" min="5" max="36" value="11" oninput="applyChange('fontSizeSlider', this.value)" class="w-full accent-indigo-500 cursor-pointer" />
+            
+            <!-- Quick Preset Chips -->
+            <div class="flex items-center gap-1.5 flex-wrap pt-1.5">
+              <span class="text-[10px] text-slate-400">Presets:</span>
+              <button onclick="applyFontSizeDirect('6px')" class="px-2 py-0.5 text-[9px] bg-slate-700 hover:bg-slate-600 rounded font-mono">6px</button>
+              <button onclick="applyFontSizeDirect('7px')" class="px-2 py-0.5 text-[9px] bg-slate-700 hover:bg-slate-600 rounded font-mono">7px</button>
+              <button onclick="applyFontSizeDirect('8px')" class="px-2 py-0.5 text-[9px] bg-slate-700 hover:bg-slate-600 rounded font-mono">8px</button>
+              <button onclick="applyFontSizeDirect('9px')" class="px-2 py-0.5 text-[9px] bg-slate-700 hover:bg-slate-600 rounded font-mono">9px</button>
+              <button onclick="applyFontSizeDirect('10px')" class="px-2 py-0.5 text-[9px] bg-slate-700 hover:bg-slate-600 rounded font-mono">10px</button>
+              <button onclick="applyFontSizeDirect('11px')" class="px-2 py-0.5 text-[9px] bg-slate-700 hover:bg-slate-600 rounded font-mono">11px</button>
+              <button onclick="applyFontSizeDirect('12px')" class="px-2 py-0.5 text-[9px] bg-slate-700 hover:bg-slate-600 rounded font-mono">12px</button>
+              <button onclick="applyFontSizeDirect('14px')" class="px-2 py-0.5 text-[9px] bg-slate-700 hover:bg-slate-600 rounded font-mono">14px</button>
+              <button onclick="applyFontSizeDirect('16px')" class="px-2 py-0.5 text-[9px] bg-slate-700 hover:bg-slate-600 rounded font-mono">16px</button>
+            </div>
+          </div>
+
+          <!-- 3. Font Weight & Text Alignment -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-bold text-slate-300 mb-1">Font Size</label>
-              <select id="prop-size-select" onchange="applyChange('fontSize', this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-600 rounded-xl text-white outline-none">
-                <option value="9px">9px (Tiny)</option>
-                <option value="10px">10px (Small)</option>
-                <option value="11px">11px (Normal Text)</option>
-                <option value="12px">12px (Regular)</option>
-                <option value="14px">14px (Medium Title)</option>
-                <option value="16px">16px (Large Heading)</option>
-                <option value="18px">18px (XL Heading)</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-300 mb-1">Font Weight</label>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Font Weight (Boldness)</label>
               <select id="prop-weight-select" onchange="applyChange('fontWeight', this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-600 rounded-xl text-white outline-none">
                 <option value="400">Regular (400)</option>
                 <option value="500">Medium (500)</option>
                 <option value="600">Semi-Bold (600)</option>
                 <option value="700">Bold (700)</option>
                 <option value="800">Extra Bold (800)</option>
+                <option value="900">Black Heavy (900)</option>
               </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Text Alignment</label>
+              <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 border border-slate-600 rounded-xl">
+                <button onclick="applyChange('textAlign', 'left')" class="py-1 text-xs hover:bg-slate-800 rounded font-bold">Left</button>
+                <button onclick="applyChange('textAlign', 'center')" class="py-1 text-xs hover:bg-slate-800 rounded font-bold">Center</button>
+                <button onclick="applyChange('textAlign', 'right')" class="py-1 text-xs hover:bg-slate-800 rounded font-bold">Right</button>
+              </div>
             </div>
           </div>
 
-          <!-- 3. Text & Background Colors -->
+          <!-- 4. Text & Background Colors -->
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-300 mb-1">Text Color</label>
               <div class="flex items-center gap-2">
                 <input type="color" id="prop-color-picker" oninput="applyChange('color', this.value)" class="w-8 h-8 rounded-lg cursor-pointer border border-slate-600 bg-transparent" />
-                <span class="text-xs font-mono text-slate-300" id="prop-color-hex">#0f172a</span>
+                <input type="text" id="prop-color-hex" oninput="applyChange('color', this.value)" class="w-20 text-xs font-mono p-1 bg-slate-900 border border-slate-600 rounded text-slate-200" value="#0f172a" />
               </div>
             </div>
 
@@ -573,50 +663,71 @@
               <label class="block text-xs font-bold text-slate-300 mb-1">Background Color</label>
               <div class="flex items-center gap-2">
                 <input type="color" id="prop-bg-picker" oninput="applyChange('background', this.value)" class="w-8 h-8 rounded-lg cursor-pointer border border-slate-600 bg-transparent" />
-                <span class="text-xs font-mono text-slate-300" id="prop-bg-hex">#ffffff</span>
+                <input type="text" id="prop-bg-hex" oninput="applyChange('background', this.value)" class="w-20 text-xs font-mono p-1 bg-slate-900 border border-slate-600 rounded text-slate-200" value="#ffffff" />
               </div>
             </div>
           </div>
 
-          <!-- 4. Corner Radius & Padding -->
+          <!-- 5. Display & Layout Mode (Next line vs inline) -->
           <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Display Flow</label>
+              <select id="prop-display-select" onchange="applyChange('displayMode', this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-600 rounded-xl text-white outline-none">
+                <option value="default">Default</option>
+                <option value="next-line">↵ Force Next Line (Full Width)</option>
+                <option value="inline-block">Inline (Same Line)</option>
+                <option value="flex-row">Row (Horizontal)</option>
+                <option value="flex-col">Column (Stacked Vertical)</option>
+              </select>
+            </div>
+
             <div>
               <label class="block text-xs font-bold text-slate-300 mb-1">Border Radius (Gol Corners)</label>
               <select id="prop-radius-select" onchange="applyChange('borderRadius', this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-600 rounded-xl text-white outline-none">
                 <option value="0px">Square (0px)</option>
-                <option value="6px">Small Round (6px)</option>
-                <option value="10px">Medium Round (10px)</option>
-                <option value="14px">Card Curve (14px)</option>
+                <option value="4px">Slight (4px)</option>
+                <option value="8px">Medium (8px)</option>
+                <option value="12px">Card Curve (12px)</option>
                 <option value="20px">Super Curved (20px)</option>
                 <option value="9999px">Pill / Circle (Full)</option>
               </select>
             </div>
+          </div>
+
+          <!-- 6. Padding & Margin -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Padding (Internal Spacing)</label>
+              <select id="prop-padding-select" onchange="applyChange('padding', this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-600 rounded-xl text-white outline-none">
+                <option value="0px">None (0px)</option>
+                <option value="2px 6px">Minimal (2px 6px)</option>
+                <option value="4px 8px">Compact (4px 8px)</option>
+                <option value="8px 12px">Standard (8px 12px)</option>
+                <option value="12px 16px">Spacious (12px 16px)</option>
+              </select>
+            </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-300 mb-1">Padding Spacing</label>
-              <select id="prop-padding-select" onchange="applyChange('padding', this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-600 rounded-xl text-white outline-none">
-                <option value="4px 8px">Compact (4px 8px)</option>
-                <option value="8px 12px">Medium (8px 12px)</option>
-                <option value="12px 14px">Spacious (12px 14px)</option>
-                <option value="16px 20px">Extra Spacious (16px 20px)</option>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Margin Bottom (Space Below)</label>
+              <select id="prop-margin-select" onchange="applyChange('marginBottom', this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-600 rounded-xl text-white outline-none">
+                <option value="0px">None (0px)</option>
+                <option value="4px">Small (4px)</option>
+                <option value="8px">Standard (8px)</option>
+                <option value="14px">Large (14px)</option>
+                <option value="20px">Extra (20px)</option>
               </select>
             </div>
           </div>
 
-          <!-- 5. Position & Visibility -->
+          <!-- Action bar -->
           <div class="pt-3 border-t border-slate-700 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-1.5">
-              <span class="text-xs font-bold text-slate-300">Position Move:</span>
-              <button onclick="moveBlock('up')" class="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold border border-slate-600">
-                ▲ Move Up
-              </button>
-              <button onclick="moveBlock('down')" class="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold border border-slate-600">
-                ▼ Move Down
-              </button>
+              <button onclick="quickAction('move-up')" class="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold border border-slate-600">▲ Move Up</button>
+              <button onclick="quickAction('move-down')" class="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold border border-slate-600">▼ Move Down</button>
             </div>
 
             <button onclick="toggleVisibility()" id="btn-vis-status" class="px-3.5 py-1.5 text-xs font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg">
-              👁 Hide Element
+              👁 Hide / Delete
             </button>
           </div>
 
@@ -624,57 +735,114 @@
 
       </div>
 
-      <!-- 1-Click Layout Polish Suggestions -->
-      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md space-y-3">
-        <div class="flex items-center justify-between">
-          <h4 class="text-xs font-bold text-white uppercase tracking-wider">Quick Layout Improvements (1-Click)</h4>
-          <span class="text-[10px] text-amber-400 font-semibold">Recommended Fixes</span>
+      <!-- TAB 2: ADD NEW FILTERS & FEATURES -->
+      <div id="inspector-tab-add" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md space-y-4 hidden">
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span>➕</span> Component & Feature Library
+          </h3>
+          <p class="text-xs text-slate-400">Kisi bhi feature ya filter par click karein, wo turant aapki mobile screen me add ho jayega!</p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div class="space-y-4">
           
-          <button onclick="fixStatsLayoutAction()" class="p-3 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-900 text-left transition flex items-start gap-2.5">
-            <span class="text-base">✨</span>
-            <div>
-              <div class="font-bold text-xs text-white">Fix Stats & Save Overlap</div>
-              <div class="text-[10px] text-slate-400">Put Save Changes on full bottom row and clean 4-stat grid</div>
-            </div>
-          </button>
+          <!-- Group 1: Filters -->
+          <div class="space-y-2">
+            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider block">1. New Attendance Filters</span>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button onclick="insertComponent('filter-status')" class="p-3 bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl text-left transition">
+                <div class="font-bold text-xs text-white">Status Filter Chips</div>
+                <div class="text-[10px] text-slate-400">[ All ] [ Present ] [ Absent ] [ Extra ]</div>
+              </button>
 
-          <button onclick="alignAngleTabsAction()" class="p-3 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-900 text-left transition flex items-start gap-2.5">
-            <span class="text-base">📷</span>
-            <div>
-              <div class="font-bold text-xs text-white">Align Angle Tabs in 1 Row</div>
-              <div class="text-[10px] text-slate-400">Fits Angle 1, Angle 2, Angle 3 neatly on a single line</div>
+              <button onclick="insertComponent('filter-dropdown')" class="p-3 bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl text-left transition">
+                <div class="font-bold text-xs text-white">Division / Section Filter</div>
+                <div class="text-[10px] text-slate-400">Dropdown to switch Div A / Div B</div>
+              </button>
+
+              <button onclick="insertComponent('filter-date')" class="p-3 bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl text-left transition">
+                <div class="font-bold text-xs text-white">Date Range Quick Filter</div>
+                <div class="text-[10px] text-slate-400">Calendar picker [ 26 Sep 2026 ]</div>
+              </button>
+
+              <button onclick="insertComponent('filter-sort')" class="p-3 bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl text-left transition">
+                <div class="font-bold text-xs text-white">Sort By Selector</div>
+                <div class="text-[10px] text-slate-400">Sort: Roll No / Name / Score</div>
+              </button>
             </div>
-          </button>
+          </div>
+
+          <!-- Group 2: Action Buttons & Features -->
+          <div class="space-y-2">
+            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider block">2. New Action Features</span>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button onclick="insertComponent('btn-export-pdf')" class="p-3 bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl text-left transition">
+                <div class="font-bold text-xs text-white">📄 Export PDF Button</div>
+                <div class="text-[10px] text-slate-400">Download formatted PDF attendance sheet</div>
+              </button>
+
+              <button onclick="insertComponent('btn-sms-alert')" class="p-3 bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl text-left transition">
+                <div class="font-bold text-xs text-white">📲 Send Absent WhatsApp / SMS</div>
+                <div class="text-[10px] text-slate-400">Notify parents of absent students</div>
+              </button>
+
+              <button onclick="insertComponent('stat-card-rate')" class="p-3 bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl text-left transition">
+                <div class="font-bold text-xs text-white">📊 Attendance % Indicator</div>
+                <div class="text-[10px] text-slate-400">Visual progress circle (e.g. 92.5%)</div>
+              </button>
+
+              <button onclick="insertComponent('banner-notice')" class="p-3 bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl text-left transition">
+                <div class="font-bold text-xs text-white">ℹ️ Custom Remark / Notice Box</div>
+                <div class="text-[10px] text-slate-400">Editable teacher's lecture note</div>
+              </button>
+            </div>
+          </div>
 
         </div>
       </div>
 
-      <!-- Theme Color Presets -->
-      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md space-y-3">
-        <h4 class="text-xs font-bold text-white uppercase tracking-wider">Theme Accent Switcher</h4>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <button onclick="setTheme('#4f46e5', 'Indigo')" class="p-2.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-left">
-            <div class="w-3.5 h-3.5 rounded-full bg-indigo-600 mb-1"></div>
-            <div class="text-xs font-bold text-white">Indigo SaaS</div>
-          </button>
+      <!-- TAB 3: LAYOUT & ORDER -->
+      <div id="inspector-tab-layout" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md space-y-4 hidden">
+        <div>
+          <h3 class="text-sm font-bold text-white">Layout Reorder & Spacing</h3>
+          <p class="text-xs text-slate-400">Cards ka order badlein ya 1-click se layout clean karein.</p>
+        </div>
 
-          <button onclick="setTheme('#059669', 'Emerald')" class="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-left">
-            <div class="w-3.5 h-3.5 rounded-full bg-emerald-600 mb-1"></div>
-            <div class="text-xs font-bold text-white">Emerald Green</div>
-          </button>
+        <!-- 1-Click Fixes -->
+        <div class="space-y-2">
+          <span class="text-xs font-bold text-amber-400 uppercase tracking-wider block">1-Click Recommended Fixes</span>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button onclick="fixStatsLayoutAction()" class="p-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-700 text-left transition">
+              <div class="font-bold text-xs text-white">✨ Fix Stats & Save Overlap</div>
+              <div class="text-[10px] text-slate-400">Separates overlapping numbers and puts Save Changes full width</div>
+            </button>
 
-          <button onclick="setTheme('#2563eb', 'Blue')" class="p-2.5 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-left">
-            <div class="w-3.5 h-3.5 rounded-full bg-blue-600 mb-1"></div>
-            <div class="text-xs font-bold text-white">Ocean Blue</div>
-          </button>
+            <button onclick="alignAngleTabsAction()" class="p-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-700 text-left transition">
+              <div class="font-bold text-xs text-white">📷 Align Angle Tabs in 1 Row</div>
+              <div class="text-[10px] text-slate-400">Angle 1, 2, 3 ko clean single row me arrange karta hai</div>
+            </button>
 
-          <button onclick="setTheme('#7c3aed', 'Violet')" class="p-2.5 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-left">
-            <div class="w-3.5 h-3.5 rounded-full bg-purple-600 mb-1"></div>
-            <div class="text-xs font-bold text-white">Violet AI</div>
-          </button>
+            <button onclick="movePhotoToTop()" class="p-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-700 text-left transition">
+              <div class="font-bold text-xs text-white">🔝 Photo Card Sabse Upar Karein</div>
+              <div class="text-[10px] text-slate-400">Classroom photo ko Summary card se pehle render karein</div>
+            </button>
+
+            <button onclick="expandTableWidth()" class="p-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-700 text-left transition">
+              <div class="font-bold text-xs text-white">↔ Clean Spacious Student Table</div>
+              <div class="text-[10px] text-slate-400">Table rows aur font ko high-readability me set karein</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Component List -->
+        <div class="space-y-2 pt-2 border-t border-slate-700">
+          <span class="text-xs font-bold text-slate-300 block">Screen Component Tree</span>
+          <div class="space-y-1.5" id="component-tree-list">
+            <!-- Dynamically populated -->
+          </div>
         </div>
       </div>
 
@@ -693,7 +861,7 @@
         <button onclick="hideExportDialog()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
 
-      <p class="text-xs text-slate-300">Aapne jo bhi text, size, color ya order change kiya hai, uska design specification niche generate ho gaya hai. Bas <b>"Copy Design Changes"</b> dabayein aur chat me bhej dein!</p>
+      <p class="text-xs text-slate-300">Aapne jo bhi text, size (5px-36px), line-breaks, naye filters ya order change kiya hai, uska design specification generate ho gaya hai. Bas <b>"Copy Design Changes"</b> dabayein aur chat me paste kar dein!</p>
 
       <textarea id="export-code" class="w-full h-48 font-mono text-[11px] p-3 bg-slate-900 border border-slate-700 rounded-xl text-emerald-400" readonly></textarea>
 
@@ -720,6 +888,8 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       attachInspectors();
+      buildComponentTree();
+      loadFromStorage();
     });
 
     function attachInspectors() {
@@ -750,8 +920,19 @@
       // Text
       document.getElementById("prop-text-input").value = el.innerText.trim();
 
-      // Colors
+      // Read Computed Styles
       const computed = window.getComputedStyle(el);
+      
+      // Parse Font Size
+      const curSize = parseInt(computed.fontSize) || 11;
+      document.getElementById("prop-size-slider").value = curSize;
+      document.getElementById("prop-size-number").value = curSize;
+      document.getElementById("font-size-live-label").textContent = curSize + "px";
+
+      // Font Weight
+      document.getElementById("prop-weight-select").value = computed.fontWeight || "400";
+
+      // Colors
       const toHex = (c) => {
         const rgb = c.match(/\d+/g);
         if (!rgb) return "#000000";
@@ -760,12 +941,54 @@
 
       const cHex = toHex(computed.color);
       document.getElementById("prop-color-picker").value = cHex;
-      document.getElementById("prop-color-hex").textContent = cHex;
+      document.getElementById("prop-color-hex").value = cHex;
 
       if (computed.backgroundColor && computed.backgroundColor !== "rgba(0, 0, 0, 0)") {
         const bgHex = toHex(computed.backgroundColor);
         document.getElementById("prop-bg-picker").value = bgHex;
-        document.getElementById("prop-bg-hex").textContent = bgHex;
+        document.getElementById("prop-bg-hex").value = bgHex;
+      }
+
+      // Position Quick Floating Toolbar above element
+      showFloatingBar(el);
+    }
+
+    function showFloatingBar(el) {
+      const bar = document.getElementById("floating-quick-bar");
+      const rect = el.getBoundingClientRect();
+      bar.style.display = "flex";
+      bar.style.top = Math.max(10, (rect.top + window.scrollY - 42)) + "px";
+      bar.style.left = Math.max(10, (rect.left + window.scrollX)) + "px";
+    }
+
+    function quickAction(action) {
+      if (!activeElem) return;
+
+      if (action === 'bold') {
+        const isBold = activeElem.style.fontWeight === 'bold' || activeElem.style.fontWeight >= 700;
+        applyChange('fontWeight', isBold ? '400' : '800');
+      } else if (action === 'italic') {
+        const isItalic = activeElem.style.fontStyle === 'italic';
+        activeElem.style.fontStyle = isItalic ? 'normal' : 'italic';
+      } else if (action === 'size-down') {
+        const cur = parseInt(window.getComputedStyle(activeElem).fontSize) || 11;
+        applyFontSizeDirect(Math.max(5, cur - 1) + "px");
+      } else if (action === 'size-up') {
+        const cur = parseInt(window.getComputedStyle(activeElem).fontSize) || 11;
+        applyFontSizeDirect(Math.min(48, cur + 1) + "px");
+      } else if (action === 'next-line') {
+        applyChange('displayMode', 'next-line');
+      } else if (action === 'stack-toggle') {
+        const cur = activeElem.style.flexDirection;
+        applyChange('displayMode', cur === 'column' ? 'flex-row' : 'flex-col');
+      } else if (action === 'move-up') {
+        moveBlock('up');
+      } else if (action === 'move-down') {
+        moveBlock('down');
+      } else if (action === 'duplicate') {
+        duplicateActive();
+      } else if (action === 'delete') {
+        toggleVisibility();
       }
     }
 
@@ -776,29 +999,74 @@
       if (!customEdits[key]) customEdits[key] = {};
 
       if (prop === "text") {
-        activeElem.innerText = val;
+        activeElem.innerHTML = val.replace(/\n/g, '<br/>');
         customEdits[key].text = val;
-      } else if (prop === "fontSize") {
-        activeElem.style.fontSize = val;
-        customEdits[key].fontSize = val;
+      } else if (prop === "fontSizeSlider" || prop === "fontSizeNum") {
+        const sizePx = val + "px";
+        activeElem.style.fontSize = sizePx;
+        document.getElementById("prop-size-slider").value = val;
+        document.getElementById("prop-size-number").value = val;
+        document.getElementById("font-size-live-label").textContent = sizePx;
+        customEdits[key].fontSize = sizePx;
       } else if (prop === "fontWeight") {
         activeElem.style.fontWeight = val;
+        document.getElementById("prop-weight-select").value = val;
         customEdits[key].fontWeight = val;
+      } else if (prop === "textAlign") {
+        activeElem.style.textAlign = val;
+        customEdits[key].textAlign = val;
       } else if (prop === "color") {
         activeElem.style.color = val;
-        document.getElementById("prop-color-hex").textContent = val;
+        document.getElementById("prop-color-picker").value = val;
+        document.getElementById("prop-color-hex").value = val;
         customEdits[key].color = val;
       } else if (prop === "background") {
         activeElem.style.background = val;
-        document.getElementById("prop-bg-hex").textContent = val;
+        document.getElementById("prop-bg-picker").value = val;
+        document.getElementById("prop-bg-hex").value = val;
         customEdits[key].background = val;
+      } else if (prop === "displayMode") {
+        if (val === 'next-line') {
+          activeElem.style.display = "block";
+          activeElem.style.width = "100%";
+          activeElem.style.clear = "both";
+        } else if (val === 'inline-block') {
+          activeElem.style.display = "inline-flex";
+          activeElem.style.width = "auto";
+        } else if (val === 'flex-row') {
+          activeElem.style.display = "flex";
+          activeElem.style.flexDirection = "row";
+          activeElem.style.flexWrap = "wrap";
+        } else if (val === 'flex-col') {
+          activeElem.style.display = "flex";
+          activeElem.style.flexDirection = "column";
+        }
+        customEdits[key].displayMode = val;
       } else if (prop === "borderRadius") {
         activeElem.style.borderRadius = val;
         customEdits[key].borderRadius = val;
       } else if (prop === "padding") {
         activeElem.style.padding = val;
         customEdits[key].padding = val;
+      } else if (prop === "marginBottom") {
+        activeElem.style.marginBottom = val;
+        customEdits[key].marginBottom = val;
       }
+
+      showFloatingBar(activeElem);
+      saveToStorage();
+    }
+
+    function applyFontSizeDirect(sizeStr) {
+      const num = parseInt(sizeStr);
+      applyChange('fontSizeNum', num);
+    }
+
+    function insertLineBreakInText() {
+      if (!activeElem) return;
+      activeElem.innerHTML += "<br/>";
+      document.getElementById("prop-text-input").value = activeElem.innerText;
+      saveToStorage();
     }
 
     function moveBlock(dir) {
@@ -811,17 +1079,33 @@
       } else if (dir === 'down' && activeElem.nextElementSibling) {
         parent.insertBefore(activeElem.nextElementSibling, activeElem);
       }
+      showFloatingBar(activeElem);
+      buildComponentTree();
+      saveToStorage();
+    }
+
+    function duplicateActive() {
+      if (!activeElem) return;
+      const clone = activeElem.cloneNode(true);
+      clone.id = activeElem.id + "_copy_" + Date.now().toString().slice(-4);
+      activeElem.parentElement.insertBefore(clone, activeElem.nextElementSibling);
+      attachInspectors();
+      selectElement(clone);
+      buildComponentTree();
+      saveToStorage();
     }
 
     function toggleVisibility() {
       if (!activeElem) return;
       if (activeElem.style.display === "none") {
         activeElem.style.display = "";
-        document.getElementById("btn-vis-status").textContent = "👁 Hide Element";
+        document.getElementById("btn-vis-status").textContent = "👁 Hide / Delete";
       } else {
         activeElem.style.display = "none";
-        document.getElementById("btn-vis-status").textContent = "👁 Show Element";
+        document.getElementById("btn-vis-status").textContent = "👁 Unhide Element";
+        document.getElementById("floating-quick-bar").style.display = "none";
       }
+      saveToStorage();
     }
 
     function switchAngle(angle) {
@@ -841,39 +1125,216 @@
       document.getElementById("tag-angle-indicator").textContent = `Angle ${angle} Live`;
     }
 
+    // Tabs inside right sidebar
+    function switchInspectorTab(tab) {
+      ['style', 'add', 'layout'].forEach(t => {
+        document.getElementById(`inspector-tab-${t}`).classList.add("hidden");
+        document.getElementById(`tab-btn-${t}`).className = "flex-1 py-2 px-3 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5";
+      });
+
+      document.getElementById(`inspector-tab-${tab}`).classList.remove("hidden");
+      document.getElementById(`tab-btn-${tab}`).className = "flex-1 py-2 px-3 text-xs font-bold rounded-xl bg-indigo-600 text-white transition flex items-center justify-center gap-1.5 shadow-sm";
+    }
+
+    // Insert new components from Library
+    function insertComponent(type) {
+      const container = document.getElementById("screen-content-area");
+      let newElem = document.createElement("div");
+      newElem.setAttribute("data-edit", "true");
+
+      if (type === 'filter-status') {
+        newElem.className = "app-card space-y-1.5";
+        newElem.setAttribute("data-name", "Status Filter Chips Row");
+        newElem.innerHTML = `
+          <div class="flex items-center justify-between text-[11px] font-bold text-slate-700">
+            <span>Filter by Status:</span>
+            <span class="text-[9px] text-indigo-600">Reset</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button class="px-2.5 py-1 bg-indigo-600 text-white font-bold text-[10px] rounded-lg">All (41)</button>
+            <button class="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold text-[10px] rounded-lg">Present (1)</button>
+            <button class="px-2.5 py-1 bg-rose-50 text-rose-800 border border-rose-300 font-bold text-[10px] rounded-lg">Absent (2)</button>
+            <button class="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-300 font-bold text-[10px] rounded-lg">Extra (0)</button>
+          </div>
+        `;
+      } else if (type === 'filter-dropdown') {
+        newElem.className = "app-card flex items-center justify-between";
+        newElem.setAttribute("data-name", "Division Filter Bar");
+        newElem.innerHTML = `
+          <span class="text-[11px] font-bold text-slate-700">Division:</span>
+          <select class="text-xs p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-bold outline-none">
+            <option>All Divisions</option>
+            <option>Division A</option>
+            <option>Division B</option>
+          </select>
+        `;
+      } else if (type === 'filter-date') {
+        newElem.className = "app-card flex items-center justify-between";
+        newElem.setAttribute("data-name", "Date Filter Bar");
+        newElem.innerHTML = `
+          <span class="text-[11px] font-bold text-slate-700">📅 Session Date:</span>
+          <input type="date" value="2026-09-26" class="text-xs p-1 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-bold" />
+        `;
+      } else if (type === 'filter-sort') {
+        newElem.className = "app-card flex items-center justify-between";
+        newElem.setAttribute("data-name", "Sort Order Selector");
+        newElem.innerHTML = `
+          <span class="text-[11px] font-bold text-slate-700">Sort Roster By:</span>
+          <select class="text-xs p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-bold outline-none">
+            <option>Roll Number (Ascending)</option>
+            <option>Student Name (A-Z)</option>
+            <option>Confidence Score (High-Low)</option>
+          </select>
+        `;
+      } else if (type === 'btn-export-pdf') {
+        newElem.className = "w-full";
+        newElem.setAttribute("data-name", "Export PDF Action Button");
+        newElem.innerHTML = `
+          <button class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2">
+            <span>📄</span> Download Attendance PDF Report
+          </button>
+        `;
+      } else if (type === 'btn-sms-alert') {
+        newElem.className = "w-full";
+        newElem.setAttribute("data-name", "WhatsApp Alert Button");
+        newElem.innerHTML = `
+          <button class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2">
+            <span>📲</span> Send Absence Alerts to Parents
+          </button>
+        `;
+      } else if (type === 'stat-card-rate') {
+        newElem.className = "app-card flex items-center justify-between p-3 bg-gradient-to-r from-indigo-50 to-white";
+        newElem.setAttribute("data-name", "Attendance Rate Progress Metric");
+        newElem.innerHTML = `
+          <div>
+            <div class="text-[10px] text-slate-500 uppercase font-bold">Overall Attendance Rate</div>
+            <div class="text-base font-extrabold text-indigo-700">92.5% Attendance</div>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-md">
+            92%
+          </div>
+        `;
+      } else if (type === 'banner-notice') {
+        newElem.className = "p-2.5 rounded-xl border border-amber-300 bg-amber-50 text-[10px] text-amber-900 font-medium";
+        newElem.setAttribute("data-name", "Teacher Notice Remark Box");
+        newElem.innerHTML = `
+          <b>📌 Faculty Remark:</b> Classroom session conducted successfully with biometric verification.
+        `;
+      }
+
+      container.insertBefore(newElem, document.getElementById("card-student-roster"));
+      attachInspectors();
+      selectElement(newElem);
+      switchInspectorTab('style');
+      buildComponentTree();
+      saveToStorage();
+      alert("New component added to mobile screen! You can click and customize it.");
+    }
+
+    // 1-Click Fix Actions
     function fixStatsLayoutAction() {
       const statsBlock = document.getElementById("block-stat-counters");
       statsBlock.innerHTML = `
-        <div class="grid grid-cols-4 gap-1 text-center py-1 bg-slate-50 rounded-lg border border-slate-200">
+        <div class="grid grid-cols-4 gap-1 text-center py-1.5 bg-slate-50 rounded-xl border border-slate-200">
           <div><span class="text-[8px] text-slate-500 uppercase font-bold block">Detected</span><span class="font-bold text-xs text-slate-900 font-mono">41</span></div>
           <div><span class="text-[8px] text-emerald-700 uppercase font-bold block">Present</span><span class="font-bold text-xs text-emerald-700 font-mono">1</span></div>
           <div><span class="text-[8px] text-rose-700 uppercase font-bold block">Absent</span><span class="font-bold text-xs text-rose-700 font-mono">2</span></div>
           <div><span class="text-[8px] text-indigo-700 uppercase font-bold block">Unknown</span><span class="font-bold text-xs text-indigo-700 font-mono">35</span></div>
         </div>
-        <button class="w-full py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+        <button class="w-full py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/30">
           <span>✓</span> Save Changes
         </button>
       `;
       attachInspectors();
+      saveToStorage();
       alert("Stats and Save button neatly separated into full grid!");
     }
 
     function alignAngleTabsAction() {
       const tabs = document.getElementById("row-angle-tabs");
-      tabs.className = "flex items-center gap-1 overflow-x-auto py-1";
+      tabs.className = "flex items-center gap-1.5 overflow-x-auto py-1";
+      saveToStorage();
       alert("Angle tabs aligned into clean single row!");
     }
 
-    function setTheme(color, name) {
-      document.getElementById("btn-save-changes").style.background = color;
-      document.getElementById("ui-fab-button").style.background = color;
-      document.getElementById("ui-avatar").style.background = color;
-      document.getElementById("tab-angle-1").style.background = color;
-      alert(`Applied ${name} theme accent!`);
+    function movePhotoToTop() {
+      const photoCard = document.getElementById("card-photo-section");
+      const summaryCard = document.getElementById("card-session-info");
+      summaryCard.parentElement.insertBefore(photoCard, summaryCard);
+      buildComponentTree();
+      saveToStorage();
+      alert("Photo Card moved above Session Info!");
+    }
+
+    function expandTableWidth() {
+      const table = document.getElementById("ui-roster-table");
+      table.style.fontSize = "11px";
+      document.querySelectorAll("#ui-roster-table [id^='row-stu']").forEach(r => {
+        r.style.padding = "10px 8px";
+      });
+      saveToStorage();
+      alert("Table spacing increased for high mobile readability!");
+    }
+
+    function buildComponentTree() {
+      const container = document.getElementById("screen-content-area");
+      const list = document.getElementById("component-tree-list");
+      list.innerHTML = "";
+
+      Array.from(container.children).forEach((child, idx) => {
+        const name = child.getAttribute("data-name") || child.id || `Component ${idx+1}`;
+        const item = document.createElement("div");
+        item.className = "p-2 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-between text-xs text-slate-300";
+        item.innerHTML = `
+          <span class="truncate font-semibold cursor-pointer hover:text-white" onclick="selectElementById('${child.id}')">${idx+1}. ${name}</span>
+          <div class="flex items-center gap-1">
+            <button onclick="moveSpecificChild(${idx}, -1)" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-[10px]">▲</button>
+            <button onclick="moveSpecificChild(${idx}, 1)" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-[10px]">▼</button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function selectElementById(id) {
+      const el = document.getElementById(id);
+      if (el) selectElement(el);
+    }
+
+    function moveSpecificChild(idx, offset) {
+      const container = document.getElementById("screen-content-area");
+      const children = Array.from(container.children);
+      const target = children[idx];
+      const newIdx = idx + offset;
+      if (newIdx < 0 || newIdx >= children.length) return;
+
+      if (offset < 0) {
+        container.insertBefore(target, children[newIdx]);
+      } else {
+        container.insertBefore(target, children[newIdx].nextElementSibling);
+      }
+      buildComponentTree();
+      saveToStorage();
+    }
+
+    function saveToStorage() {
+      localStorage.setItem("va_studio_custom_html", document.getElementById("screen-content-area").innerHTML);
+    }
+
+    function loadFromStorage() {
+      const saved = localStorage.getItem("va_studio_custom_html");
+      if (saved) {
+        document.getElementById("screen-content-area").innerHTML = saved;
+        attachInspectors();
+        buildComponentTree();
+      }
     }
 
     function resetToInitial() {
-      location.reload();
+      if (confirm("Reset all changes back to initial state?")) {
+        localStorage.removeItem("va_studio_custom_html");
+        location.reload();
+      }
     }
 
     function showExportDialog() {
@@ -881,9 +1342,10 @@
       const order = Array.from(container.children).map(c => c.id || c.getAttribute("data-name"));
 
       const payload = {
-        screen: "Mobile Attendance History Page (Exact Screenshot)",
-        componentOrder: order,
-        visualChanges: customEdits,
+        page: "Attendance History Mobile Redesign",
+        layoutSequence: order,
+        visualPropertyEdits: customEdits,
+        fullCustomHTMLSnippet: container.innerHTML,
         timestamp: new Date().toISOString()
       };
 
