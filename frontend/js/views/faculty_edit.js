@@ -58,8 +58,8 @@ const FacultyEditView = {
         }
       });
 
-      if (user.role === "admin" && Auth.isSuperAdmin()) {
-        App.showToast("Access Denied: Super Administrators cannot edit Administrator profiles.", "error");
+      if ((user.role === "super_admin" || user.role === "superadmin") && !Auth.isSuperAdmin()) {
+        App.showToast("Access Denied: Only Super Administrators can edit Super Administrator profiles.", "error");
         App.navigate("faculty");
         return;
       }
@@ -98,7 +98,7 @@ const FacultyEditView = {
             </div>
           </div>
 
-          <form id="faculty-edit-form" onsubmit="event.preventDefault(); FacultyEditView.submitForm();">
+          <form id="faculty-edit-form" autocomplete="off" onsubmit="event.preventDefault(); FacultyEditView.submitForm();">
             
             <!-- SECTION 1: Personal Information -->
             <div class="form-section-card">
@@ -122,7 +122,7 @@ const FacultyEditView = {
                 </div>
                 <div class="form-group mb-0">
                   <label class="form-label">Institutional Email *</label>
-                  <input type="email" id="fe-email" class="form-input text-xs" value="${user.email}" required />
+                  <input type="email" id="fe-email" class="form-input text-xs" value="${user.email}" autocomplete="off" required />
                 </div>
               </div>
 
@@ -166,11 +166,11 @@ const FacultyEditView = {
               <div class="form-grid-2">
                 <div class="form-group mb-0">
                   <label class="form-label">New Password</label>
-                  <input type="password" id="fe-password" class="form-input text-xs" placeholder="Leave blank to keep existing password" />
+                  <input type="password" id="fe-password" class="form-input text-xs" autocomplete="new-password" placeholder="Leave blank to keep existing password" />
                 </div>
                 <div class="form-group mb-0">
                   <label class="form-label">Confirm New Password</label>
-                  <input type="password" id="fe-confirm-password" class="form-input text-xs" placeholder="Re-enter new password" />
+                  <input type="password" id="fe-confirm-password" class="form-input text-xs" autocomplete="new-password" placeholder="Re-enter new password" />
                 </div>
               </div>
             </div>

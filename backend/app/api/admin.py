@@ -276,9 +276,16 @@ def update_faculty_user(
     if payload.full_name is not None and payload.full_name.strip() != target.full_name:
         updated_fields.append("full_name")
         target.full_name = payload.full_name.strip()
-    if payload.email is not None and payload.email.strip() != target.email:
+    if payload.email is not None and payload.email.strip().lower() != (target.email or "").lower():
+        new_email = payload.email.strip().lower()
+        existing = db.query(User).filter(User.email.ilike(new_email), User.id != target.id).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Email '{new_email}' already belongs to another user ({existing.full_name or existing.username}). Each user must have a unique email address."
+            )
         updated_fields.append("email")
-        target.email = payload.email.strip()
+        target.email = new_email
     if payload.role is not None and payload.role != target.role:
         new_role = payload.role
         if new_role not in ("teacher", "faculty", "admin", "super_admin", "superadmin"):
@@ -298,8 +305,15 @@ def update_faculty_user(
         updated_fields.append("password")
         target.hashed_password = get_password_hash(payload.password)
 
-    db.commit()
-    db.refresh(target)
+    try:
+        db.commit()
+        db.refresh(target)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to update profile: {str(e)}"
+        )
 
     if updated_fields:
         notification_service.notify_faculty_profile_updated(
