@@ -147,15 +147,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# No-Cache Header Middleware for Instant Browser Refresh on Mobile
+# Cache-Control Middleware: Dynamic APIs remain fresh, static assets are cached for ultra-fast tab loads
 @app.middleware("http")
-async def add_no_cache_headers(request: Request, call_next):
+async def add_cache_headers(request: Request, call_next):
     response = await call_next(request)
     path = request.url.path
-    if path == "/" or path.startswith("/api/") or path.endswith((".html", ".js", ".css")):
+    if path.startswith("/api/"):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
+    elif path == "/" or path.endswith(".html"):
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    elif path.endswith((".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".ico", ".woff", ".woff2")):
+        response.headers["Cache-Control"] = "public, max-age=604800, stale-while-revalidate=86400"
     return response
 
 # Global Exception Handler
