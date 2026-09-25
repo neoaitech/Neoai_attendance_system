@@ -1495,6 +1495,133 @@ body.camera-fullscreen-open #src-camera-box {
   box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
 }
 
+/* ================= Modern Capture Session Banner & Actions ================= */
+.capture-session-banner {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.capture-session-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.capture-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Sleek Compact Toggle Pill */
+.status-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.toggle-pill-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.toggle-pill-btn:hover {
+  color: #0f172a;
+}
+
+.toggle-pill-btn.is-present.active {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.35);
+}
+
+.toggle-pill-btn.is-absent.active {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.35);
+}
+
+/* Compact Micro Legend */
+.capture-micro-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+  background: #f8fafc;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.legend-dot.green { background: #10b981; }
+.legend-dot.orange { background: #f59e0b; }
+.legend-dot.red { background: #ef4444; }
+
+/* Bottom Finalize Bar */
+.capture-bottom-finalize-bar {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.capture-finalize-big-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.capture-finalize-big-btn:hover {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+  transform: translateY(-1px);
+}
+
+.capture-finalize-big-btn:active {
+  transform: scale(0.98);
+}
+
 /* ================= Unknown Faces Responsive Grid ================= */
 .unknown-faces-responsive-grid {
   display: grid;
@@ -2197,35 +2324,73 @@ body.camera-fullscreen-open #src-camera-box {
     grid-column: span 1 !important;
   }
 
-  /* Prevent student cards and actions from overflowing right edge */
+  /* Mobile Single-Row Sleek Student Cards (Matches #review style) */
   .student-verification-card {
-    flex-direction: column !important;
-    align-items: stretch !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 8px 10px !important;
     gap: 8px !important;
-    padding: 10px 12px !important;
+    border-radius: 12px !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
 
   .student-verification-card > div:first-child {
-    width: 100% !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
   }
 
   .student-verification-card > div:last-child {
-    width: 100% !important;
-    justify-content: flex-end !important;
+    flex-shrink: 0 !important;
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
-  .status-toggle-group {
+  .status-toggle-pill {
+    display: inline-flex !important;
+    width: auto !important;
+    padding: 2px !important;
+  }
+
+  .toggle-pill-btn {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .photo-canvas-frame {
+    max-height: 220px !important;
+    min-height: 180px !important;
+    overflow: hidden !important;
+  }
+
+  .photo-canvas-frame img {
+    max-height: 210px !important;
+    width: 100% !important;
+    object-fit: contain !important;
+  }
+
+  .capture-session-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .capture-header-actions {
     width: 100% !important;
     display: flex !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
   }
 
-  .status-toggle-btn {
+  .capture-header-actions .btn-sm {
     flex: 1 !important;
-    text-align: center !important;
-    padding: 8px 0 !important;
-    font-size: 0.76rem !important;
+    justify-content: center !important;
+    padding: 6px 8px !important;
+    font-size: 11px !important;
   }
 
   .division-summary-cards-grid {

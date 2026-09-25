@@ -2058,7 +2058,7 @@ const CaptureView = {
     this.activePhotoIndex = 0;
     this.currentZoom = 1.0;
     this.galleryMode = "focus";
-    this.activeVerificationFilter = "all";
+    this.activeVerificationFilter = this.activeVerificationFilter || "all";
 
     // Build Photo URLs list
     let photoUrls = [];
@@ -2163,97 +2163,75 @@ const CaptureView = {
 
     resBox.classList.remove("hidden");
     resBox.innerHTML = `
-      <div class="glass-panel mt-6" id="attendance-results-section">
+      <div class="glass-panel mt-6 p-4 sm:p-5" id="attendance-results-section">
         
-        <!-- 1. BIOMETRICS PROCESSED HEADER -->
-        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-5">
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <h3 class="text-lg font-bold text-slate-900">Biometrics Processed</h3>
-              <span class="badge badge-present text-xs">Face Detection • Anti-Spoof • Biometric Matching</span>
-            </div>
-            <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-              <span class="font-bold text-slate-800">${session.course_name || session.session_name}</span>
-              <span>&bull;</span>
-              <span>Selected Class: <b class="text-emerald-700">${presentRecords.length} Present</b>, <b class="text-rose-700">${absentRecords.length} Absent</b>${frozenRecords.length > 0 ? `, <b class="text-cyan-700 font-bold">${frozenRecords.length} Frozen</b>` : ''} (${regularRecords.length} Enrolled)</span>
-              <span>&bull;</span>
-              <span>Extra Lecture: <b class="text-amber-700">${extraCandidates.length} Detected</b> (<b class="text-emerald-700">${approvedExtraCount} Approved</b>)</span>
-              <span>&bull;</span>
-              <span>Unknown: <b class="text-indigo-700">${unknowns.length}</b></span>
-              <span>&bull;</span>
-              <span>Spoof: <b class="text-rose-700">${spoofRecords.length}</b></span>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2.5">
-            <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.discardDraftSession(${session.id})" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Discard this scan and cancel without saving">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i>
-              <span>Discard Draft</span>
-            </button>
-            <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.recaptureImages()" title="Retake or upload new images for this lecture without losing academic settings">
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-600"></i>
-              <span>Re-Capture</span>
-            </button>
-            <button type="button" class="btn-primary btn-sm flex items-center gap-1.5" onclick="CaptureView.openFinalizeModal(${session.id})">
-              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-              <span>Save & Finalize Attendance</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 2. SUMMARY BREAKDOWN CARDS -->
-        <div class="division-summary-cards-grid">
-          ${divisionGroups.map(g => `
-            <div class="division-summary-card">
-              <div class="div-card-header">
-                <span class="div-pill">Selected Class • Div ${g.division}</span>
-                <span class="div-enrolled-count">${g.total} Enrolled</span>
+        <!-- 1. SESSION SUMMARY BANNER & 1-LINE STATS -->
+        <div class="capture-session-banner mb-4">
+          <div class="capture-session-header mb-3">
+            <div>
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                <span class="badge badge-present text-[11px] font-bold">Biometrics Processed</span>
+                <span class="text-xs text-slate-500 font-mono">${photoUrls.length} Angle${photoUrls.length > 1 ? 's' : ''} Analyzed</span>
               </div>
-              <div class="div-stats-row">
-                <span class="text-emerald-600 font-bold font-mono">
-                  <i data-lucide="check" class="w-3.5 h-3.5 inline"></i> ${g.present} Present
-                </span>
-                <span class="text-rose-600 font-bold font-mono">
-                  <i data-lucide="x" class="w-3.5 h-3.5 inline"></i> ${g.absent} Absent
-                </span>
-                ${g.frozen > 0 ? `
-                  <span class="text-cyan-700 font-bold font-mono">
-                    ❄️ ${g.frozen} Frozen
-                  </span>
-                ` : ''}
-              </div>
+              <h3 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+                ${session.course_name || session.session_name || 'Classroom Session'}
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                ${divisionGroups.map(g => `Div ${g.division}`).join(", ") || 'All Sections'} &bull; ${regularRecords.length} Enrolled Students
+              </p>
             </div>
-          `).join("")}
 
-          <!-- Extra Lecture Candidates Card -->
-          <div class="division-summary-card" style="border-color: rgba(245, 158, 11, 0.4); background: #fffbeb;">
-            <div class="div-card-header">
-              <span class="div-pill bg-amber-100 text-amber-900 border-amber-300">🟠 Extra Lecture Candidates</span>
-              <span class="div-enrolled-count text-amber-800 font-bold">${extraCandidates.length} Detected</span>
-            </div>
-            <div class="div-stats-row">
-              <span class="text-emerald-700 font-bold font-mono">${approvedExtraCount} Approved</span>
-              <span class="text-slate-500 font-bold font-mono">${ignoredExtraCount} Ignored</span>
+            <div class="capture-header-actions">
+              <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.discardDraftSession(${session.id})" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Discard this scan">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i>
+                <span class="hidden sm:inline">Discard</span>
+              </button>
+              <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.recaptureImages()" title="Retake or upload new images">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-600"></i>
+                <span>Re-Capture</span>
+              </button>
+              <button type="button" class="btn-primary btn-sm flex items-center gap-1.5" onclick="CaptureView.openFinalizeModal(${session.id})">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                <span>Save & Finalize</span>
+              </button>
             </div>
           </div>
 
-          <!-- Unidentified Faces Card -->
-          <div class="division-summary-card overall-card">
-            <div class="div-card-header">
-              <span class="div-pill bg-indigo-100 text-indigo-800">Unidentified / Spoof</span>
-              <span class="div-enrolled-count">${unknowns.length + spoofRecords.length} Faces</span>
+          <!-- Guaranteed 1-Line Stats Row (Same as #review) -->
+          <div class="review-stats-row mt-3">
+            <div class="review-stat-pill pill-detected">
+              <span class="stat-label">Detected</span>
+              <span class="stat-val">${session.total_detected || (presentRecords.length + unknowns.length + extraCandidates.length)}</span>
             </div>
-            <div class="div-stats-row">
-              <span class="text-indigo-700 font-bold font-mono">${unknowns.length} Unknown Faces</span>
-              <span class="text-rose-700 font-bold font-mono ml-auto">${spoofRecords.length} Spoof Rejected</span>
+            <div class="review-stat-pill pill-present">
+              <span class="stat-label">Present</span>
+              <span class="stat-val">${presentRecords.length}</span>
+            </div>
+            <div class="review-stat-pill pill-absent">
+              <span class="stat-label">Absent</span>
+              <span class="stat-val">${absentRecords.length}</span>
+            </div>
+            ${frozenRecords.length > 0 ? `
+              <div class="review-stat-pill" style="background:#ecfeff; border-color:#a5f3fc;">
+                <span class="stat-label" style="color:#0891b2;">Frozen</span>
+                <span class="stat-val" style="color:#0e7490;">${frozenRecords.length}</span>
+              </div>
+            ` : ''}
+            <div class="review-stat-pill pill-extra">
+              <span class="stat-label">Extra</span>
+              <span class="stat-val">${extraCandidates.length}</span>
+            </div>
+            <div class="review-stat-pill pill-unknown">
+              <span class="stat-label">Unknown</span>
+              <span class="stat-val">${unknowns.length}</span>
             </div>
           </div>
         </div>
 
-        <!-- 3. LARGE CLASSROOM IMAGE VIEWER -->
-        <div class="photo-viewer-card mb-3">
-          <!-- Top Toolbar: Angle Switcher + Mode + Zoom Controls -->
-          <div class="photo-viewer-toolbar">
+        <!-- 2. LARGE CLASSROOM IMAGE VIEWER -->
+        <div class="photo-viewer-card mb-4" style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); background: #ffffff;">
+          <!-- Top Toolbar: Angle Switcher + Lightbox -->
+          <div class="photo-viewer-toolbar p-2 sm:p-3 flex items-center justify-between border-b border-slate-100">
             <div class="photo-angle-tabs">
               ${photoUrls.map((url, idx) => `
                 <button type="button" class="angle-tab-btn ${idx === this.activePhotoIndex ? 'active' : ''}" onclick="CaptureView.switchPhoto(${idx})">
@@ -2263,19 +2241,8 @@ const CaptureView = {
               `).join("")}
             </div>
 
-            <div class="flex items-center gap-2">
-              <div class="photo-view-mode-toggle">
-                <button type="button" class="view-mode-btn ${this.galleryMode === 'focus' ? 'active' : ''}" id="btn-view-focus" onclick="CaptureView.setGalleryMode('focus')" title="Single Angle Large View">
-                  <i data-lucide="square" class="w-3.5 h-3.5"></i>
-                  <span class="text-[11px] ml-1">Single Angle</span>
-                </button>
-                <button type="button" class="view-mode-btn ${this.galleryMode === 'grid' ? 'active' : ''}" id="btn-view-grid" onclick="CaptureView.setGalleryMode('grid')" title="Side-by-Side Angles">
-                  <i data-lucide="grid" class="w-3.5 h-3.5"></i>
-                  <span class="text-[11px] ml-1">Side-by-Side</span>
-                </button>
-              </div>
-
-              <div class="photo-zoom-controls" id="photo-zoom-controls">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <div class="photo-zoom-controls hidden sm:flex" id="photo-zoom-controls">
                 <button type="button" class="btn-zoom" onclick="CaptureView.adjustZoom(-0.15)" title="Zoom Out"><i data-lucide="minus"></i></button>
                 <span class="zoom-text" id="zoom-level-text">100%</span>
                 <button type="button" class="btn-zoom" onclick="CaptureView.adjustZoom(0.15)" title="Zoom In"><i data-lucide="plus"></i></button>
@@ -2295,78 +2262,73 @@ const CaptureView = {
             </div>
           </div>
 
-          <!-- Side-by-Side Matrix Mode -->
-          <div class="photo-grid-matrix hidden" id="grid-photo-box">
-            ${photoUrls.map((url, idx) => `
-              <div class="photo-grid-card" onclick="CaptureView.switchPhoto(${idx}); CaptureView.setGalleryMode('focus');">
-                <img src="${url}" />
-                <span class="grid-card-label">Angle ${idx + 1}</span>
-              </div>
-            `).join("")}
+          <!-- Micro Legend -->
+          <div class="capture-micro-legend">
+            <div class="flex items-center gap-1">
+              <span class="legend-dot green"></span>
+              <span>Recognized Student</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="legend-dot orange"></span>
+              <span>Extra / Spoof</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="legend-dot red"></span>
+              <span>Unidentified Face</span>
+            </div>
           </div>
         </div>
 
-        <!-- 4. AI RESULT LEGEND BAR -->
-        <div class="ai-result-legend-bar">
-          <div class="legend-item">
-            <span class="legend-box green"></span>
-            <span>Green Box = Recognized Selected Class Student</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-box orange"></span>
-            <span>Orange Box = Extra Lecture Candidate / Spoof Rejected</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-box red"></span>
-            <span>Red Box = Unidentified Face</span>
-          </div>
-          <span class="text-[11px] font-mono text-slate-400 ml-auto">AI Face Detection &bull; Biometric Verification</span>
-        </div>
-
-        <!-- 5. ATTENDANCE VERIFICATION SECTION -->
-        <div class="mt-6">
-          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-            <h4 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Attendance Verification & Review</h4>
-            <span class="text-xs text-slate-500">Normal class attendance vs. outside-roster extra lecture candidates</span>
+        <!-- 3. ATTENDANCE VERIFICATION SECTION -->
+        <div class="mt-4">
+          <div class="flex items-center justify-between gap-3 mb-2">
+            <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-wider">Attendance Verification & Review</h4>
+            <span class="text-[11px] text-slate-500 hidden sm:inline">Tap Present/Absent to quickly toggle student status</span>
           </div>
 
-          <!-- Navigation Filter Tabs -->
-          <div class="verification-nav-bar">
-            <button type="button" class="v-tab-btn active" id="v-tab-all" onclick="CaptureView.setVerificationFilter('all')">
-              <span>All Results</span>
-              <span class="v-tab-badge bg-slate-200 text-slate-700">${regularRecords.length + extraCandidates.length + unknowns.length + spoofRecords.length}</span>
+          <!-- Touch-friendly Horizontal Scrolling Filter Chips -->
+          <div class="review-chips-row mb-3" id="verification-chips-row">
+            <button type="button" class="roster-filter-chip ${this.activeVerificationFilter === 'all' ? 'active' : ''}" id="v-tab-all" onclick="CaptureView.setVerificationFilter('all')">
+              <span>All Students</span>
+              <span class="font-mono ml-1 text-[11px]">(${regularRecords.length + extraCandidates.length + unknowns.length + spoofRecords.length})</span>
             </button>
-            <button type="button" class="v-tab-btn" id="v-tab-roster" onclick="CaptureView.setVerificationFilter('roster')">
-              <span>Normal Class Attendance</span>
-              <span class="v-tab-badge present">${presentRecords.length}P / ${absentRecords.length}A${frozenRecords.length > 0 ? ` / ${frozenRecords.length}❄️` : ''}</span>
+            <button type="button" class="roster-filter-chip chip-present ${this.activeVerificationFilter === 'present' ? 'active' : ''}" id="v-tab-present" onclick="CaptureView.setVerificationFilter('present')">
+              <span>Present</span>
+              <span class="font-mono ml-1 text-[11px]">(${presentRecords.length})</span>
             </button>
-            <button type="button" class="v-tab-btn" id="v-tab-extra" onclick="CaptureView.setVerificationFilter('extra')">
-              <span>🟠 Extra Lecture Candidates</span>
-              <span class="v-tab-badge" style="background: rgba(245, 158, 11, 0.2); color: #b45309;">${extraCandidates.length}</span>
+            <button type="button" class="roster-filter-chip chip-absent ${this.activeVerificationFilter === 'absent' ? 'active' : ''}" id="v-tab-absent" onclick="CaptureView.setVerificationFilter('absent')">
+              <span>Absent</span>
+              <span class="font-mono ml-1 text-[11px]">(${absentRecords.length})</span>
             </button>
-            <button type="button" class="v-tab-btn" id="v-tab-unknown" onclick="CaptureView.setVerificationFilter('unknown')">
-              <span>Unidentified Faces</span>
-              <span class="v-tab-badge unknown">${unknowns.length}</span>
+            ${frozenRecords.length > 0 ? `
+              <button type="button" class="roster-filter-chip ${this.activeVerificationFilter === 'frozen' ? 'active' : ''}" id="v-tab-frozen" onclick="CaptureView.setVerificationFilter('frozen')">
+                <span>❄️ Frozen</span>
+                <span class="font-mono ml-1 text-[11px]">(${frozenRecords.length})</span>
+              </button>
+            ` : ''}
+            <button type="button" class="roster-filter-chip chip-extra ${this.activeVerificationFilter === 'extra' ? 'active' : ''}" id="v-tab-extra" onclick="CaptureView.setVerificationFilter('extra')">
+              <span>🟠 Extra Candidates</span>
+              <span class="font-mono ml-1 text-[11px]">(${extraCandidates.length})</span>
             </button>
-            <button type="button" class="v-tab-btn" id="v-tab-spoof" onclick="CaptureView.setVerificationFilter('spoof')">
-              <span>Spoof Rejected</span>
-              <span class="v-tab-badge spoof">${spoofRecords.length}</span>
-            </button>
+            ${unknowns.length > 0 ? `
+              <button type="button" class="roster-filter-chip ${this.activeVerificationFilter === 'unknown' ? 'active' : ''}" id="v-tab-unknown" onclick="CaptureView.setVerificationFilter('unknown')">
+                <span>Unidentified</span>
+                <span class="font-mono ml-1 text-[11px]">(${unknowns.length})</span>
+              </button>
+            ` : ''}
+            ${spoofRecords.length > 0 ? `
+              <button type="button" class="roster-filter-chip ${this.activeVerificationFilter === 'spoof' ? 'active' : ''}" id="v-tab-spoof" onclick="CaptureView.setVerificationFilter('spoof')">
+                <span>Spoof</span>
+                <span class="font-mono ml-1 text-[11px]">(${spoofRecords.length})</span>
+              </button>
+            ` : ''}
           </div>
 
           <!-- CONTAINER FOR FILTERED SECTIONS -->
-          <div id="verification-content-area" class="space-y-6">
+          <div id="verification-content-area" class="space-y-5">
 
             <!-- SECTION 1: NORMAL SELECTED CLASS ATTENDANCE -->
-            <div id="v-section-roster" class="space-y-5">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Normal Selected Class Attendance</h5>
-                </div>
-                <span class="text-xs text-slate-500">Only enrolled students in selected division(s) participate in normal class attendance</span>
-              </div>
-
+            <div id="v-section-roster" class="space-y-4">
               ${divisionGroups.length === 0 ? `
                 <div class="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center text-slate-400 text-xs">
                   No registered student roster is associated with this selected context.
@@ -2377,7 +2339,7 @@ const CaptureView = {
                     <div class="division-roster-header">
                       <div class="flex items-center gap-2">
                         <span class="div-pill">Division ${dg.division}</span>
-                        <span class="text-xs text-slate-600 font-semibold">${dg.records.length} Students Enrolled</span>
+                        <span class="text-xs text-slate-600 font-semibold">${dg.records.length} Students</span>
                       </div>
                       <div class="flex items-center gap-3 text-xs font-mono">
                         <span class="text-emerald-700 font-bold">${dg.present} Present</span>
@@ -2386,7 +2348,7 @@ const CaptureView = {
                       </div>
                     </div>
 
-                    <div class="p-3 space-y-2">
+                    <div class="p-2 sm:p-3 space-y-2">
                       ${dg.records.map(r => {
                         const isFrozen = isRecordFrozen(r);
                         const isPresent = !isFrozen && (r.status === "PRESENT" || r.status === "LATE");
@@ -2406,9 +2368,9 @@ const CaptureView = {
                         }
 
                         return `
-                          <div class="student-verification-card ${cardClass}" id="student-row-${r.id}" data-status="${isFrozen ? 'frozen' : r.status.toLowerCase()}"
+                          <div class="student-verification-card ${cardClass}" id="student-row-${r.id}" data-status="${isFrozen ? 'frozen' : (isPresent ? 'present' : 'absent')}"
                             style="${isFrozen ? 'border-color: #a5f3fc; background: rgba(236,254,255,0.45);' : ''}">
-                            <div class="flex items-center gap-3 min-w-0">
+                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
                               <!-- Face Avatar / Registered Student Photo -->
                               <div class="student-avatar-box ${avatarClass}" style="${isFrozen ? 'border: 2px solid #0891b2; background: #ecfeff;' : ''}">
                                 ${studentPhoto ? `
@@ -2418,35 +2380,31 @@ const CaptureView = {
                                   <span class="avatar-letter" style="${isFrozen ? 'color:#0891b2; font-weight:800;' : ''}">${isFrozen ? '❄️' : (r.student_name || 'S').charAt(0)}</span>
                                 `}
                               </div>
-                              <div class="truncate">
-                                <div class="flex items-center gap-2 mb-0.5">
+                              <div class="truncate flex-1 min-w-0">
+                                <div class="flex items-center gap-1.5 mb-0.5">
                                   <span class="font-bold text-slate-900 text-xs truncate">${r.student_name || 'Enrolled Student'}</span>
-                                  <span class="font-mono text-[11px] text-slate-500 font-semibold">(${r.roll_number || 'N/A'})</span>
-                                  <span class="badge text-[10px] bg-slate-100 text-slate-700">Div ${r.section || dg.division}</span>
+                                  <span class="font-mono text-[11px] text-slate-500 font-semibold flex-shrink-0">(${r.roll_number || 'N/A'})</span>
+                                  <span class="badge text-[10px] bg-slate-100 text-slate-700 flex-shrink-0">Div ${r.section || dg.division}</span>
                                   ${isFrozen ? `
-                                    <span class="badge text-[10px] py-0 px-2 font-bold" style="background:#cffafe; color:#0e7490; border: 1px solid #a5f3fc;">
+                                    <span class="badge text-[9px] py-0 px-1.5 font-bold flex-shrink-0" style="background:#cffafe; color:#0e7490; border: 1px solid #a5f3fc;">
                                       ❄️ FROZEN
                                     </span>
                                   ` : ''}
                                 </div>
-                                <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                                <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
                                   ${isFrozen ? `
                                     <span class="font-semibold text-cyan-800">
-                                      ${matchPct > 0 ? `❄️ Detected in Photos (${matchPct}% Match)` : `❄️ Attendance Frozen`}
+                                      ${matchPct > 0 ? `❄️ Detected (${matchPct}%)` : `❄️ Attendance Frozen`}
                                     </span>
-                                    <span>&bull;</span>
-                                    <span class="text-cyan-900 font-bold">Status: <b>FROZEN (Exempt)</b></span>
                                     ${r.freeze_until ? `<span class="text-[10px] text-cyan-700 font-mono">(until ${r.freeze_until})</span>` : ''}
-                                    ${r.freeze_reason ? `<span class="text-slate-400">&bull; ${r.freeze_reason}</span>` : ''}
                                   ` : `
                                     <span class="font-semibold ${isPresent ? 'text-emerald-600' : 'text-slate-400'}">
                                       ${isPresent ? (matchPct > 0 ? `✓ ${matchPct}% Match` : '✓ Verified') : 'Not Detected in Photos'}
                                     </span>
-                                    <span>&bull;</span>
-                                    <span class="text-slate-600">Status: <b>${isPresent ? 'Present' : 'Absent'}</b></span>
                                     ${isOverridden ? `
-                                      <span class="manual-override-badge">
-                                        <i data-lucide="edit-3" class="w-3 h-3"></i> Manual Override
+                                      <span>&bull;</span>
+                                      <span class="manual-override-badge text-[10px]">
+                                        <i data-lucide="edit-3" class="w-3 h-3"></i> Manual
                                       </span>
                                     ` : ''}
                                   `}
@@ -2454,24 +2412,24 @@ const CaptureView = {
                               </div>
                             </div>
 
-                            <!-- Right Action Area -->
-                            <div class="flex items-center gap-2 flex-shrink-0">
+                            <!-- Right Action Area: Horizontal Toggle Pill -->
+                            <div class="flex items-center gap-1.5 flex-shrink-0">
                               ${isFrozen ? `
-                                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-100/80 border border-cyan-300 text-cyan-950 text-xs font-bold shadow-xs">
-                                  <i data-lucide="snowflake" class="w-3.5 h-3.5 text-cyan-700"></i>
-                                  <span>Frozen (Exempt)</span>
+                                <div class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-100/80 border border-cyan-300 text-cyan-950 text-[11px] font-bold shadow-xs">
+                                  <i data-lucide="snowflake" class="w-3 h-3 text-cyan-700"></i>
+                                  <span>Frozen</span>
                                 </div>
                               ` : `
-                                <div class="status-toggle-group">
-                                  <button type="button" class="status-toggle-btn ${isPresent ? 'active-present' : ''}" onclick="CaptureView.updateStudentStatus(${r.id}, 'PRESENT')">
+                                <div class="status-toggle-pill">
+                                  <button type="button" class="toggle-pill-btn is-present ${isPresent ? 'active' : ''}" onclick="CaptureView.updateStudentStatus(${r.id}, 'PRESENT')">
                                     Present
                                   </button>
-                                  <button type="button" class="status-toggle-btn ${!isPresent ? 'active-absent' : ''}" onclick="CaptureView.updateStudentStatus(${r.id}, 'ABSENT')">
+                                  <button type="button" class="toggle-pill-btn is-absent ${!isPresent ? 'active' : ''}" onclick="CaptureView.updateStudentStatus(${r.id}, 'ABSENT')">
                                     Absent
                                   </button>
                                 </div>
                                 ${!isPresent ? `
-                                  <button type="button" class="btn-secondary text-[11px] py-1 px-2 text-indigo-600 hover:bg-indigo-50" onclick="CaptureView.openQuickSnapModal(${session.id}, ${r.student_id}, '${r.student_name}', ${r.id})" title="Verify Student Live with Webcam">
+                                  <button type="button" class="btn-secondary text-[11px] py-1 px-2 text-indigo-600 hover:bg-indigo-50" onclick="CaptureView.openQuickSnapModal(${session.id}, ${r.student_id}, '${(r.student_name || '').replace(/'/g, "\\'")}', ${r.id})" title="Verify Student Live with Webcam">
                                     <i data-lucide="camera" class="w-3.5 h-3.5"></i>
                                   </button>
                                 ` : ''}
@@ -2486,8 +2444,8 @@ const CaptureView = {
               }).join("")}
             </div>
 
-            <!-- SECTION 2: EXTRA LECTURE CANDIDATES (Registered Students from Other Classes) -->
-            <div id="v-section-extra" class="p-4 bg-amber-50/60 border border-amber-200 rounded-xl">
+            <!-- SECTION 2: EXTRA LECTURE CANDIDATES -->
+            <div id="v-section-extra" class="p-3 sm:p-4 bg-amber-50/60 border border-amber-200 rounded-xl">
               <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-amber-200">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
@@ -2602,14 +2560,14 @@ const CaptureView = {
               `}
             </div>
 
-            <!-- SECTION 3: UNIDENTIFIED FACE CROPS (Responsive Grid) -->
-            <div id="v-section-unknowns" class="p-4 bg-slate-50 border border-slate-200 rounded-xl ${unknowns.length === 0 ? 'hidden' : ''}">
+            <!-- SECTION 3: UNIDENTIFIED FACE CROPS -->
+            <div id="v-section-unknowns" class="p-3 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl ${unknowns.length === 0 ? 'hidden' : ''}">
               <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
                   <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Unidentified Face Crops (${unknowns.length})</h5>
                 </div>
-                <span class="text-xs text-slate-500">Faces detected by camera but not matched to any registered institutional student</span>
+                <span class="text-xs text-slate-500">Detected faces not matched to any registered student</span>
               </div>
 
               <div class="unknown-faces-responsive-grid" id="unknowns-cards-container">
@@ -2663,13 +2621,13 @@ const CaptureView = {
             </div>
 
             <!-- SECTION 4: SPOOF REJECTED SECTION -->
-            <div id="v-section-spoof" class="p-4 bg-amber-50/80 border border-amber-200 rounded-xl ${spoofRecords.length === 0 ? 'hidden' : ''}">
+            <div id="v-section-spoof" class="p-3 sm:p-4 bg-amber-50/80 border border-amber-200 rounded-xl ${spoofRecords.length === 0 ? 'hidden' : ''}">
               <div class="flex items-center justify-between mb-3 pb-2 border-b border-amber-200">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                   <h5 class="text-xs font-bold text-amber-900 uppercase tracking-wider">Spoof Protection Rejections (${spoofRecords.length})</h5>
                 </div>
-                <span class="text-xs text-amber-800">Anti-Spoofing system flagged these attempts as non-live presentations</span>
+                <span class="text-xs text-amber-800">Anti-Spoofing system flagged non-live presentations</span>
               </div>
 
               <div class="space-y-2">
@@ -2695,10 +2653,32 @@ const CaptureView = {
           </div>
         </div>
 
+        <!-- 4. BOTTOM STICKY/PROMINENT FINALIZE BAR -->
+        <div class="capture-bottom-finalize-bar mt-6">
+          <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="text-xs font-bold text-slate-800">
+                Attendance Ready: <b class="text-emerald-700">${presentRecords.length} Present</b>, <b class="text-rose-700">${absentRecords.length} Absent</b>${frozenRecords.length > 0 ? `, <b class="text-cyan-700">${frozenRecords.length} Frozen</b>` : ''}
+              </span>
+            </div>
+            <span class="text-[11px] text-slate-400 font-semibold">Total Enrolled: ${regularRecords.length}</span>
+          </div>
+
+          <button type="button" class="capture-finalize-big-btn" onclick="CaptureView.openFinalizeModal(${session.id})">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span>Save & Finalize Attendance (${presentRecords.length} Present)</span>
+          </button>
+        </div>
+
       </div>
     `;
 
     if (window.lucide) window.lucide.createIcons();
+
+    if (this.activeVerificationFilter && this.activeVerificationFilter !== "all") {
+      this.setVerificationFilter(this.activeVerificationFilter);
+    }
 
     // Smooth scroll down to results only on initial scan execution
     if (shouldScroll) {
@@ -2714,24 +2694,63 @@ const CaptureView = {
   setVerificationFilter(filter) {
     this.activeVerificationFilter = filter;
 
-    document.querySelectorAll(".v-tab-btn").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll(".roster-filter-chip, .v-tab-btn").forEach(btn => btn.classList.remove("active"));
     document.getElementById(`v-tab-${filter}`)?.classList.add("active");
 
     const rosterSec = document.getElementById("v-section-roster");
     const extraSec = document.getElementById("v-section-extra");
     const unknownsSec = document.getElementById("v-section-unknowns");
     const spoofSec = document.getElementById("v-section-spoof");
+    const studentCards = document.querySelectorAll(".student-verification-card");
 
     if (filter === "all") {
       if (rosterSec) rosterSec.classList.remove("hidden");
       if (extraSec) extraSec.classList.remove("hidden");
       if (unknownsSec) unknownsSec.classList.remove("hidden");
       if (spoofSec) spoofSec.classList.remove("hidden");
+      studentCards.forEach(c => c.classList.remove("hidden"));
+    } else if (filter === "present") {
+      if (rosterSec) rosterSec.classList.remove("hidden");
+      if (extraSec) extraSec.classList.add("hidden");
+      if (unknownsSec) unknownsSec.classList.add("hidden");
+      if (spoofSec) spoofSec.classList.add("hidden");
+      studentCards.forEach(c => {
+        if (c.getAttribute("data-status") === "present") {
+          c.classList.remove("hidden");
+        } else {
+          c.classList.add("hidden");
+        }
+      });
+    } else if (filter === "absent") {
+      if (rosterSec) rosterSec.classList.remove("hidden");
+      if (extraSec) extraSec.classList.add("hidden");
+      if (unknownsSec) unknownsSec.classList.add("hidden");
+      if (spoofSec) spoofSec.classList.add("hidden");
+      studentCards.forEach(c => {
+        if (c.getAttribute("data-status") === "absent") {
+          c.classList.remove("hidden");
+        } else {
+          c.classList.add("hidden");
+        }
+      });
+    } else if (filter === "frozen") {
+      if (rosterSec) rosterSec.classList.remove("hidden");
+      if (extraSec) extraSec.classList.add("hidden");
+      if (unknownsSec) unknownsSec.classList.add("hidden");
+      if (spoofSec) spoofSec.classList.add("hidden");
+      studentCards.forEach(c => {
+        if (c.getAttribute("data-status") === "frozen") {
+          c.classList.remove("hidden");
+        } else {
+          c.classList.add("hidden");
+        }
+      });
     } else if (filter === "roster") {
       if (rosterSec) rosterSec.classList.remove("hidden");
       if (extraSec) extraSec.classList.add("hidden");
       if (unknownsSec) unknownsSec.classList.add("hidden");
       if (spoofSec) spoofSec.classList.add("hidden");
+      studentCards.forEach(c => c.classList.remove("hidden"));
     } else if (filter === "extra") {
       if (rosterSec) rosterSec.classList.add("hidden");
       if (extraSec) extraSec.classList.remove("hidden");
