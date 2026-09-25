@@ -165,55 +165,70 @@ const ReviewView = {
       const totalCount = (session.records || []).length;
 
       const actualTime = session.actual_time || (session.created_at && window.DateTimeUtils ? window.DateTimeUtils.formatTime(session.created_at) : (session.start_time || '09:00 AM'));
+      const facultyName = session.teacher_name || session.faculty_name || 'Administrator';
       
       content.innerHTML = `
-        <!-- Session Summary Banner: Symmetrical Mobile Grid + Full Width Save Button -->
-        <div class="glass-panel mb-3 p-3 sm:p-4">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            
-            <!-- Course Title & Meta -->
+        <!-- Session Summary Banner: Guaranteed 1-Line Stats & Prominent Faculty Name -->
+        <div class="review-session-banner">
+          <div class="review-session-header">
             <div>
-              <div class="flex items-center gap-1.5 mb-1 flex-wrap">
-                <span class="badge badge-ai font-mono text-[10px] sm:text-xs font-bold">${session.class_code || 'CS-301'}</span>
-                <h3 class="text-sm sm:text-base font-extrabold text-slate-900">${session.session_name}</h3>
-                ${photoList.length > 1 ? `<span class="badge badge-neutral text-[9px] font-bold">📷 ${photoList.length} Angles</span>` : ''}
+              <div class="review-course-title-row">
+                <span class="badge badge-ai font-mono text-xs font-bold">${session.class_code || 'CS-301'}</span>
+                <h3 class="review-course-title">${session.session_name}</h3>
+                ${photoList.length > 1 ? `<span class="badge badge-neutral text-[10px] font-bold">📷 ${photoList.length} Angles</span>` : ''}
               </div>
-              <p class="text-[11px] text-slate-500">
-                <b>${window.DateTimeUtils ? window.DateTimeUtils.formatDate(session.session_date || session.created_at) : session.session_date}</b> • <span class="text-indigo-600 font-bold">${actualTime}</span> • ${session.teacher_name || 'Faculty'}
-              </p>
+              <div class="review-session-meta">
+                <span>📅 <b>${window.DateTimeUtils ? window.DateTimeUtils.formatDate(session.session_date || session.created_at) : session.session_date}</b></span>
+                <span>•</span>
+                <span>⏰ <b style="color: #6366f1;">${actualTime}</b></span>
+                <span>•</span>
+                <span>👤 Faculty: <b class="faculty-highlight">${facultyName}</b></span>
+              </div>
             </div>
 
-            <!-- Symmetrical Stats Grid & Action Button -->
-            <div class="w-full sm:w-auto flex flex-col sm:flex-row sm:items-center gap-2">
-              
-              <!-- 4-Column Clean Grid on Mobile, Row on Desktop -->
-              <div class="grid grid-cols-4 sm:flex sm:items-center gap-1.5 text-center">
-                <div class="px-2 py-1 bg-slate-50 rounded-lg border border-slate-200">
-                  <span class="text-[8px] sm:text-[10px] text-slate-500 uppercase tracking-wider block font-bold">Detected</span>
-                  <span class="text-xs sm:text-sm font-extrabold text-slate-900 font-mono">${session.total_detected}</span>
-                </div>
-                <div class="px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-200">
-                  <span class="text-[8px] sm:text-[10px] text-emerald-700 uppercase tracking-wider block font-bold">Present</span>
-                  <span class="text-xs sm:text-sm font-extrabold text-emerald-700 font-mono">${presentCount}</span>
-                </div>
-                <div class="px-2 py-1 bg-rose-50 rounded-lg border border-rose-200">
-                  <span class="text-[8px] sm:text-[10px] text-rose-700 uppercase tracking-wider block font-bold">Absent</span>
-                  <span class="text-xs sm:text-sm font-extrabold text-rose-700 font-mono">${absentCount}</span>
-                </div>
-                <div class="px-2 py-1 ${extraCount > 0 ? 'bg-amber-50 border-amber-300' : 'bg-indigo-50 border-indigo-200'} rounded-lg border">
-                  <span class="text-[8px] sm:text-[10px] ${extraCount > 0 ? 'text-amber-800' : 'text-indigo-700'} uppercase tracking-wider block font-bold">${extraCount > 0 ? 'Extra' : 'Unknown'}</span>
-                  <span class="text-xs sm:text-sm font-extrabold ${extraCount > 0 ? 'text-amber-900' : 'text-indigo-700'} font-mono">${extraCount > 0 ? extraCount : (session.total_unknown || 0)}</span>
-                </div>
-              </div>
-
-              <!-- Save Changes Button: Full Width on Mobile, cleanly separated -->
-              <button class="btn-primary text-xs py-2 px-3.5 w-full sm:w-auto justify-center font-bold shadow-sm" onclick="ReviewView.saveAllChanges()">
+            <!-- Desktop Save Changes Button (Compact in Header) -->
+            <div class="sm:block hidden">
+              <button class="btn-primary text-xs py-2 px-4 font-bold shadow-sm flex items-center gap-1.5" onclick="ReviewView.saveAllChanges()">
                 <i data-lucide="check-check" class="w-4 h-4"></i>
                 <span>Save Changes</span>
               </button>
-
             </div>
+          </div>
 
+          <!-- Guaranteed 1-Line Stats Row (Both Desktop & Mobile) -->
+          <div class="review-stats-row">
+            <div class="review-stat-pill pill-detected">
+              <span class="stat-label">Detected</span>
+              <span class="stat-val">${session.total_detected}</span>
+            </div>
+            <div class="review-stat-pill pill-present">
+              <span class="stat-label">Present</span>
+              <span class="stat-val">${presentCount}</span>
+            </div>
+            <div class="review-stat-pill pill-absent">
+              <span class="stat-label">Absent</span>
+              <span class="stat-val">${absentCount}</span>
+            </div>
+            ${extraCount > 0 ? `
+              <div class="review-stat-pill pill-extra">
+                <span class="stat-label">Extra</span>
+                <span class="stat-val">${extraCount}</span>
+              </div>
+            ` : ''}
+            ${session.total_unknown > 0 || (!extraCount && session.total_unknown !== undefined) ? `
+              <div class="review-stat-pill pill-unknown">
+                <span class="stat-label">Unknown</span>
+                <span class="stat-val">${session.total_unknown || 0}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Mobile-only Save Changes Button (Neat below 1-line stats) -->
+          <div class="sm:hidden block mt-2.5">
+            <button class="review-save-btn" onclick="ReviewView.saveAllChanges()">
+              <i data-lucide="check-check" class="w-4 h-4"></i>
+              <span>Save Changes</span>
+            </button>
           </div>
         </div>
 

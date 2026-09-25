@@ -3,29 +3,211 @@
    File: frontend/css/pages/review.css
    =================================================================== */
 
-.session-inspector-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow-sm);
+/* ================= Responsive Display Helpers ================= */
+.hidden { display: none !important; }
+.block { display: block !important; }
+
+@media (min-width: 769px) {
+  .sm\:hidden { display: none !important; }
+  .sm\:block { display: block !important; }
+  .sm\:inline { display: inline !important; }
+  .sm\:inline-flex { display: inline-flex !important; }
+  .sm\:flex { display: flex !important; }
+}
+
+@media (max-width: 768px) {
+  .sm\:block,
+  .sm\:inline,
+  .sm\:inline-flex,
+  .sm\:flex { display: none !important; }
+  .sm\:hidden { display: block !important; }
+}
+
+/* ================= Session Summary Banner ================= */
+.review-session-banner {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   box-sizing: border-box;
 }
 
-.session-stat-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-surface-subtle);
-  border: 1px solid var(--border-subtle);
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
+.review-session-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
+.review-course-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.review-course-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.review-session-meta {
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.review-session-meta b {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.review-session-meta .faculty-highlight {
+  color: #4f46e5;
+  font-weight: 700;
+  background: rgba(99, 102, 241, 0.08);
+  padding: 1px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+/* ================= 1-Line Guaranteed Stats Row ================= */
+.review-stats-row {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.review-stat-pill {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 6px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: #f8fafc !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+.review-stat-pill .stat-label {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  color: #64748b !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  line-height: 1 !important;
+}
+
+.review-stat-pill .stat-val {
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  font-family: 'JetBrains Mono', monospace, sans-serif !important;
+  color: #0f172a !important;
+  line-height: 1.2 !important;
+  margin-top: 3px !important;
+}
+
+/* Specific Pill Color Themes */
+.review-stat-pill.pill-detected {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+.review-stat-pill.pill-detected .stat-val {
+  color: #0f172a !important;
+}
+
+.review-stat-pill.pill-present {
+  background: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+.review-stat-pill.pill-present .stat-label {
+  color: #15803d !important;
+}
+.review-stat-pill.pill-present .stat-val {
+  color: #16a34a !important;
+}
+
+.review-stat-pill.pill-absent {
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+.review-stat-pill.pill-absent .stat-label {
+  color: #b91c1c !important;
+}
+.review-stat-pill.pill-absent .stat-val {
+  color: #dc2626 !important;
+}
+
+.review-stat-pill.pill-extra {
+  background: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+.review-stat-pill.pill-extra .stat-label {
+  color: #b45309 !important;
+}
+.review-stat-pill.pill-extra .stat-val {
+  color: #d97706 !important;
+}
+
+.review-stat-pill.pill-unknown {
+  background: #eef2ff !important;
+  border-color: #c7d2fe !important;
+}
+.review-stat-pill.pill-unknown .stat-label {
+  color: #4338ca !important;
+}
+.review-stat-pill.pill-unknown .stat-val {
+  color: #4f46e5 !important;
+}
+
+/* Save Changes Button */
+.review-save-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  transition: all 0.15s ease;
+}
+
+.review-save-btn:hover {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* ================= Workspace Grid ================= */
 .review-workspace-grid {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -55,13 +237,13 @@
   width: 100%;
   max-width: 100%;
   max-height: 460px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 12px);
   overflow: hidden;
   background: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   position: relative;
   box-sizing: border-box;
   transition: all 0.25s ease;
@@ -204,14 +386,35 @@
   box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
 }
 
-/* ================= Mobile User-Friendly Responsive Design (<= 768px) ================= */
+/* ================= Mobile Adjustments (<= 768px) ================= */
 @media (max-width: 768px) {
-  /* Clean Compact Workspace & Panels */
-  .session-inspector-card {
-    padding: 12px 10px;
-    margin-bottom: 12px;
-    width: 100% !important;
-    max-width: 100% !important;
+  .review-session-banner {
+    padding: 12px 12px !important;
+    border-radius: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .review-session-meta {
+    font-size: 11px !important;
+    gap: 5px !important;
+  }
+
+  /* 1-Line Stats Row on Mobile */
+  .review-stats-row {
+    gap: 4px !important;
+  }
+
+  .review-stat-pill {
+    padding: 6px 2px !important;
+    border-radius: 8px !important;
+  }
+
+  .review-stat-pill .stat-label {
+    font-size: 8px !important;
+  }
+
+  .review-stat-pill .stat-val {
+    font-size: 13px !important;
   }
 
   .review-workspace-grid {
@@ -227,7 +430,6 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
   }
 
-  /* Compact Photo Viewer & Smooth Horizontal Scroll Tabs */
   .annotated-viewer-bounded {
     max-height: 220px !important;
     border-radius: 10px;
@@ -239,6 +441,7 @@
     max-width: 100% !important;
   }
 
+  /* Photo tabs smooth horizontal scroll on mobile */
   .photo-angle-tabs {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
@@ -246,7 +449,6 @@
     padding-bottom: 3px;
     scrollbar-width: none;
   }
-
   .photo-angle-tabs::-webkit-scrollbar {
     display: none;
   }
@@ -288,7 +490,6 @@
     display: block !important;
   }
 
-  /* Hide Desktop-only separate columns (embedded inside Col 1) */
   .review-roster-table td.col-score,
   .review-roster-table td.col-type {
     display: none !important;
