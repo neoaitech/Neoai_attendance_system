@@ -92,10 +92,12 @@ FACULTY_DEFAULT_PERMISSIONS = {
     "attendance.mark_absent",
     "attendance.recapture",
     "attendance.finalize",
+    "attendance.edit",
     "student.view",
     "student.create",
     "student.edit",
     "student.upload_photos",
+    "student.export",
     "course.view",
     "unknown_face.view",
     "unknown_face.review",
@@ -179,10 +181,9 @@ class PermissionService:
             db.flush()
 
         # 3. Associate Permissions with Roles
-        # Admin (Root Institutional Administrator) gets all permissions including permissions.manage
+        # Super Admin & Admin get all permissions (Super Admin has supreme unconditional authority)
         admin_role.permissions = list(perm_map.values())
-        # Super Admin gets all operational permissions EXCEPT permissions.manage (Authority & Permissions Matrix)
-        super_admin_role.permissions = [p for k, p in perm_map.items() if k != "permissions.manage"]
+        super_admin_role.permissions = list(perm_map.values())
         # Faculty gets default faculty permissions
         faculty_perms = [p for k, p in perm_map.items() if k in FACULTY_DEFAULT_PERMISSIONS]
         faculty_role.permissions = faculty_perms
@@ -233,14 +234,8 @@ class PermissionService:
         if not user or not user.is_active or user.status in ("Suspended", "Deactivated"):
             return False
 
-        # Institutional Administrator has unconditional full access to everything
-        if self.is_admin(user):
-            return True
-
-        # Super Administrator has full access to operational permissions, but NO access to permissions.manage
-        if self.is_super_admin(user):
-            if permission_key == "permissions.manage":
-                return False
+        # Super Administrator and Institutional Administrator have unconditional full access to everything
+        if self.is_super_admin(user) or self.is_admin(user):
             return True
 
         # Check user explicit permission overrides
@@ -395,10 +390,8 @@ class PermissionService:
 
         effective = {}
         for p in all_perms:
-            if is_admin_user:
+            if is_super or is_admin_user:
                 effective[p.key] = True
-            elif is_super:
-                effective[p.key] = (p.key != "permissions.manage")
             elif p.key in override_map:
                 effective[p.key] = (override_map[p.key] == "ALLOW")
             elif p.key in role_perms:

@@ -464,7 +464,7 @@ class ReportService:
             batches_list.append(batch_obj)
 
             div_key = f"{prog} {sem} Div {sec}" if len(batch_map) > 1 else sec
-            divisions_data[div_key] = batch_obj
+            divisions_data[div_key] = {"batch_id": b_key, "total_enrolled": len(b_students)}
 
             if prog not in hierarchy:
                 hierarchy[prog] = {}

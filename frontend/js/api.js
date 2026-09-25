@@ -131,7 +131,7 @@ const API = {
     } catch (error) {
       console.warn(`[API] ${options.method || 'GET'} ${endpoint} failed:`, error.message);
       if (error.message && (error.message.includes("Failed to fetch") || error.message.includes("NetworkError") || error.message.includes("Load failed"))) {
-        throw new Error(`Unable to connect to AI server at ${url}. Please ensure the server is active or click 'Change Backend URL' below.`);
+        throw new Error("Network connection interrupted or slow while communicating with server. Please check your connection and try again.");
       }
       throw error;
     }

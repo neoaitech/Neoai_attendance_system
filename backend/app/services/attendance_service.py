@@ -279,6 +279,10 @@ class AttendanceService:
         db.add(session)
         db.flush()  # Generate session.id
 
+        # Wipe any ghost / residual records for this session ID to guarantee clean slate
+        db.query(AttendanceRecord).filter(AttendanceRecord.session_id == session.id).delete()
+        db.query(UnknownFace).filter(UnknownFace.session_id == session.id).delete()
+
         # Fetch ONLY the active students enrolled in the selected course offering(s) / section(s)
         eligible_students = []
         seen_student_ids = set()
@@ -355,6 +359,7 @@ class AttendanceService:
                 unk["confidence"] = float(_clean_val(unk["confidence"]))
 
         recognized_student_ids = set()
+        recorded_student_records = {}  # student_id -> AttendanceRecord
         extra_lecture_candidates = []
         seen_extra_student_ids = set()
 
@@ -365,13 +370,24 @@ class AttendanceService:
         # A) Selected Roster Students -> Normal Class Attendance (PRESENT / FROZEN / SPOOF_REJECTED)
         # B) Outside Roster Registered Students -> EXTRA LECTURE CANDIDATES (Deduplicated, Not in Selected Class stats)
         for rec in cv_result["recognized"]:
-            st_id = rec["student_id"]
+            raw_st_id = rec["student_id"]
+            st_id = int(raw_st_id) if str(raw_st_id).isdigit() else raw_st_id
             is_spoof = rec.get("is_spoof", False)
             target_st = student_obj_map.get(st_id)
             is_student_frozen = bool(target_st and (target_st.is_frozen or target_st.attendance_status == "FROZEN"))
 
             if st_id in enrolled_student_ids:
-                # Part of selected class roster
+                recognized_student_ids.add(st_id)
+
+                # Multi-angle deduplication: If student was already recorded in this session, keep higher confidence
+                if st_id in recorded_student_records:
+                    prev_rec = recorded_student_records[st_id]
+                    if rec["confidence"] > (prev_rec.confidence_score or 0.0):
+                        prev_rec.confidence_score = rec["confidence"]
+                        if rec.get("bbox"):
+                            prev_rec.detection_bbox = rec["bbox"]
+                    continue
+
                 if is_student_frozen:
                     # Student is frozen - Mark FROZEN even if recognized in classroom
                     record = AttendanceRecord(
@@ -387,7 +403,7 @@ class AttendanceService:
                         marked_at=datetime.utcnow()
                     )
                     db.add(record)
-                    recognized_student_ids.add(st_id)
+                    recorded_student_records[st_id] = record
                     continue
 
                 if is_spoof:
@@ -403,10 +419,9 @@ class AttendanceService:
                         marked_at=datetime.utcnow()
                     )
                     db.add(record)
-                    recognized_student_ids.add(st_id)
+                    recorded_student_records[st_id] = record
                     continue
 
-                recognized_student_ids.add(st_id)
                 record = AttendanceRecord(
                     session_id=session.id,
                     student_id=st_id,
@@ -419,6 +434,7 @@ class AttendanceService:
                     marked_at=datetime.utcnow()
                 )
                 db.add(record)
+                recorded_student_records[st_id] = record
 
             else:
                 # Registered institutional student outside selected roster -> EXTRA LECTURE CANDIDATE
@@ -452,11 +468,12 @@ class AttendanceService:
 
         # 2. Auto-Absent logic strictly for enrolled students in this offering who were not detected
         for s in eligible_students:
-            if s.id not in recognized_student_ids:
+            s_id = int(s.id) if str(s.id).isdigit() else s.id
+            if s_id not in recorded_student_records and s_id not in recognized_student_ids:
                 is_st_frozen = bool(s.is_frozen or s.attendance_status == "FROZEN")
                 record = AttendanceRecord(
                     session_id=session.id,
-                    student_id=s.id,
+                    student_id=s_id,
                     status="FROZEN" if is_st_frozen else "ABSENT",
                     confidence_score=0.0,
                     detection_bbox=None,
@@ -467,6 +484,7 @@ class AttendanceService:
                     marked_at=datetime.utcnow()
                 )
                 db.add(record)
+                recorded_student_records[s_id] = record
 
         # 3. Create UnknownFace records (Truly unidentified faces)
         for unk in cv_result["unknown"]:

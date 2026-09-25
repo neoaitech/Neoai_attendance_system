@@ -1280,12 +1280,26 @@ const CaptureView = {
       return;
     }
 
+    // Scale canvas so max dimension <= 1280px to accelerate AI inference and prevent mobile timeouts
+    const maxDim = 1280;
+    let w = video.videoWidth;
+    let h = video.videoHeight;
+    if (w > maxDim || h > maxDim) {
+      if (w > h) {
+        h = Math.round((h * maxDim) / w);
+        w = maxDim;
+      } else {
+        w = Math.round((w * maxDim) / h);
+        h = maxDim;
+      }
+    }
+
     const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.96);
+    ctx.drawImage(video, 0, 0, w, h);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.80);
 
     if (this.capturedClassroomSnaps.length >= 8) {
       App.showToast("Maximum 8 classroom angles reached", "info");
@@ -1308,6 +1322,48 @@ const CaptureView = {
     }
 
     App.showToast(`Angle #${this.capturedClassroomSnaps.length} captured! (1–8 allowed)`, "success");
+  },
+
+  compressImageFile(file, maxDim = 1280, quality = 0.80) {
+    return new Promise((resolve) => {
+      if (!file || !file.type || !file.type.startsWith("image/")) {
+        return resolve(file);
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob((blob) => {
+            if (blob && blob.size < file.size) {
+              const cleanName = (file.name || "upload.jpg").replace(/\.[^/.]+$/, "") + ".jpg";
+              resolve(new File([blob], cleanName, { type: "image/jpeg" }));
+            } else {
+              resolve(file);
+            }
+          }, "image/jpeg", quality);
+        };
+        img.onerror = () => resolve(file);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
   },
 
   onFilesSelected(input) {
@@ -1463,7 +1519,13 @@ const CaptureView = {
             scanBtn.innerHTML = `<i data-lucide="scan" class="w-4 h-4"></i><span>Scan & Aggregate Attendance</span>`;
             return;
           }
-          filesToUpload.slice(0, 8).forEach(f => fd.append("photos", f));
+          scanBtn.disabled = true;
+          scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>Optimizing Photos for Mobile...</span>`;
+          const compressedFiles = await Promise.all(
+            filesToUpload.slice(0, 8).map(f => this.compressImageFile(f, 1280, 0.80))
+          );
+          compressedFiles.forEach(f => fd.append("photos", f));
+          scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>AI Biometric Face Verification...</span>`;
           session = await API.post("/sessions/create-and-process", fd);
         } else if (this.activeMode === "camera") {
           if (this.capturedClassroomSnaps.length === 0) {
@@ -1472,6 +1534,8 @@ const CaptureView = {
             scanBtn.innerHTML = `<i data-lucide="scan" class="w-4 h-4"></i><span>Scan & Aggregate Attendance</span>`;
             return;
           }
+          scanBtn.disabled = true;
+          scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>Uploading Classroom Angles...</span>`;
           const snapsToSend = this.capturedClassroomSnaps.slice(0, 8);
           let convertedCount = 0;
           for (let i = 0; i < snapsToSend.length; i++) {
@@ -1487,7 +1551,7 @@ const CaptureView = {
                   u8arr[n] = bstr.charCodeAt(n);
                 }
                 const blob = new Blob([u8arr], { type: mime });
-                fd.append("photos", blob, `webcam_snap_${i + 1}.jpg`);
+                fd.append("photos", blob, `camera_angle_${i + 1}.jpg`);
                 convertedCount++;
               } catch (e) {
                 console.warn("Failed to convert snap to blob:", e);
@@ -1497,6 +1561,7 @@ const CaptureView = {
           if (convertedCount === 0) {
             fd.append("webcam_snapshots_json", JSON.stringify(snapsToSend));
           }
+          scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>AI Biometric Face Verification...</span>`;
           session = await API.post("/sessions/create-and-process", fd);
         }
 
@@ -1545,8 +1610,30 @@ const CaptureView = {
     const allRecords = session.records || [];
     const isRecordFrozen = (r) => Boolean(r.is_frozen || r.attendance_status === "FROZEN" || r.status === "FROZEN" || r.verification_type === "FROZEN_STUDENT");
 
+    // Deduplicate all records by student_id (prioritize PRESENT / FROZEN over AUTO_ABSENT, keep highest confidence)
+    const dedupRecordsMap = new Map();
+    allRecords.forEach(r => {
+      const key = r.student_id;
+      if (!dedupRecordsMap.has(key)) {
+        dedupRecordsMap.set(key, r);
+      } else {
+        const existing = dedupRecordsMap.get(key);
+        const existingIsPres = !isRecordFrozen(existing) && (existing.status === "PRESENT" || existing.status === "LATE");
+        const newIsPres = !isRecordFrozen(r) && (r.status === "PRESENT" || r.status === "LATE");
+        const existingIsFrozen = isRecordFrozen(existing);
+        const newIsFrozen = isRecordFrozen(r);
+
+        if ((newIsPres && !existingIsPres) || (newIsFrozen && !existingIsFrozen && !existingIsPres)) {
+          dedupRecordsMap.set(key, r);
+        } else if (newIsPres && existingIsPres && (r.confidence_score || 0) > (existing.confidence_score || 0)) {
+          dedupRecordsMap.set(key, r);
+        }
+      }
+    });
+    const uniqueRecords = Array.from(dedupRecordsMap.values());
+
     // 1. NORMAL SELECTED CLASS RECORDS
-    const regularRecords = allRecords.filter(r => !r.is_extra_lecture && r.verification_type !== "EXTRA_LECTURE" && r.attendance_type !== "EXTRA_LECTURE");
+    const regularRecords = uniqueRecords.filter(r => !r.is_extra_lecture && r.verification_type !== "EXTRA_LECTURE" && r.attendance_type !== "EXTRA_LECTURE");
     const presentRecords = regularRecords.filter(r => !isRecordFrozen(r) && (r.status === "PRESENT" || r.status === "LATE"));
     const frozenRecords = regularRecords.filter(r => isRecordFrozen(r));
     const absentRecords = regularRecords.filter(r => !isRecordFrozen(r) && r.status === "ABSENT");
@@ -1558,7 +1645,7 @@ const CaptureView = {
 
     // 3. UNKNOWN & SPOOF
     const unknowns = session.unknown_faces || [];
-    const spoofRecords = (session.spoof_faces || []).concat(allRecords.filter(r => r.verification_type === "SPOOF_REJECTED" || r.notes?.includes("Spoof")));
+    const spoofRecords = (session.spoof_faces || []).concat(uniqueRecords.filter(r => r.verification_type === "SPOOF_REJECTED" || r.notes?.includes("Spoof")));
 
     // Group regular records by division for precise isolation
     const divisionGroupsMap = new Map();

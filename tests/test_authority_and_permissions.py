@@ -104,7 +104,7 @@ def test_super_admin_has_all_permissions(db_session):
     super_user = db_session.query(User).filter(User.username == "test_super").first()
     assert permission_service.is_super_admin(super_user) is True
     assert permission_service.has_permission(db_session, super_user, "student.delete") is True
-    assert permission_service.has_permission(db_session, super_user, "permissions.manage") is False
+    assert permission_service.has_permission(db_session, super_user, "permissions.manage") is True
     assert permission_service.has_permission(db_session, super_user, "settings.manage") is True
 
 # ===================================================================
@@ -124,7 +124,9 @@ def test_faculty_default_permissions_and_restrictions(db_session):
     # Allowed by default for faculty
     assert permission_service.has_permission(db_session, faculty, "attendance.take") is True
     assert permission_service.has_permission(db_session, faculty, "attendance.view") is True
+    assert permission_service.has_permission(db_session, faculty, "attendance.edit") is True
     assert permission_service.has_permission(db_session, faculty, "student.view") is True
+    assert permission_service.has_permission(db_session, faculty, "student.export") is True
     assert permission_service.has_permission(db_session, faculty, "report.view") is True
     
     # Sensitive operations blocked by default for faculty
