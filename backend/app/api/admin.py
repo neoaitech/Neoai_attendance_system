@@ -312,6 +312,119 @@ def update_faculty_user(
 
     return target.to_dict()
 
+@router.delete("/faculty/{faculty_id}")
+def delete_faculty_user(
+    faculty_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    from backend.app.services.permission_service import permission_service
+    from backend.app.db.models import (
+        ClassCourse,
+        AttendanceSession,
+        UserPermissionOverride,
+        UserAcademicScope,
+        PermissionRequest,
+        Notification,
+        course_faculty_association,
+        AuditLog
+    )
+
+    target = db.query(User).filter(User.id == faculty_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="Faculty user not found.")
+
+    # Prevent self-deletion
+    if target.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Security Restriction: You cannot delete your own account."
+        )
+
+    # Prevent non-superadmin from deleting a superadmin
+    if target.role in ("super_admin", "superadmin") and not permission_service.is_super_admin(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: Only Super Administrators can delete Super Administrator accounts."
+        )
+
+    # Prevent deleting the last remaining superadmin
+    if target.role in ("super_admin", "superadmin"):
+        super_count = db.query(User).filter(
+            User.role.in_(["super_admin", "superadmin"]),
+            User.is_active == True,
+            User.id != target.id
+        ).count()
+        if super_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Security Protection: Cannot delete the last remaining Super Administrator."
+            )
+
+    faculty_name = target.full_name or target.username
+    target_username = target.username
+
+    # Safely clean up associated references
+    try:
+        db.execute(course_faculty_association.delete().where(course_faculty_association.c.user_id == target.id))
+    except Exception as e:
+        print(f"[DeleteFaculty] course_faculty_association cleanup: {e}")
+
+    # Nullify primary teacher assignments on courses
+    db.query(ClassCourse).filter(ClassCourse.teacher_id == target.id).update({"teacher_id": None})
+
+    # Nullify teacher on attendance sessions so history is preserved
+    db.query(AttendanceSession).filter(AttendanceSession.teacher_id == target.id).update({"teacher_id": None})
+
+    # Delete permission overrides & nullify granted_by
+    db.query(UserPermissionOverride).filter(UserPermissionOverride.user_id == target.id).delete()
+    db.query(UserPermissionOverride).filter(UserPermissionOverride.granted_by_user_id == target.id).update({"granted_by_user_id": None})
+
+    # Delete academic scopes
+    db.query(UserAcademicScope).filter(UserAcademicScope.user_id == target.id).delete()
+
+    # Clean up permission requests
+    db.query(PermissionRequest).filter(PermissionRequest.requester_user_id == target.id).delete()
+    db.query(PermissionRequest).filter(PermissionRequest.reviewer_user_id == target.id).update({"reviewer_user_id": None})
+
+    # Clean up notifications
+    db.query(Notification).filter(Notification.recipient_user_id == target.id).delete()
+    db.query(Notification).filter(Notification.actor_user_id == target.id).update({"actor_user_id": None})
+
+    # Clean up biometrics photo if present
+    if target.photo_url and str(target.photo_url).startswith("/uploads/"):
+        photo_rel = str(target.photo_url).replace("/uploads/", "")
+        photo_path = settings.UPLOAD_DIR / photo_rel
+        if photo_path.exists():
+            try:
+                photo_path.unlink()
+            except Exception:
+                pass
+
+    # Audit log
+    audit_entry = AuditLog(
+        user_id=current_user.id,
+        actor_name=current_user.full_name or current_user.username,
+        actor_role=current_user.role,
+        action="DELETE_FACULTY",
+        entity="User",
+        entity_id=target.id,
+        target_user_id=target.id,
+        target_name=faculty_name,
+        result="SUCCESS",
+        details=f"Faculty account '{faculty_name}' (@{target_username}) was permanently deleted by {current_user.full_name or current_user.username}."
+    )
+    db.add(audit_entry)
+
+    # Finally delete the user
+    db.delete(target)
+    db.commit()
+
+    return {
+        "status": "success",
+        "message": f"Faculty account '{faculty_name}' deleted successfully."
+    }
+
 class MatchingSensitivityPayload(BaseModel):
     tolerance: float
     label: Optional[str] = None

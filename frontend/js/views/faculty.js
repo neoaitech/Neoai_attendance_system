@@ -284,6 +284,9 @@ const FacultyView = {
       const isTargetAdmin = u.role === "admin";
       const isTargetSuper = u.role in { "super_admin": 1, "superadmin": 1 };
       const cannotEdit = isSuperAdmin && isTargetAdmin;
+      const currentUserId = Auth.currentUser ? Auth.currentUser.id : null;
+      const currentUsername = Auth.currentUser ? Auth.currentUser.username : null;
+      const isSelf = (currentUserId && currentUserId === u.id) || (currentUsername && currentUsername === u.username);
 
       let roleBadge = `<span class="role-badge-teacher"><i data-lucide="graduation-cap" class="w-3 h-3"></i>Course Faculty</span>`;
       if (isTargetSuper) {
@@ -332,6 +335,12 @@ const FacultyView = {
                 <button class="btn-secondary btn-sm ${u.is_active ? 'text-amber-600' : 'text-emerald-600'}" onclick="FacultyView.toggleUserStatus(${u.id}, ${!u.is_active})">
                   ${u.is_active ? 'Suspend' : 'Activate'}
                 </button>
+                ${!isSelf ? `
+                  <button class="btn-secondary btn-sm text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200" onclick="FacultyView.confirmDeleteFaculty(${u.id}, '${this.escapeHtml(u.full_name || u.username).replace(/'/g, "\\'")}', '${u.role}')" title="Delete Faculty Account">
+                    <i data-lucide="trash-2" class="w-3 h-3 text-rose-500"></i>
+                    <span>Delete</span>
+                  </button>
+                ` : ''}
               </div>
             `}
           </td>
@@ -340,6 +349,74 @@ const FacultyView = {
     }).join("");
 
     if (window.lucide) window.lucide.createIcons();
+  },
+
+  confirmDeleteFaculty(facultyId, facultyName, role) {
+    const isSuperAdmin = Auth.isSuperAdmin();
+    const isAdmin = Auth.isAdmin() || isSuperAdmin;
+    if (!isAdmin) {
+      App.showToast("Access denied. Only Administrators can delete faculty accounts.", "error");
+      return;
+    }
+
+    const html = `
+      <div class="modal-card" style="max-width: 460px; padding: 22px;">
+        <div class="flex items-center gap-3 mb-3 text-rose-600">
+          <div class="w-10 h-10 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="modal-title text-rose-600 block text-base">Delete Faculty Account</span>
+            <span class="text-xs text-slate-500">${this.escapeHtml(facultyName)} &bull; ${role ? role.toUpperCase() : 'FACULTY'}</span>
+          </div>
+        </div>
+
+        <div class="space-y-2.5 my-3">
+          <p class="text-xs text-slate-700 leading-relaxed">
+            Are you sure you want to permanently delete the account for <strong class="text-slate-900">"${this.escapeHtml(facultyName)}"</strong>?
+          </p>
+          <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-800 leading-normal">
+            <strong>Warning:</strong> This will permanently delete this faculty account, unassign them from any allocated classes, and revoke all system access. This action cannot be undone.
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 mt-4 pt-3 border-t border-slate-100">
+          <button type="button" class="btn-secondary text-xs py-2 px-3.5" onclick="App.closeModal()">
+            Cancel
+          </button>
+          <button type="button" id="confirm-delete-faculty-btn" class="btn-danger text-xs py-2 px-4 font-bold flex items-center gap-1.5" onclick="FacultyView.executeDeleteFaculty(${facultyId})">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <span>Delete Faculty Account</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    App.showModal(html);
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  async executeDeleteFaculty(facultyId) {
+    const btn = document.getElementById("confirm-delete-faculty-btn");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-sm mr-2"></span> Deleting...`;
+    }
+
+    try {
+      const res = await API.delete(`/admin/faculty/${facultyId}`);
+      App.closeModal();
+      App.showToast(res.message || "Faculty account deleted successfully.", "success");
+      await this.loadData();
+    } catch (err) {
+      console.error("Delete faculty error:", err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="trash-2" class="w-4 h-4 mr-1"></i><span>Delete Faculty Account</span>`;
+        if (window.lucide) window.lucide.createIcons();
+      }
+      App.showToast(err.message || "Failed to delete faculty account.", "error");
+    }
   },
 
   async toggleUserStatus(userId, newActiveStatus) {

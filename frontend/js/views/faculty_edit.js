@@ -44,6 +44,10 @@ const FacultyEditView = {
       if (!user) {
         throw new Error("Faculty account not found.");
       }
+      this.facultyUser = user;
+      const currentUserId = Auth.currentUser ? Auth.currentUser.id : null;
+      const currentUsername = Auth.currentUser ? Auth.currentUser.username : null;
+      const isSelf = (currentUserId && currentUserId === user.id) || (currentUsername && currentUsername === user.username);
 
       // Check current class assignments
       this.cachedClasses.forEach(c => {
@@ -80,6 +84,12 @@ const FacultyEditView = {
               <p class="text-xs text-slate-500">Update personal profile, account status, security credentials, and teaching assignments.</p>
             </div>
             <div class="flex items-center gap-2">
+              ${!isSelf ? `
+                <button type="button" class="btn-secondary btn-sm text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200" onclick="FacultyEditView.confirmDeleteFaculty()" title="Delete Faculty Account">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i>
+                  <span>Delete</span>
+                </button>
+              ` : ''}
               <button type="button" class="btn-secondary btn-sm" onclick="App.navigate('faculty')">Cancel</button>
               <button type="button" class="btn-primary btn-sm" onclick="FacultyEditView.submitForm()">
                 <i data-lucide="check" class="w-4 h-4"></i>
@@ -192,7 +202,13 @@ const FacultyEditView = {
                 <span>Changes will take effect immediately.</span>
               </div>
               <div class="flex items-center gap-3">
-                <button type="button" class="btn-secondary text-xs py-2 px-4" onclick="App.navigate('admin_panel')">Cancel</button>
+                ${!isSelf ? `
+                  <button type="button" class="btn-secondary text-xs py-2 px-3.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 font-semibold flex items-center gap-1.5" onclick="FacultyEditView.confirmDeleteFaculty()">
+                    <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
+                    <span>Delete Faculty</span>
+                  </button>
+                ` : ''}
+                <button type="button" class="btn-secondary text-xs py-2 px-4" onclick="App.navigate('faculty')">Cancel</button>
                 <button type="submit" class="btn-primary text-xs py-2 px-5 font-semibold" id="fe-submit-btn">
                   <i data-lucide="check" class="w-4 h-4 mr-1"></i>
                   <span>Save Changes</span>
@@ -333,6 +349,78 @@ const FacultyEditView = {
       btn.innerHTML = `<i data-lucide="check" class="w-4 h-4 mr-1"></i><span>Save Changes</span>`;
       if (window.lucide) window.lucide.createIcons();
       App.showToast(err.message || "Failed to update faculty account", "error");
+    }
+  },
+
+  confirmDeleteFaculty() {
+    const isSuperAdmin = Auth.isSuperAdmin();
+    const isAdmin = Auth.isAdmin() || isSuperAdmin;
+    if (!isAdmin) {
+      App.showToast("Access denied. Only Administrators can delete faculty accounts.", "error");
+      return;
+    }
+
+    const fac = this.facultyUser || {};
+    const name = fac.full_name || fac.username || "this faculty member";
+    const role = fac.role || "teacher";
+
+    const html = `
+      <div class="modal-card" style="max-width: 460px; padding: 22px;">
+        <div class="flex items-center gap-3 mb-3 text-rose-600">
+          <div class="w-10 h-10 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="modal-title text-rose-600 block text-base">Delete Faculty Account</span>
+            <span class="text-xs text-slate-500">${this.escapeHtml(name)} &bull; ${role.toUpperCase()}</span>
+          </div>
+        </div>
+
+        <div class="space-y-2.5 my-3">
+          <p class="text-xs text-slate-700 leading-relaxed">
+            Are you sure you want to permanently delete the account for <strong class="text-slate-900">"${this.escapeHtml(name)}"</strong>?
+          </p>
+          <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-800 leading-normal">
+            <strong>Warning:</strong> This will permanently delete this faculty account, unassign them from allocated classes, and revoke all system access. This action cannot be undone.
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 mt-4 pt-3 border-t border-slate-100">
+          <button type="button" class="btn-secondary text-xs py-2 px-3.5" onclick="App.closeModal()">
+            Cancel
+          </button>
+          <button type="button" id="confirm-delete-faculty-edit-btn" class="btn-danger text-xs py-2 px-4 font-bold flex items-center gap-1.5" onclick="FacultyEditView.executeDeleteFaculty()">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <span>Delete Faculty Account</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    App.showModal(html);
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  async executeDeleteFaculty() {
+    const btn = document.getElementById("confirm-delete-faculty-edit-btn");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-sm mr-2"></span> Deleting...`;
+    }
+
+    try {
+      const res = await API.delete(`/admin/faculty/${this.facultyId}`);
+      App.closeModal();
+      App.showToast(res.message || "Faculty account deleted successfully.", "success");
+      App.navigate("faculty");
+    } catch (err) {
+      console.error("Delete faculty error:", err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="trash-2" class="w-4 h-4 mr-1"></i><span>Delete Faculty Account</span>`;
+        if (window.lucide) window.lucide.createIcons();
+      }
+      App.showToast(err.message || "Failed to delete faculty account.", "error");
     }
   }
 };
