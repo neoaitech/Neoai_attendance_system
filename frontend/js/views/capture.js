@@ -1473,7 +1473,30 @@ const CaptureView = {
             return;
           }
           const snapsToSend = this.capturedClassroomSnaps.slice(0, 8);
-          fd.append("webcam_snapshots_json", JSON.stringify(snapsToSend));
+          let convertedCount = 0;
+          for (let i = 0; i < snapsToSend.length; i++) {
+            const snap = snapsToSend[i];
+            if (snap && snap.startsWith("data:")) {
+              try {
+                const parts = snap.split(",");
+                const mime = (parts[0].match(/:(.*?);/) || [])[1] || "image/jpeg";
+                const bstr = atob(parts[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                  u8arr[n] = bstr.charCodeAt(n);
+                }
+                const blob = new Blob([u8arr], { type: mime });
+                fd.append("photos", blob, `webcam_snap_${i + 1}.jpg`);
+                convertedCount++;
+              } catch (e) {
+                console.warn("Failed to convert snap to blob:", e);
+              }
+            }
+          }
+          if (convertedCount === 0) {
+            fd.append("webcam_snapshots_json", JSON.stringify(snapsToSend));
+          }
           session = await API.post("/sessions/create-and-process", fd);
         }
 

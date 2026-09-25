@@ -87,7 +87,7 @@ async def create_and_process_session(
     deduplicating students across all photos so each student is recorded once.
     Robustly parses multipart form data for both single and multiple files.
     """
-    form_data = await request.form()
+    form_data = await request.form(max_part_size=50 * 1024 * 1024, max_files=1000)
     
     class_id_val = str(form_data.get("class_id") or "").strip()
     if not class_id_val:
@@ -175,30 +175,31 @@ async def create_and_process_session(
                 f.write(content)
             saved_disk_paths.append(str(filepath))
 
-    # 2. Handle Webcam Snapshots (Multi-shot array or single base64)
-    if webcam_snapshots_json:
-        try:
-            snaps = json.loads(webcam_snapshots_json)
-            for idx, snap_str in enumerate(snaps, len(saved_disk_paths) + 1):
-                if "," in snap_str:
-                    snap_str = snap_str.split(",")[1]
-                img_bytes = base64.b64decode(snap_str)
-                filename = f"raw_session_{uuid.uuid4().hex[:8]}_cam{idx}.jpg"
-                filepath = settings.SESSION_PHOTOS_DIR / filename
-                with open(filepath, "wb") as f:
-                    f.write(img_bytes)
-                saved_disk_paths.append(str(filepath))
-        except Exception:
-            pass
-    elif webcam_base64:
-        if "," in webcam_base64:
-            webcam_base64 = webcam_base64.split(",")[1]
-        img_bytes = base64.b64decode(webcam_base64)
-        filename = f"raw_session_{uuid.uuid4().hex[:8]}.jpg"
-        filepath = settings.SESSION_PHOTOS_DIR / filename
-        with open(filepath, "wb") as f:
-            f.write(img_bytes)
-        saved_disk_paths.append(str(filepath))
+    # 2. Handle Webcam Snapshots (Multi-shot array or single base64 fallback)
+    if not saved_disk_paths:
+        if webcam_snapshots_json:
+            try:
+                snaps = json.loads(webcam_snapshots_json)
+                for idx, snap_str in enumerate(snaps, 1):
+                    if "," in snap_str:
+                        snap_str = snap_str.split(",")[1]
+                    img_bytes = base64.b64decode(snap_str)
+                    filename = f"raw_session_{uuid.uuid4().hex[:8]}_cam{idx}.jpg"
+                    filepath = settings.SESSION_PHOTOS_DIR / filename
+                    with open(filepath, "wb") as f:
+                        f.write(img_bytes)
+                    saved_disk_paths.append(str(filepath))
+            except Exception:
+                pass
+        elif webcam_base64:
+            if "," in webcam_base64:
+                webcam_base64 = webcam_base64.split(",")[1]
+            img_bytes = base64.b64decode(webcam_base64)
+            filename = f"raw_session_{uuid.uuid4().hex[:8]}.jpg"
+            filepath = settings.SESSION_PHOTOS_DIR / filename
+            with open(filepath, "wb") as f:
+                f.write(img_bytes)
+            saved_disk_paths.append(str(filepath))
 
     if not saved_disk_paths:
         raise HTTPException(status_code=400, detail="No classroom photos provided. Please upload or capture 1 to 8 photos.")

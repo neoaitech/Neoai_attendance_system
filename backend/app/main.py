@@ -7,6 +7,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.app.core.config import settings
+
+# Increase Starlette multipart form field max part size from 1MB to 50MB
+# to seamlessly support multi-angle high-resolution classroom photos
+try:
+    import starlette.formparsers as sfp
+    sfp.MultiPartParser.max_part_size = 50 * 1024 * 1024
+    sfp.MultiPartParser.spool_max_size = 50 * 1024 * 1024
+except Exception:
+    pass
 from backend.app.db.session import engine, Base, SessionLocal, run_auto_migrations
 from backend.app.db.seed_data import seed_database
 from backend.app.services.face_engine import face_engine
