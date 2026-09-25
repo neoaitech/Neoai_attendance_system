@@ -128,7 +128,7 @@ def test_email_connection(
     success, error = send_raw_smtp_email(
         settings_obj=settings_obj,
         to_email=payload.recipient_email.strip(),
-        subject="✅ Neo AI Attendance Portal: SMTP Mail Server Connection Test",
+        subject="Neo AI Attendance Portal - SMTP Server Connection Test",
         html_content=test_html
     )
 

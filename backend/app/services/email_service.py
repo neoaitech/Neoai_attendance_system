@@ -123,6 +123,8 @@ def send_raw_smtp_email(
         msg["Message-ID"] = make_msgid(domain=domain)
         msg["Reply-To"] = from_email
         msg["X-Mailer"] = "Neo AI Attendance Portal Mailer"
+        msg["Auto-Submitted"] = "auto-generated"
+        msg["X-Auto-Response-Suppress"] = "All"
 
         # Body: multipart/alternative (Plain-text fallback + HTML)
         body_part = MIMEMultipart("alternative")
@@ -625,7 +627,7 @@ def build_faculty_welcome_email(
     containing their User ID, Initial Password, Role, and Portal Login Link.
     """
     portal_link = login_url or PORTAL_BASE_URL
-    subject = f"🎓 Welcome to Neo AI Attendance Portal — Your Institutional Account Credentials"
+    subject = f"Neo AI Attendance Portal - Faculty Account Access Details for {faculty_name}"
 
     html = f"""<!DOCTYPE html>
 <html>
@@ -750,7 +752,7 @@ def build_faculty_password_reset_email(
     Builds a secure HTML notification email informing faculty that their login credentials/password have been updated.
     """
     portal_link = login_url or PORTAL_BASE_URL
-    subject = f"🔐 Neo AI Attendance Portal Security Notice — Your Password Has Been Updated"
+    subject = f"Neo AI Attendance Portal - Account Security & Password Updated"
     from backend.app.core.datetime_utils import format_ist_datetime, get_utc_now
     timestamp_ist = format_ist_datetime(get_utc_now())
 
@@ -863,7 +865,7 @@ def build_course_allocation_email(
     """
     portal_link = login_url or PORTAL_BASE_URL
     div_str = ", ".join(sorted(divisions)) if divisions else "A"
-    subject = f"📚 Neo AI Attendance Portal: Teaching Assignment for {course_code} — {course_name}"
+    subject = f"Neo AI Attendance Portal - Teaching Schedule: {course_code} ({course_name})"
 
     html = f"""<!DOCTYPE html>
 <html>
