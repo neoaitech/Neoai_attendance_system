@@ -309,28 +309,26 @@ const ReviewView = {
 
           </div>
 
-          <!-- Section 2: Interactive Student Attendance Roster -->
+          <!-- Section 2: Interactive Student Attendance Roster (Clean Mobile & Desktop Cards) -->
           <div class="glass-panel" style="margin-bottom: 0; display: flex; flex-direction: column;">
             
-            <div class="panel-header mb-2.5 flex items-center justify-between flex-wrap gap-2">
-              <span class="panel-title text-xs sm:text-sm font-bold flex items-center gap-1.5">
+            <div class="review-roster-header">
+              <span class="review-roster-title">
                 <i data-lucide="users" class="w-4 h-4 text-emerald-600"></i>
                 <span>Student Roster</span>
-                <span class="text-[10px] font-bold text-slate-500 font-mono">(${totalCount})</span>
+                <span class="text-[11px] font-bold text-slate-500 font-mono">(${totalCount})</span>
               </span>
-              <div class="flex gap-1.5">
-                <button type="button" class="btn-secondary text-[11px] py-1 px-2 font-bold" onclick="ReviewView.markAll('PRESENT')">All Present</button>
-                <button type="button" class="btn-secondary text-[11px] py-1 px-2 font-bold" onclick="ReviewView.markAll('ABSENT')">All Absent</button>
+              <div class="flex items-center gap-1.5">
+                <button type="button" class="roster-quick-btn" onclick="ReviewView.markAll('PRESENT')">✓ All Present</button>
+                <button type="button" class="roster-quick-btn" onclick="ReviewView.markAll('ABSENT')">✗ All Absent</button>
               </div>
             </div>
 
             <!-- Quick Search Input -->
-            <div class="mb-2">
-              <input type="text" id="roster-search-input" class="form-input text-xs py-1.5 px-2.5 w-full rounded-lg" placeholder="Search student by name or roll number..." oninput="ReviewView.filterRoster(this.value)" />
-            </div>
+            <input type="text" id="roster-search-input" class="review-search-input" placeholder="Search student by name or roll number..." oninput="ReviewView.filterRoster(this.value)" />
 
             <!-- Quick Status Filter Chips (1-Tap on Mobile) -->
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-2 mb-2 no-scrollbar">
+            <div class="review-chips-row">
               <button type="button" class="roster-filter-chip ${this.activeStatusFilter === 'ALL' ? 'active' : ''}" data-filter="ALL" onclick="ReviewView.setStatusFilter('ALL')">
                 All (${totalCount})
               </button>
@@ -347,31 +345,20 @@ const ReviewView = {
               ` : ''}
             </div>
 
-            <!-- Roster Table / Mobile Cards -->
-            <div class="data-table-container" style="flex: 1; max-height: 480px; overflow: auto; width: 100%; max-width: 100%; -webkit-overflow-scrolling: touch;">
-              <table class="data-table review-roster-table">
-                <thead>
-                  <tr>
-                    <th>Student & Roll Number</th>
-                    <th>Match Score</th>
-                    <th>Attendance Status</th>
-                    <th>Type / Verification</th>
-                  </tr>
-                </thead>
-                <tbody id="attendance-roster-tbody">
-                  ${this.renderRosterRows(session.records || [])}
-                </tbody>
-              </table>
+            <!-- Roster Native Card List (No Table, Zero Horizontal Overflow) -->
+            <div class="review-roster-container">
+              <div id="attendance-roster-list" class="review-roster-list">
+                ${this.renderRosterRows(session.records || [])}
+              </div>
             </div>
 
             <!-- Footer Action Row -->
-            <div class="flex justify-between items-center pt-3 mt-3 border-t border-slate-200">
-              <button class="btn-danger text-xs py-1.5 px-3 font-semibold" onclick="ReviewView.deleteCurrentSession(${session.id})">
+            <div class="review-roster-footer">
+              <button class="btn-danger text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5" onclick="ReviewView.deleteCurrentSession(${session.id})">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                <span class="hidden sm:inline">Delete Session</span>
-                <span class="sm:hidden">Delete</span>
+                <span>Delete</span>
               </button>
-              <button class="btn-primary text-xs py-1.5 px-4 font-bold shadow-sm" onclick="ReviewView.saveAllChanges()">
+              <button class="btn-primary text-xs py-1.5 px-4 font-bold shadow-sm flex items-center gap-1.5" onclick="ReviewView.saveAllChanges()">
                 <i data-lucide="save" class="w-3.5 h-3.5"></i>
                 <span>Save Changes</span>
               </button>
@@ -407,64 +394,50 @@ const ReviewView = {
     }
 
     if (filtered.length === 0) {
-      return `<tr><td colspan="4" class="text-center py-6 text-slate-400 text-xs">No matching students found for this filter.</td></tr>`;
+      return `<div class="text-center py-8 text-slate-400 text-xs font-medium">No matching students found for this filter.</div>`;
     }
 
     return filtered.map(r => {
       const isFrozen = Boolean(r.is_frozen || r.attendance_status === 'FROZEN' || r.status === 'FROZEN' || r.verification_type === 'FROZEN_STUDENT');
-      const initials = (r.student_name || 'S').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+      const initials = (r.student_name || 'S').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'S';
       const isExtra = Boolean(r.is_extra_lecture || r.verification_type === 'EXTRA_LECTURE' || r.attendance_type === 'EXTRA_LECTURE');
 
       return `
-        <tr data-record-id="${r.id}" class="${isFrozen ? 'bg-cyan-50/30' : ''}">
-          <!-- Col 1: Student Information -->
-          <td class="col-student">
-            <div class="flex items-center gap-2 sm:gap-2.5">
-              <div class="w-8 h-8 rounded-full ${isFrozen ? 'bg-cyan-100 border border-cyan-300 text-cyan-900' : (isExtra ? 'bg-amber-100 border border-amber-300 text-amber-900' : 'bg-slate-100 border border-slate-200 text-slate-700')} flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                ${isFrozen ? '❄️' : initials}
-              </div>
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-bold text-slate-900 text-xs sm:text-sm truncate">${r.student_name}</span>
-                  ${isFrozen ? `<span class="badge text-[9px] bg-cyan-100 text-cyan-900 border border-cyan-300 font-bold py-0 px-1">❄️ FROZEN</span>` : (isExtra ? `<span class="badge text-[9px] bg-amber-100 text-amber-800 border border-amber-300 font-bold py-0 px-1">🟠 Extra</span>` : '')}
-                </div>
-                <div class="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 flex-wrap">
-                  <span>${r.roll_number}</span>
-                  ${isExtra ? `<span class="text-slate-400">&bull; ${r.program || ''} Div ${r.section || 'A'}</span>` : ''}
-                  <!-- Mobile-only compact metadata badges -->
-                  <div class="sm:hidden flex items-center gap-1 text-[10px]">
-                    ${r.confidence_score > 0 ? `
-                      <span class="font-bold font-mono ${r.confidence_score >= 75 ? 'text-emerald-700' : 'text-amber-700'}">
-                        • ${r.confidence_score}%
-                      </span>
-                    ` : ''}
-                    <span class="text-slate-400">•</span>
-                    <span class="text-[9px] font-semibold text-slate-500">
-                      ${r.verification_type === 'AUTO_AI' ? 'AI' : (r.verification_type === 'AUTO_ABSENT' ? 'Auto-Abs' : 'Manual')}
-                    </span>
-                  </div>
-                </div>
-              </div>
+        <div class="review-student-card ${isFrozen ? 'is-frozen' : ''}" data-record-id="${r.id}">
+          
+          <!-- Avatar Circle with Initials -->
+          <div class="student-avatar-circle ${isFrozen ? 'is-frozen' : (isExtra ? 'is-extra' : '')}">
+            ${isFrozen ? '❄️' : initials}
+          </div>
+
+          <!-- Student Name & Metadata -->
+          <div class="student-card-info">
+            <div class="student-name-row">
+              <span class="student-card-name">${r.student_name}</span>
+              ${isFrozen ? `<span class="student-card-badge badge-frozen">❄️ FROZEN</span>` : (isExtra ? `<span class="student-card-badge badge-extra">🟠 Extra</span>` : '')}
             </div>
-          </td>
-
-          <!-- Col 2: Match Score (Desktop) -->
-          <td class="col-score">
-            ${r.confidence_score > 0 ? `
-              <span class="text-xs font-bold font-mono ${r.confidence_score >= 75 ? 'text-emerald-600' : 'text-amber-600'}">
-                ${r.confidence_score}%
+            <div class="student-card-sub">
+              <span class="student-card-roll">${r.roll_number}</span>
+              ${r.confidence_score > 0 ? `
+                <span>•</span>
+                <span class="student-card-score ${r.confidence_score >= 75 ? 'score-good' : 'score-warn'}">${r.confidence_score}%</span>
+              ` : ''}
+              <span>•</span>
+              <span class="student-card-badge ${r.verification_type === 'AUTO_AI' ? 'badge-ai' : 'badge-manual'}">
+                ${r.verification_type === 'AUTO_AI' ? 'AI Match' : (r.verification_type === 'AUTO_ABSENT' ? 'Auto-Abs' : 'Manual')}
               </span>
-            ` : `<span class="text-xs text-slate-400 font-mono">N/A</span>`}
-          </td>
+              ${isExtra ? `<span>• ${r.program || ''} Div ${r.section || 'A'}</span>` : ''}
+            </div>
+          </div>
 
-          <!-- Col 3: Attendance Status (Interactive on all screens) -->
-          <td class="col-status">
+          <!-- Status Dropdown Action (Guaranteed NO cut off) -->
+          <div class="student-card-action">
             ${isFrozen ? `
-              <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-cyan-50 border border-cyan-300 text-cyan-900 text-[11px] font-bold font-mono">
+              <span class="student-card-badge badge-frozen" style="padding: 6px 10px; font-size: 11px;">
                 ❄️ FROZEN
               </span>
             ` : `
-              <select class="form-select text-xs py-1 px-1.5 status-selector" 
+              <select class="student-status-select" 
                       data-record-id="${r.id}" 
                       data-status="${r.status || 'PRESENT'}"
                       onchange="ReviewView.onStatusChange(${r.id}, this.value)">
@@ -475,25 +448,9 @@ const ReviewView = {
                 <option value="EXCUSED" ${r.status === 'EXCUSED' ? 'selected' : ''}>EXCUSED</option>
               </select>
             `}
-          </td>
+          </div>
 
-          <!-- Col 4: Type / Verification (Desktop) -->
-          <td class="col-type">
-            ${isExtra ? `
-              <span class="badge text-[10px] bg-amber-100 text-amber-800 border border-amber-300 font-bold">
-                🟠 Extra Lecture
-              </span>
-            ` : (isFrozen ? `
-              <span class="badge text-[10px] bg-cyan-50 text-cyan-800 border border-cyan-300 font-bold">
-                ❄️ FROZEN (Exempt)
-              </span>
-            ` : `
-              <span class="badge ${r.verification_type === 'AUTO_AI' ? 'badge-ai' : (r.verification_type === 'AUTO_ABSENT' ? 'badge-absent' : 'badge-late')} text-[10px]">
-                ${r.verification_type === 'AUTO_AI' ? '🟢 Normal AI' : (r.verification_type === 'AUTO_ABSENT' ? 'Auto Absent' : 'Manual')}
-              </span>
-            `)}
-          </td>
-        </tr>
+        </div>
       `;
     }).join("");
   },
@@ -507,9 +464,9 @@ const ReviewView = {
         c.classList.remove("active");
       }
     });
-    const tbody = document.getElementById("attendance-roster-tbody");
-    if (tbody && this.currentSessionData) {
-      tbody.innerHTML = this.renderRosterRows(this.currentSessionData.records || []);
+    const list = document.getElementById("attendance-roster-list");
+    if (list && this.currentSessionData) {
+      list.innerHTML = this.renderRosterRows(this.currentSessionData.records || []);
     }
   },
 
@@ -530,29 +487,29 @@ const ReviewView = {
 
   filterRoster(query) {
     this.rosterSearchQuery = query;
-    const tbody = document.getElementById("attendance-roster-tbody");
-    if (tbody && this.currentSessionData) {
-      tbody.innerHTML = this.renderRosterRows(this.currentSessionData.records || []);
+    const list = document.getElementById("attendance-roster-list");
+    if (list && this.currentSessionData) {
+      list.innerHTML = this.renderRosterRows(this.currentSessionData.records || []);
     }
   },
 
   onStatusChange(recordId, newStatus) {
-    const row = document.querySelector(`tr[data-record-id="${recordId}"]`);
-    if (row) {
-      const select = row.querySelector(".status-selector");
+    const card = document.querySelector(`.review-student-card[data-record-id="${recordId}"]`);
+    if (card) {
+      const select = card.querySelector(".student-status-select");
       if (select) {
         select.setAttribute("data-status", newStatus);
       }
-      const badge = row.querySelector(".col-type .badge");
+      const badge = card.querySelector(".student-card-badge.badge-ai, .student-card-badge.badge-manual");
       if (badge) {
         badge.textContent = "Manual";
-        badge.className = "badge badge-late text-[10px]";
+        badge.className = "student-card-badge badge-manual";
       }
     }
   },
 
   markAll(status) {
-    const selectors = document.querySelectorAll(".status-selector");
+    const selectors = document.querySelectorAll(".student-status-select");
     selectors.forEach(s => {
       s.value = status;
       s.setAttribute("data-status", status);
@@ -564,7 +521,7 @@ const ReviewView = {
   async saveAllChanges() {
     if (!this.currentSessionData) return;
 
-    const selectors = document.querySelectorAll(".status-selector");
+    const selectors = document.querySelectorAll(".student-status-select");
     const updates = [];
 
     selectors.forEach(s => {
