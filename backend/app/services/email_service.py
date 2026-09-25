@@ -1,10 +1,12 @@
 import os
+import re
 import smtplib
 import ssl
 import calendar
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
+from email.utils import formataddr, formatdate, make_msgid
 from datetime import datetime, date
 from typing import Dict, Any, List, Optional
 import threading
@@ -110,15 +112,30 @@ def send_raw_smtp_email(
 
     try:
         from_email = settings_obj.smtp_from_email or settings_obj.smtp_user
-        from_header = f"{settings_obj.smtp_from_name} <{from_email}>"
+        sender_display = settings_obj.smtp_from_name or "Neo AI Attendance Portal"
 
         msg = MIMEMultipart("mixed")
-        msg["From"] = from_header
+        msg["From"] = formataddr((sender_display, from_email))
         msg["To"] = to_email
         msg["Subject"] = subject
+        msg["Date"] = formatdate(localtime=True)
+        domain = from_email.split("@")[-1] if "@" in from_email else "gmail.com"
+        msg["Message-ID"] = make_msgid(domain=domain)
+        msg["Reply-To"] = from_email
+        msg["X-Mailer"] = "Neo AI Attendance Portal Mailer"
 
-        # HTML Body
+        # Body: multipart/alternative (Plain-text fallback + HTML)
         body_part = MIMEMultipart("alternative")
+        
+        # Strip HTML to produce clean plain-text fallback (crucial for spam filter pass)
+        plain_text = re.sub(r'<style.*?</style>', '', html_content, flags=re.DOTALL)
+        plain_text = re.sub(r'<[^>]+>', ' ', plain_text)
+        plain_text = re.sub(r'[ \t]+', ' ', plain_text)
+        plain_text = re.sub(r'\n\s*\n', '\n\n', plain_text).strip()
+
+        text_part = MIMEText(plain_text, "plain", "utf-8")
+        body_part.attach(text_part)
+
         html_part = MIMEText(html_content, "html", "utf-8")
         body_part.attach(html_part)
         msg.attach(body_part)
