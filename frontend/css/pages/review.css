@@ -64,6 +64,7 @@
   border: 1px solid var(--border-subtle);
   position: relative;
   box-sizing: border-box;
+  transition: all 0.25s ease;
 }
 
 .annotated-viewer-bounded img {
@@ -77,28 +78,236 @@
   display: block;
 }
 
-/* Mobile adjustments for History & Review */
+/* ================= Status Filter Chips ================= */
+.roster-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.roster-filter-chip:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.roster-filter-chip.active {
+  background: #4f46e5 !important;
+  color: #ffffff !important;
+  border-color: #4338ca !important;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3) !important;
+}
+
+.roster-filter-chip.chip-present.active {
+  background: #059669 !important;
+  color: #ffffff !important;
+  border-color: #047857 !important;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3) !important;
+}
+
+.roster-filter-chip.chip-absent.active {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #b91c1c !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3) !important;
+}
+
+.roster-filter-chip.chip-extra.active {
+  background: #d97706 !important;
+  color: #ffffff !important;
+  border-color: #b45309 !important;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3) !important;
+}
+
+/* ================= Status Selector Dynamic Badges ================= */
+.status-selector {
+  transition: all 0.15s ease;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.status-selector[data-status="PRESENT"] {
+  background-color: #f0fdf4 !important;
+  color: #15803d !important;
+  border-color: #86efac !important;
+}
+
+.status-selector[data-status="ABSENT"] {
+  background-color: #fef2f2 !important;
+  color: #dc2626 !important;
+  border-color: #fca5a5 !important;
+}
+
+.status-selector[data-status="LATE"] {
+  background-color: #fffbeb !important;
+  color: #d97706 !important;
+  border-color: #fde68a !important;
+}
+
+.status-selector[data-status="EXCUSED"] {
+  background-color: #faf5ff !important;
+  color: #9333ea !important;
+  border-color: #e9d5ff !important;
+}
+
+.status-selector[data-status="FROZEN"] {
+  background-color: #ecfeff !important;
+  color: #0891b2 !important;
+  border-color: #a5f3fc !important;
+}
+
+/* ================= Photo Angle Switcher Pills ================= */
+.photo-angle-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.angle-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.angle-tab-btn:hover {
+  color: #0f172a;
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.angle-tab-btn.active {
+  background: #6366f1;
+  color: #ffffff;
+  border-color: #4f46e5;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
+}
+
+/* ================= Mobile User-Friendly Responsive Design (<= 768px) ================= */
 @media (max-width: 768px) {
+  /* Clean Compact Workspace & Panels */
   .session-inspector-card {
-    padding: 14px 12px;
-    margin-bottom: 14px;
+    padding: 12px 10px;
+    margin-bottom: 12px;
     width: 100% !important;
     max-width: 100% !important;
   }
 
-  .annotated-viewer-bounded {
-    max-height: 280px !important;
-    border-radius: 10px;
-  }
-
-  .annotated-viewer-bounded img {
-    max-height: 260px !important;
+  .review-workspace-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
     width: 100% !important;
     max-width: 100% !important;
   }
 
   .review-workspace-grid > .glass-panel {
-    padding: 14px 12px !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  /* Compact Photo Viewer & Smooth Horizontal Scroll Tabs */
+  .annotated-viewer-bounded {
+    max-height: 220px !important;
+    border-radius: 10px;
+  }
+
+  .annotated-viewer-bounded img {
+    max-height: 210px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .photo-angle-tabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 3px;
+    scrollbar-width: none;
+  }
+
+  .photo-angle-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .angle-tab-btn {
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    border-radius: 999px !important;
+  }
+
+  /* Transform Roster Table into Native Mobile Cards */
+  .review-roster-table thead {
+    display: none !important;
+  }
+
+  .review-roster-table,
+  .review-roster-table tbody {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .review-roster-table tr {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 10px 12px !important;
+    background: #ffffff !important;
+    gap: 8px !important;
     border-radius: 12px !important;
+    margin-bottom: 6px !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  }
+
+  .review-roster-table td {
+    padding: 0 !important;
+    border: none !important;
+    display: block !important;
+  }
+
+  /* Hide Desktop-only separate columns (embedded inside Col 1) */
+  .review-roster-table td.col-score,
+  .review-roster-table td.col-type {
+    display: none !important;
+  }
+
+  .review-roster-table td.col-student {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .review-roster-table td.col-status {
+    flex-shrink: 0 !important;
+    text-align: right !important;
+  }
+
+  .status-selector {
+    width: 95px !important;
+    height: 32px !important;
+    font-size: 11px !important;
+    padding: 4px 6px !important;
   }
 }

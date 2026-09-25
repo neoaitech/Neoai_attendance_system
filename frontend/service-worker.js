@@ -1,13 +1,14 @@
 // NeoAI Tech Service Worker - PWA Offline Shell & Fast Asset Caching
-const CACHE_NAME = 'neoai-tech-v16.1';
+const CACHE_NAME = 'neoai-tech-v17.0';
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
-  '/manifest.json',
-  '/css/styles.css?v=15.1',
-  '/images/icon-192.png',
-  '/images/icon-512.png',
-  '/images/visionattend_logo.png'
+  'index.html',
+  'manifest.json',
+  'css/styles.css?v=17.0',
+  'css/pages/review.css?v=17.0',
+  'images/icon-192.png',
+  'images/icon-512.png',
+  'images/visionattend_logo.png'
 ];
 
 // Install Event
