@@ -34,7 +34,7 @@ const App = {
   viewMetadata: {
     dashboard: {
       breadcrumb: "Platform / Overview",
-      title: "Classroom Intelligence Dashboard",
+      title: "Dashboard",
       subtitle: "Biometric attendance telemetry, weekly trends, and roster health"
     },
     profile: {

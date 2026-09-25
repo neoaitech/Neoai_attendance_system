@@ -108,29 +108,38 @@ const DashboardView = {
       <div class="dashboard-layout-grid">
         
         <!-- Attendance Trend Chart Card -->
-        <div class="dashboard-analytics-card">
+        <div class="dashboard-analytics-card card-trend-analytics">
           <div class="dashboard-card-header">
             <div>
-              <span class="dashboard-card-title">Weekly Attendance Trend</span>
-              <span class="dashboard-card-subtitle">Attendance rate over recent academic sessions</span>
+              <div class="flex items-center gap-2">
+                <span class="dashboard-card-title">Weekly Attendance Trend</span>
+                <span class="trend-live-beacon"><span class="beacon-pulse-dot"></span>Live Telemetry</span>
+              </div>
+              <span class="dashboard-card-subtitle">Biometric attendance velocity over recent sessions</span>
             </div>
-            <div class="pipeline-tag" style="background: rgba(99, 102, 241, 0.06); color: #4f46e5; border-color: rgba(99, 102, 241, 0.15);">
-              Last 7 Sessions
+            <div class="pipeline-tag tag-trend">
+              <i data-lucide="activity" class="w-3 h-3 inline mr-1 text-indigo-500"></i>Last 7 Sessions
             </div>
           </div>
-          <div id="chart-container-box" style="height: 275px; position: relative; width: 100%;">
+          <div id="chart-container-box" class="trend-chart-box" style="height: 275px; position: relative; width: 100%;">
             <canvas id="attendanceTrendChart"></canvas>
           </div>
         </div>
 
         <!-- Course Health Breakdown Panel -->
-        <div class="dashboard-analytics-card">
+        <div class="dashboard-analytics-card card-course-analytics">
           <div class="dashboard-card-header">
             <div>
-              <span class="dashboard-card-title">Course Performance</span>
-              <span class="dashboard-card-subtitle">Attendance health by course</span>
+              <div class="flex items-center gap-2">
+                <span class="dashboard-card-title">Course Performance</span>
+                <span class="course-count-pill" id="course-count-pill">Live Health</span>
+              </div>
+              <span class="dashboard-card-subtitle">Attendance health & compliance by course</span>
             </div>
-            <button class="btn-secondary btn-sm text-[11px] py-1 px-2.5" onclick="App.navigate('classes')">View All</button>
+            <button class="btn-secondary btn-sm text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 hover:border-indigo-400" onclick="App.navigate('classes')">
+              <span>View All</span>
+              <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </button>
           </div>
           <div id="class-distribution-list" class="course-performance-container">
             <div class="p-8 text-center text-slate-400 text-xs">
@@ -141,37 +150,48 @@ const DashboardView = {
 
       </div>
 
-      <!-- Operational Summary Banner (Row 3) -->
+      <!-- Operational Summary Banner (Row 3: Cyber AI Telemetry Radar) -->
       <div class="operational-summary-panel" id="ai-insights-panel">
         <div class="operational-summary-left">
           <div class="operational-summary-icon">
-            <i data-lucide="activity" class="w-4 h-4"></i>
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+            <span class="icon-radar-ring"></span>
           </div>
-          <div>
-            <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider block">Operational Summary</span>
+          <div class="operational-summary-content">
+            <div class="operational-summary-tag-row">
+              <span class="ai-sparkle-tag">✦ AI SYSTEM TELEMETRY</span>
+              <span class="ai-mode-pill">Real-time Radar</span>
+            </div>
             <p class="operational-summary-text" id="ai-insights-text">
               Analyzing live attendance trends, multi-division rosters, and workload across enrolled courses...
             </p>
           </div>
         </div>
         <div class="operational-pipeline-tags">
-          <span class="pipeline-tag">Face Detection: Active</span>
-          <span class="pipeline-tag">Anti-Spoof Guard: Active</span>
-          <span class="pipeline-tag">Biometric Matching: Active</span>
+          <span class="pipeline-tag"><span class="tag-pulse-emerald"></span>Face Detection: Active</span>
+          <span class="pipeline-tag"><span class="tag-pulse-emerald"></span>Anti-Spoof Guard: Active</span>
+          <span class="pipeline-tag"><span class="tag-pulse-emerald"></span>Biometric Matching: Active</span>
         </div>
       </div>
 
-      <!-- Recent Sessions Activity Table (Row 4) -->
+      <!-- Recent Sessions Activity (Row 4: Desktop Table + Mobile Native Cards) -->
       <div class="dashboard-sessions-card">
         <div class="dashboard-card-header">
           <div>
-            <span class="dashboard-card-title">Recent Attendance Sessions</span>
-            <span class="dashboard-card-subtitle">Latest biometric recognition activity</span>
+            <div class="flex items-center gap-2">
+              <span class="dashboard-card-title">Recent Attendance Sessions</span>
+              <span class="session-live-chip">Live Feed</span>
+            </div>
+            <span class="dashboard-card-subtitle">Latest biometric recognition activity and lecture logs</span>
           </div>
-          <button class="btn-secondary btn-sm" onclick="App.navigate('review')">Full Session History</button>
+          <button class="btn-secondary btn-sm flex items-center gap-1.5" onclick="App.navigate('review')">
+            <span>Full Session History</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
         </div>
         
-        <div class="data-table-container">
+        <!-- Desktop Table (>= 769px) -->
+        <div class="data-table-container dashboard-desktop-table">
           <table class="data-table">
             <thead>
               <tr>
@@ -192,6 +212,13 @@ const DashboardView = {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Session Cards (<= 768px) -->
+        <div class="dashboard-mobile-sessions" id="recent-sessions-mobile-list">
+          <div class="text-center py-8 text-slate-400 text-xs">
+            <span class="spinner-sm mr-2"></span> Loading recent session telemetry...
+          </div>
         </div>
       </div>
     `;
@@ -262,14 +289,14 @@ const DashboardView = {
       // 3. Operational Summary Banner Text
       const insightsText = document.getElementById("ai-insights-text");
       if (insightsText) {
-        let msg = `System actively monitoring <b>${data.total_students ?? 0} registered students</b> across <b>${data.total_classes ?? 0} active academic courses</b> with <b>${data.overall_attendance_rate ?? 0}%</b> overall institutional attendance.`;
+        let msg = `System actively monitoring <span class="highlight-chip-indigo">${data.total_students ?? 0} registered students</span> across <span class="highlight-chip-purple">${data.total_classes ?? 0} active courses</span> with <span class="highlight-chip-emerald">${data.overall_attendance_rate ?? 0}% overall compliance</span>.`;
         if (data.class_wise_distribution && data.class_wise_distribution.length > 0) {
           const topClass = [...data.class_wise_distribution].sort((a, b) => b.avg_attendance - a.avg_attendance)[0];
           if (topClass) {
-            msg = `Top Performing Course: <b>${topClass.class_code} (${topClass.class_name})</b> leads with <b>${topClass.avg_attendance}%</b> average attendance.`;
+            msg = `Top Performing: <span class="highlight-chip-indigo">${topClass.class_code} (${topClass.class_name})</span> leads with <span class="highlight-chip-emerald">${topClass.avg_attendance}% attendance</span>.`;
           }
           if (data.pending_unknown_faces_count > 0) {
-            msg += ` Notice: <b>${data.pending_unknown_faces_count} unknown face(s)</b> pending verification in queue.`;
+            msg += ` <span class="highlight-chip-amber"><i data-lucide="alert-circle" class="w-3 h-3 inline mr-1"></i>${data.pending_unknown_faces_count} unknown face(s) in queue</span>`;
           }
         }
         insightsText.innerHTML = msg;
@@ -288,29 +315,57 @@ const DashboardView = {
             </div>
           `;
         } else {
-          classDistContainer.innerHTML = data.class_wise_distribution.map(c => `
-            <div class="course-progress-card">
-              <div class="flex justify-between items-center">
+          classDistContainer.innerHTML = data.class_wise_distribution.map(c => {
+            const isHealthy = c.avg_attendance >= 75;
+            const statusClass = isHealthy ? 'status-healthy' : 'status-at-risk';
+            const rateColor = isHealthy ? '#059669' : '#dc2626';
+            const rateBg = isHealthy ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+            const rateBorder = isHealthy ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)';
+            const rateText = isHealthy ? 'Healthy' : 'At Risk';
+            const progressFillClass = isHealthy ? 'progress-fill-emerald-shimmer' : 'progress-fill-rose-shimmer';
+
+            return `
+            <div class="course-progress-card ${statusClass}">
+              <div class="course-card-top">
                 <span class="course-code-badge">${c.class_code}</span>
-                <span class="text-xs font-bold font-mono" style="color: ${c.avg_attendance >= 75 ? '#10b981' : '#ef4444'};">${c.avg_attendance}%</span>
+                <span class="course-rate-pill" style="background: ${rateBg}; color: ${rateColor}; border: 1px solid ${rateBorder};">
+                  <span class="rate-dot" style="background: ${rateColor};"></span>
+                  ${c.avg_attendance}% ${rateText}
+                </span>
               </div>
-              <div class="text-xs font-semibold text-slate-900 truncate mt-0.5" title="${c.class_name}">${c.class_name}</div>
+              <div class="course-card-name" title="${c.class_name}">${c.class_name}</div>
               <div class="progress-track">
-                <div class="${c.avg_attendance >= 75 ? 'progress-fill-emerald' : 'progress-fill-rose'}" style="width: ${Math.min(100, Math.max(0, c.avg_attendance))}%;"></div>
+                <div class="${progressFillClass}" style="width: ${Math.min(100, Math.max(0, c.avg_attendance))}%;"></div>
               </div>
-              <div class="flex justify-between text-[11px] text-slate-500 mt-0.5">
-                <span>${c.enrolled} Enrolled</span>
-                <span class="${c.defaulters > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'}">${c.defaulters} Defaulter(s)</span>
+              <div class="course-card-meta">
+                <span class="meta-chip meta-enrolled">
+                  <i data-lucide="users" class="w-3 h-3 text-indigo-500"></i>
+                  <span>${c.enrolled} Enrolled</span>
+                </span>
+                ${c.defaulters > 0 ? `
+                  <span class="meta-chip meta-defaulters-alert">
+                    <i data-lucide="alert-triangle" class="w-3 h-3 text-rose-500"></i>
+                    <span>${c.defaulters} Defaulter(s)</span>
+                  </span>
+                ` : `
+                  <span class="meta-chip meta-defaulters-ok">
+                    <i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i>
+                    <span>0 Defaulters</span>
+                  </span>
+                `}
               </div>
             </div>
-          `).join("");
+            `;
+          }).join("");
         }
       }
 
-      // 6. Render Recent Sessions Table
+      // 6. Render Recent Sessions Table (Desktop) & Mobile Cards
       const tbody = document.getElementById("recent-sessions-tbody");
-      if (tbody) {
-        if (!data.recent_sessions || data.recent_sessions.length === 0) {
+      const mobileSessionsList = document.getElementById("recent-sessions-mobile-list");
+      
+      if (!data.recent_sessions || data.recent_sessions.length === 0) {
+        if (tbody) {
           tbody.innerHTML = `
             <tr>
               <td colspan="7" class="text-center py-10 text-slate-400 text-xs">
@@ -318,7 +373,16 @@ const DashboardView = {
               </td>
             </tr>
           `;
-        } else {
+        }
+        if (mobileSessionsList) {
+          mobileSessionsList.innerHTML = `
+            <div class="text-center py-8 text-slate-400 text-xs">
+              No attendance sessions recorded yet.
+            </div>
+          `;
+        }
+      } else {
+        if (tbody) {
           tbody.innerHTML = data.recent_sessions.map(s => {
             const actualTime = s.actual_time || (s.created_at && window.DateTimeUtils ? window.DateTimeUtils.formatTime(s.created_at) : (s.start_time || '09:00 AM'));
             return `
@@ -359,6 +423,42 @@ const DashboardView = {
               </td>
             </tr>
           `;
+          }).join("");
+        }
+
+        if (mobileSessionsList) {
+          mobileSessionsList.innerHTML = data.recent_sessions.map(s => {
+            const actualTime = s.actual_time || (s.created_at && window.DateTimeUtils ? window.DateTimeUtils.formatTime(s.created_at) : (s.start_time || '09:00 AM'));
+            const dateStr = window.DateTimeUtils ? window.DateTimeUtils.formatDate(s.session_date || s.created_at) : s.session_date;
+            return `
+            <div class="dashboard-mobile-session-card" onclick="ReviewView.openSession(${s.id})">
+              <div class="mobile-session-header">
+                <span class="course-code-badge">${s.class_code || 'CS-301'}</span>
+                <span class="mobile-session-time">
+                  <i data-lucide="clock" class="w-3 h-3 text-slate-400 inline mr-1"></i>${actualTime}
+                </span>
+              </div>
+              <div class="mobile-session-title">${s.session_name}</div>
+              <div class="mobile-session-date">${dateStr}</div>
+              <div class="mobile-session-stats">
+                <span class="mobile-stat-pill stat-detected">
+                  <i data-lucide="camera" class="w-3 h-3 text-indigo-500"></i> ${s.total_detected} Detected
+                </span>
+                <span class="mobile-stat-pill stat-present">
+                  <span class="status-dot-green"></span> ${s.total_recognized} Present
+                </span>
+                ${s.total_unknown > 0 ? `
+                  <span class="mobile-stat-pill stat-unknown">
+                    <span class="status-dot-rose"></span> ${s.total_unknown} Unknown
+                  </span>
+                ` : ''}
+              </div>
+              <div class="mobile-session-cta">
+                <span>Inspect Session & Records</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </div>
+            </div>
+            `;
           }).join("");
         }
       }
@@ -407,6 +507,12 @@ const DashboardView = {
     const labels = trendData.map(d => d.date);
     const points = trendData.map(d => d.rate);
 
+    const chartCtx = ctx.getContext('2d');
+    const gradient = chartCtx.createLinearGradient(0, 0, 0, 240);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
+    gradient.addColorStop(0.55, 'rgba(99, 102, 241, 0.08)');
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.00)');
+
     this.chartInstance = new Chart(ctx, {
       type: "line",
       data: {
@@ -415,32 +521,40 @@ const DashboardView = {
           label: "Attendance Rate",
           data: points,
           borderColor: "#6366f1",
-          backgroundColor: "rgba(99, 102, 241, 0.08)",
-          borderWidth: 2.4,
+          backgroundColor: gradient,
+          borderWidth: 3,
           fill: true,
-          tension: 0.35,
-          pointBackgroundColor: "#6366f1",
-          pointBorderColor: "#ffffff",
-          pointBorderWidth: 2,
+          tension: 0.42,
+          pointBackgroundColor: "#ffffff",
+          pointBorderColor: "#6366f1",
+          pointBorderWidth: 2.5,
           pointRadius: 5,
-          pointHoverRadius: 7
+          pointHoverRadius: 8,
+          pointHoverBackgroundColor: "#6366f1",
+          pointHoverBorderColor: "#ffffff",
+          pointHoverBorderWidth: 3
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
             backgroundColor: "#0f172a",
             titleColor: "#ffffff",
-            bodyColor: "#ffffff",
+            bodyColor: "#f8fafc",
             padding: 10,
-            cornerRadius: 8,
-            titleFont: { size: 11, family: 'Plus Jakarta Sans', weight: 'bold' },
-            bodyFont: { size: 11, family: 'Plus Jakarta Sans' },
+            cornerRadius: 10,
+            titleFont: { size: 12, family: 'Plus Jakarta Sans', weight: '700' },
+            bodyFont: { size: 11, family: 'Plus Jakarta Sans', weight: '500' },
+            displayColors: false,
             callbacks: {
-              label: (ctx) => ` Attendance Rate: ${ctx.parsed.y}%`
+              label: (ctx) => `  Attendance: ${ctx.parsed.y}%`
             }
           }
         },
@@ -448,10 +562,13 @@ const DashboardView = {
           y: {
             min: 0,
             max: 100,
-            grid: { color: "rgba(15, 23, 42, 0.05)" },
+            grid: {
+              color: "rgba(226, 232, 240, 0.7)",
+              borderDash: [4, 4]
+            },
             ticks: {
-              color: "#64748b",
-              font: { size: 11, family: 'Plus Jakarta Sans' },
+              color: "#94a3b8",
+              font: { size: 10, family: 'Plus Jakarta Sans', weight: '600' },
               callback: (val) => `${val}%`,
               stepSize: 20
             }
@@ -460,7 +577,7 @@ const DashboardView = {
             grid: { display: false },
             ticks: {
               color: "#64748b",
-              font: { size: 11, family: 'Plus Jakarta Sans' }
+              font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' }
             }
           }
         }
