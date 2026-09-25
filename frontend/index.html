@@ -24,14 +24,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   
-  <!-- Lucide Icons & Chart.js -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Cache Control Meta Tags to force immediate browser refresh on mobile -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <!-- Lucide Icons & Chart.js (Deferred for zero-blocking page load) -->
+  <script defer src="https://unpkg.com/lucide@1.48.0/dist/umd/lucide.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Enterprise Design System -->
   <link rel="stylesheet" href="css/styles.css?v=14.0" />
@@ -283,33 +278,33 @@
     </div>
   </div>
 
-  <!-- JavaScript Modules with Cache-Busting -->
-  <script src="js/api.js?v=14.0"></script>
-  <script src="js/utils/date_utils.js?v=14.0"></script>
-  <script src="js/auth.js?v=14.0"></script>
-  <script src="js/views/dashboard.js?v=14.0"></script>
-  <script src="js/views/capture.js?v=14.0"></script>
-  <script src="js/views/review.js?v=14.0"></script>
-  <script src="js/views/students.js?v=14.0"></script>
-  <script src="js/views/student_new.js?v=14.0"></script>
-  <script src="js/views/student_edit.js?v=14.0"></script>
-  <script src="js/views/classes.js?v=14.0"></script>
-  <script src="js/views/course_new.js?v=14.0"></script>
-  <script src="js/views/course_edit.js?v=14.0"></script>
-  <script src="js/views/offering_new.js?v=14.0"></script>
-  <script src="js/views/offering_edit.js?v=14.0"></script>
-  <script src="js/views/roster_manage.js?v=14.0"></script>
-  <script src="js/views/faculty.js?v=14.0"></script>
-  <script src="js/views/faculty_new.js?v=14.0"></script>
-  <script src="js/views/faculty_edit.js?v=14.0"></script>
-  <script src="js/views/reports.js?v=14.0"></script>
-  <script src="js/views/unknown_faces.js?v=14.0"></script>
-  <script src="js/views/model_benchmark.js?v=14.0"></script>
-  <script src="js/views/admin_panel.js?v=14.0"></script>
-  <script src="js/views/permissions.js?v=14.0"></script>
-  <script src="js/views/profile.js?v=14.0"></script>
-  <script src="js/views/student_attendance.js?v=14.0"></script>
-  <script src="js/views/requisitions.js?v=14.0"></script>
-  <script src="js/app.js?v=14.0"></script>
+  <!-- JavaScript Modules (Deferred for non-blocking parallel load) -->
+  <script defer src="js/api.js?v=14.1"></script>
+  <script defer src="js/utils/date_utils.js?v=14.1"></script>
+  <script defer src="js/auth.js?v=14.1"></script>
+  <script defer src="js/views/dashboard.js?v=14.1"></script>
+  <script defer src="js/views/capture.js?v=14.1"></script>
+  <script defer src="js/views/review.js?v=14.1"></script>
+  <script defer src="js/views/students.js?v=14.1"></script>
+  <script defer src="js/views/student_new.js?v=14.1"></script>
+  <script defer src="js/views/student_edit.js?v=14.1"></script>
+  <script defer src="js/views/classes.js?v=14.1"></script>
+  <script defer src="js/views/course_new.js?v=14.1"></script>
+  <script defer src="js/views/course_edit.js?v=14.1"></script>
+  <script defer src="js/views/offering_new.js?v=14.1"></script>
+  <script defer src="js/views/offering_edit.js?v=14.1"></script>
+  <script defer src="js/views/roster_manage.js?v=14.1"></script>
+  <script defer src="js/views/faculty.js?v=14.1"></script>
+  <script defer src="js/views/faculty_new.js?v=14.1"></script>
+  <script defer src="js/views/faculty_edit.js?v=14.1"></script>
+  <script defer src="js/views/reports.js?v=14.1"></script>
+  <script defer src="js/views/unknown_faces.js?v=14.1"></script>
+  <script defer src="js/views/model_benchmark.js?v=14.1"></script>
+  <script defer src="js/views/admin_panel.js?v=14.1"></script>
+  <script defer src="js/views/permissions.js?v=14.1"></script>
+  <script defer src="js/views/profile.js?v=14.1"></script>
+  <script defer src="js/views/student_attendance.js?v=14.1"></script>
+  <script defer src="js/views/requisitions.js?v=14.1"></script>
+  <script defer src="js/app.js?v=14.1"></script>
 </body>
 </html>

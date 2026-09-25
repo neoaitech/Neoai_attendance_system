@@ -36,9 +36,23 @@ const Auth = {
       return false;
     }
 
+    // Instant Fast-Boot: If user profile is already cached in localStorage,
+    // show the App Shell immediately in 0ms without waiting for network roundtrip!
+    let hasFastBooted = false;
+    const cachedUserJson = localStorage.getItem("va_cached_user");
+    if (cachedUserJson) {
+      try {
+        this.currentUser = JSON.parse(cachedUserJson);
+        this.showAppShell();
+        this.updateUserInterface();
+        hasFastBooted = true;
+      } catch (e) {}
+    }
+
     try {
       const user = await API.get("/auth/me");
       this.currentUser = user;
+      localStorage.setItem("va_cached_user", JSON.stringify(user));
       this.showAppShell();
       this.updateUserInterface();
       if (window.App && window.App.onUserLogin) {
@@ -49,6 +63,13 @@ const Auth = {
       }
       return true;
     } catch (e) {
+      if (e && (e.status === 401 || (e.message && e.message.includes("401")))) {
+        this.logout();
+        return false;
+      }
+      if (hasFastBooted) {
+        return true;
+      }
       this.showLoginScreen();
       return false;
     }
@@ -341,6 +362,9 @@ const Auth = {
         };
       }
 
+      // Save user to cached storage for instant fast-boot on next tab
+      localStorage.setItem("va_cached_user", JSON.stringify(this.currentUser));
+
       // Transition to authenticated application shell
       this.showAppShell();
       this.updateUserInterface();
@@ -378,6 +402,8 @@ const Auth = {
     localStorage.removeItem("va_remember_username");
     localStorage.removeItem("va_active_view");
     localStorage.removeItem("va_active_params");
+    localStorage.removeItem("va_cached_user");
+    localStorage.removeItem("va_cached_dashboard");
     this.currentUser = null;
     if (window.App && window.App.onUserLogout) {
       window.App.onUserLogout();

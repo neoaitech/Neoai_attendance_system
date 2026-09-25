@@ -196,8 +196,53 @@ const DashboardView = {
       </div>
     `;
 
+    // Fast-Hydrate: if cached metrics exist, render KPI values immediately
+    try {
+      const cached = localStorage.getItem("va_cached_dashboard");
+      if (cached) {
+        this.updateKpis(JSON.parse(cached));
+      }
+    } catch (e) {}
+
     if (window.lucide) window.lucide.createIcons();
     await this.loadData();
+  },
+
+  updateKpis(data) {
+    if (!data) return;
+    const sEl = document.getElementById("kpi-total-students");
+    const cEl = document.getElementById("kpi-total-classes");
+    const rEl = document.getElementById("kpi-overall-rate");
+    const uEl = document.getElementById("kpi-unknown-count");
+    const uCap = document.getElementById("kpi-unknown-caption");
+
+    if (sEl) sEl.textContent = data.total_students ?? 0;
+    if (cEl) cEl.textContent = data.total_classes ?? 0;
+    
+    if (rEl) {
+      const rate = data.overall_attendance_rate ?? 0;
+      rEl.textContent = `${rate}%`;
+      rEl.style.color = rate >= 75 ? "#10b981" : "#ef4444";
+    }
+
+    if (uEl) {
+      const unk = data.pending_unknown_faces_count ?? 0;
+      uEl.textContent = unk;
+      uEl.style.color = unk > 0 ? "#d97706" : "#10b981";
+      if (uCap) {
+        uCap.textContent = unk > 0 ? "Requires verification" : "Queue is clear";
+      }
+    }
+
+    const badge = document.getElementById("unknown-badge");
+    if (badge) {
+      if (data.pending_unknown_faces_count > 0) {
+        badge.textContent = data.pending_unknown_faces_count;
+        badge.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+      }
+    }
   },
 
   async loadData() {
@@ -207,42 +252,12 @@ const DashboardView = {
     try {
       const data = await API.get("/analytics/dashboard");
       this.dashboardData = data;
+      try {
+        localStorage.setItem("va_cached_dashboard", JSON.stringify(data));
+      } catch (e) {}
 
       // 1. Update KPI Counters
-      const sEl = document.getElementById("kpi-total-students");
-      const cEl = document.getElementById("kpi-total-classes");
-      const rEl = document.getElementById("kpi-overall-rate");
-      const uEl = document.getElementById("kpi-unknown-count");
-      const uCap = document.getElementById("kpi-unknown-caption");
-
-      if (sEl) sEl.textContent = data.total_students ?? 0;
-      if (cEl) cEl.textContent = data.total_classes ?? 0;
-      
-      if (rEl) {
-        const rate = data.overall_attendance_rate ?? 0;
-        rEl.textContent = `${rate}%`;
-        rEl.style.color = rate >= 75 ? "#10b981" : "#ef4444";
-      }
-
-      if (uEl) {
-        const unk = data.pending_unknown_faces_count ?? 0;
-        uEl.textContent = unk;
-        uEl.style.color = unk > 0 ? "#d97706" : "#10b981";
-        if (uCap) {
-          uCap.textContent = unk > 0 ? "Requires verification" : "Queue is clear";
-        }
-      }
-
-      // 2. Update Unknown Faces Badge in Sidebar
-      const badge = document.getElementById("unknown-badge");
-      if (badge) {
-        if (data.pending_unknown_faces_count > 0) {
-          badge.textContent = data.pending_unknown_faces_count;
-          badge.classList.remove("hidden");
-        } else {
-          badge.classList.add("hidden");
-        }
-      }
+      this.updateKpis(data);
 
       // 3. Operational Summary Banner Text
       const insightsText = document.getElementById("ai-insights-text");
