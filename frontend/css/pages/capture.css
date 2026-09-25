@@ -304,6 +304,68 @@
   object-fit: cover !important;
 }
 
+.snap-thumb-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  background: rgba(239, 68, 68, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 20;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.snap-thumb-remove:hover {
+  background: #dc2626;
+  transform: scale(1.2);
+}
+
+.snap-thumb-badge {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+.snap-thumb-status {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 3px;
+  border-radius: 3px;
+  z-index: 10;
+}
+
+.snap-thumb-status.staged {
+  background: rgba(16, 185, 129, 0.9);
+  color: #ffffff;
+}
+
+.snap-thumb-status.staging {
+  background: rgba(99, 102, 241, 0.9);
+  color: #ffffff;
+}
+
 /* ================= Live Attendance Summary Card (Right) ================= */
 .live-summary-card {
   background: #ffffff;

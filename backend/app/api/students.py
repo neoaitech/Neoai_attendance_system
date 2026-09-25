@@ -15,6 +15,7 @@ from backend.app.db.models import Student, ClassCourse, User, AuditLog, Academic
 from backend.app.schemas.student import StudentCreate, StudentUpdate, StudentResponse, StudentFreezeRequest
 from backend.app.services.face_engine import face_engine
 from backend.app.services.storage_service import storage_service
+from backend.app.api.staging import get_staged_photo_info
 
 router = APIRouter(prefix="/students", tags=["Students"])
 
@@ -215,8 +216,57 @@ async def register_student_with_photo(
     saved_photo_paths = []
     saved_file_disk_paths = []
     seen_filenames = set()
+    pre_extracted_embeddings = []
 
-    # 1. Collect all uploaded files under any standard key
+    # 0. Support Instagram-style background staged photos
+    staged_photo_ids_raw = form_data.get("staged_photo_ids") or form_data.get("staged_photos_json")
+    staged_ids = []
+    if staged_photo_ids_raw:
+        if isinstance(staged_photo_ids_raw, str):
+            try:
+                parsed = json.loads(staged_photo_ids_raw)
+                if isinstance(parsed, list):
+                    staged_ids = [str(x).strip() for x in parsed if str(x).strip()]
+                else:
+                    staged_ids = [s.strip() for s in staged_photo_ids_raw.split(",") if s.strip()]
+            except Exception:
+                staged_ids = [s.strip() for s in staged_photo_ids_raw.split(",") if s.strip()]
+        elif isinstance(staged_photo_ids_raw, list):
+            staged_ids = [str(x).strip() for x in staged_photo_ids_raw if str(x).strip()]
+    else:
+        staged_list = form_data.getlist("staged_photo_ids")
+        if staged_list:
+            staged_ids = [str(x).strip() for x in staged_list if str(x).strip()]
+
+    # Migrate any valid staged photos directly into permanent student storage
+    for idx, sid in enumerate(staged_ids, 1):
+        info = get_staged_photo_info(sid)
+        if info and os.path.exists(info["disk_path"]):
+            try:
+                with open(info["disk_path"], "rb") as sf:
+                    content = sf.read()
+                ext = info["filename"].split(".")[-1] if "." in info["filename"] else "jpg"
+                filename = f"portrait_{roll_number}_staged{idx}_{uuid.uuid4().hex[:6]}.{ext}"
+                url_path, disk_path = storage_service.save_image(content, filename, folder="students")
+                saved_photo_paths.append(url_path)
+                saved_file_disk_paths.append(disk_path)
+
+                cached_enc = info.get("face_encoding")
+                if cached_enc is not None:
+                    pre_extracted_embeddings.append(cached_enc)
+
+                # Clean up staging file immediately
+                try:
+                    os.remove(info["disk_path"])
+                    meta_p = Path(info["disk_path"]).parent / f"{sid}.meta.json"
+                    if meta_p.exists():
+                        meta_p.unlink(missing_ok=True)
+                except Exception:
+                    pass
+            except Exception as e:
+                print(f"[StudentRegister] Warning migrating staged photo {sid}: {e}")
+
+    # 1. Collect all uploaded files under any standard key (fallback/direct)
     upload_list = []
     for key in ["photos", "photo", "files", "file", "image", "images"]:
         items = form_data.getlist(key)
@@ -225,7 +275,7 @@ async def register_student_with_photo(
                 seen_filenames.add(item.filename)
                 upload_list.append(item)
 
-    # 2. Count total photos (uploads + webcam snaps)
+    # 2. Count total photos (staged + uploads + webcam snaps)
     webcam_count = 0
     parsed_snapshots = []
     if webcam_snapshots_json:
@@ -237,7 +287,7 @@ async def register_student_with_photo(
     elif webcam_base64:
         webcam_count = 1
 
-    total_submitted_photos = len(upload_list) + webcam_count
+    total_submitted_photos = len(saved_photo_paths) + len(upload_list) + webcam_count
 
     # Biometric Requirement: Enforce 3 to 8 photos for enrollment gallery
     if total_submitted_photos < 3:
@@ -251,7 +301,7 @@ async def register_student_with_photo(
             detail=f"Maximum 8 face photos allowed for biometric registration. (Received: {total_submitted_photos})"
         )
 
-    for idx, p in enumerate(upload_list, 1):
+    for idx, p in enumerate(upload_list, len(saved_photo_paths) + 1):
         extension = p.filename.split(".")[-1] if "." in p.filename else "jpg"
         filename = f"portrait_{roll_number}_angle{idx}_{uuid.uuid4().hex[:6]}.{extension}"
         content = await p.read()
@@ -260,7 +310,7 @@ async def register_student_with_photo(
             saved_photo_paths.append(url_path)
             saved_file_disk_paths.append(disk_path)
 
-    # 3. Handle Webcam Snapshots
+    # 3. Handle Webcam Snapshots (fallback/direct)
     if parsed_snapshots:
         for idx, snap_str in enumerate(parsed_snapshots, len(saved_photo_paths) + 1):
             if "," in snap_str:
@@ -280,8 +330,10 @@ async def register_student_with_photo(
         saved_file_disk_paths.append(disk_path)
 
     # 4. Extract Multi-Angle Biometric Embeddings (512-D ArcFace)
-    multi_embeddings = []
-    for disk_path in saved_file_disk_paths:
+    # If pre-computed embeddings exist from background staging, use them directly!
+    multi_embeddings = list(pre_extracted_embeddings)
+    unprocessed_disk_paths = saved_file_disk_paths[len(pre_extracted_embeddings):]
+    for disk_path in unprocessed_disk_paths:
         enc = face_engine.extract_single_face_encoding(disk_path)
         if enc:
             multi_embeddings.append(enc)

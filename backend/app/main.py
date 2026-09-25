@@ -32,6 +32,7 @@ from backend.app.api.academic import router as academic_router
 from backend.app.api.notifications import router as notifications_router
 from backend.app.api.authority import router as authority_router
 from backend.app.api.email_reports import router as email_reports_router
+from backend.app.api.staging import router as staging_router, prune_expired_staging_files
 from backend.app.services.permission_service import permission_service
 
 @asynccontextmanager
@@ -108,20 +109,24 @@ async def lifespan(app: FastAPI):
             print(f"[AutoUnfreeze] Error: {e}")
 
     run_auto_unfreeze()
+    try:
+        prune_expired_staging_files(max_age_seconds=3600)
+    except Exception as e:
+        print(f"[StagingPrune] Startup note: {e}")
 
-    # Background task: check every midnight for expired freezes
-    async def periodic_auto_unfreeze():
+    # Background task: check every midnight for expired freezes and prune staging files
+    async def periodic_maintenance():
         while True:
             try:
-                # Wait until next midnight (IST offset handled via UTC check)
                 await asyncio.sleep(3600)  # Check every hour
                 run_auto_unfreeze()
+                prune_expired_staging_files(max_age_seconds=3600)
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                print(f"[AutoUnfreeze periodic] Error: {e}")
+                print(f"[PeriodicMaintenance] Error: {e}")
 
-    task = asyncio.create_task(periodic_auto_unfreeze())
+    task = asyncio.create_task(periodic_maintenance())
 
     yield
     # Shutdown
@@ -192,6 +197,7 @@ app.include_router(academic_router, prefix=settings.API_V1_STR)
 app.include_router(notifications_router, prefix=settings.API_V1_STR)
 app.include_router(authority_router, prefix=settings.API_V1_STR)
 app.include_router(email_reports_router, prefix=settings.API_V1_STR)
+app.include_router(staging_router, prefix=settings.API_V1_STR)
 
 # Static File Mounts
 app.mount("/uploads", StaticFiles(directory=str(settings.UPLOAD_DIR)), name="uploads")

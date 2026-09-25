@@ -2,6 +2,7 @@ const StudentNewView = {
   activeStream: null,
   regPhotoFiles: [],
   capturedSnaps: [],
+  stagedPhotos: [],
   cachedClasses: [],
   selectedClassIds: new Set(),
   resolvingUnknownFaceId: null,
@@ -12,6 +13,7 @@ const StudentNewView = {
   async render(container, params = {}) {
     this.regPhotoFiles = [];
     this.capturedSnaps = [];
+    this.stagedPhotos = [];
     this.selectedClassIds.clear();
 
     this.resolvingUnknownFaceId = params.unknownFaceId || (App.currentParams && App.currentParams.unknownFaceId) || null;
@@ -32,7 +34,18 @@ const StudentNewView = {
         const response = await fetch(this.prefillCropUrl);
         const blob = await response.blob();
         const file = new File([blob], `unknown_crop_${this.resolvingUnknownFaceId || 'detected'}.jpg`, { type: blob.type || 'image/jpeg' });
-        this.regPhotoFiles.push(file);
+        const item = {
+          id: "p_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+          type: "file",
+          file: file,
+          dataUrl: URL.createObjectURL(file),
+          stagingId: null,
+          status: "uploading",
+          abortController: new AbortController(),
+          faceDetected: true
+        };
+        this.stagedPhotos.push(item);
+        this.uploadPhotoToStaging(item);
       } catch (e) {
         console.warn("Could not pre-fetch crop image:", e);
       }
@@ -531,8 +544,27 @@ const StudentNewView = {
   },
 
   onFilesSelected(input) {
-    if (!input.files) return;
-    this.regPhotoFiles = Array.from(input.files);
+    if (!input.files || input.files.length === 0) return;
+    const selected = Array.from(input.files);
+    for (const f of selected) {
+      if (this.stagedPhotos.length >= 8) {
+        App.showToast("Maximum 8 face photos reached.", "info");
+        break;
+      }
+      const item = {
+        id: "p_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+        type: "file",
+        file: f,
+        dataUrl: URL.createObjectURL(f),
+        stagingId: null,
+        status: "uploading",
+        abortController: new AbortController(),
+        faceDetected: false
+      };
+      this.stagedPhotos.push(item);
+      this.uploadPhotoToStaging(item);
+    }
+    input.value = ""; // Allow re-selecting same photo if removed
     this.updatePhotoGrid();
   },
 
@@ -564,20 +596,124 @@ const StudentNewView = {
   },
 
   snapWebcam() {
-    const total = this.regPhotoFiles.length + this.capturedSnaps.length;
-    if (total >= 8) {
+    if (this.stagedPhotos.length >= 8) {
       App.showToast("Maximum 8 face photos reached.", "warning");
       return;
     }
     const vid = document.getElementById("sn-webcam-video");
-    if (!vid) return;
+    if (!vid || !vid.videoWidth) {
+      App.showToast("Camera feed is not ready.", "warning");
+      return;
+    }
     const canvas = document.createElement("canvas");
     canvas.width = vid.videoWidth || 640;
     canvas.height = vid.videoHeight || 480;
     canvas.getContext("2d").drawImage(vid, 0, 0);
-    this.capturedSnaps.push(canvas.toDataURL("image/jpeg", 0.9));
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
+
+    const item = {
+      id: "p_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+      type: "snap",
+      dataUrl: dataUrl,
+      stagingId: null,
+      status: "uploading",
+      abortController: new AbortController(),
+      faceDetected: false
+    };
+    this.stagedPhotos.push(item);
+    this.uploadPhotoToStaging(item);
     this.updatePhotoGrid();
-    App.showToast(`Captured face angle (${this.capturedSnaps.length} cam photos)`, "success");
+    App.showToast(`Angle #${this.stagedPhotos.length} captured & pre-uploading...`, "success");
+  },
+
+  async uploadPhotoToStaging(item) {
+    try {
+      const fd = new FormData();
+      if (item.type === "file" && item.file) {
+        fd.append("file", item.file);
+      } else if (item.dataUrl) {
+        fd.append("base64_data", item.dataUrl);
+      }
+      fd.append("purpose", "student");
+      fd.append("client_id", item.id);
+
+      const res = await API.request("/staging/upload", {
+        method: "POST",
+        body: fd,
+        signal: item.abortController.signal
+      });
+
+      if (res && res.staging_id) {
+        item.stagingId = res.staging_id;
+        item.status = "ready";
+        item.faceDetected = Boolean(res.face_detected);
+        this.updateCardStagingIndicator(item.id);
+      }
+    } catch (err) {
+      if (err.name === "AbortError" || (err.message && err.message.includes("abort"))) {
+        return; // Normal cancellation when user clicks retake or delete
+      }
+      console.warn("[Staging] Background photo upload note:", err.message);
+      item.status = "error";
+      this.updateCardStagingIndicator(item.id);
+    }
+  },
+
+  updateCardStagingIndicator(itemId) {
+    const cardEl = document.querySelector(`[data-photo-id="${itemId}"]`);
+    if (!cardEl) return;
+    const item = this.stagedPhotos.find(p => p.id === itemId);
+    if (!item) return;
+
+    const indEl = cardEl.querySelector(".staging-indicator");
+    if (indEl) {
+      if (item.status === "ready") {
+        indEl.className = "staging-indicator staging-ready";
+        indEl.innerHTML = `<i data-lucide="check" style="width:10px;height:10px;"></i> Ready`;
+      } else if (item.status === "error") {
+        indEl.className = "staging-indicator staging-error";
+        indEl.textContent = "Queued";
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+  },
+
+  removePhoto(photoId) {
+    const idx = this.stagedPhotos.findIndex(p => p.id === photoId);
+    if (idx === -1) return;
+    const item = this.stagedPhotos[idx];
+
+    // 1. INSTANT (0ms) UI removal
+    this.stagedPhotos.splice(idx, 1);
+    this.updatePhotoGrid();
+
+    // 2. Abort any active background upload immediately
+    if (item.abortController) {
+      try { item.abortController.abort(); } catch (e) {}
+    }
+
+    // 3. Immediately purge the staged file from server disk (0 junk left)
+    if (item.stagingId) {
+      API.delete(`/staging/${item.stagingId}`).catch(err => {
+        console.warn("[Staging] Immediate server delete note:", err.message);
+      });
+    }
+
+    App.showToast("Photo removed & server staging cleared.", "info");
+  },
+
+  // Legacy wrappers so nothing breaks
+  removeFile(fileIdx) {
+    if (this.stagedPhotos[fileIdx]) {
+      this.removePhoto(this.stagedPhotos[fileIdx].id);
+    }
+  },
+
+  removeSnap(snapIdx) {
+    const snapPhotos = this.stagedPhotos.filter(p => p.type === "snap");
+    if (snapPhotos[snapIdx]) {
+      this.removePhoto(snapPhotos[snapIdx].id);
+    }
   },
 
   updatePhotoGrid() {
@@ -585,7 +721,7 @@ const StudentNewView = {
     const badge = document.getElementById("sn-photo-badge");
     if (!grid) return;
 
-    const total = this.regPhotoFiles.length + this.capturedSnaps.length;
+    const total = this.stagedPhotos.length;
     if (badge) {
       if (total < 3) {
         badge.className = "badge badge-absent text-xs font-bold";
@@ -605,46 +741,33 @@ const StudentNewView = {
     }
 
     let html = "";
-    let idx = 1;
+    this.stagedPhotos.forEach((item, idx) => {
+      const num = idx + 1;
+      let statusHtml = "";
+      if (item.status === "uploading") {
+        statusHtml = `<span class="staging-indicator staging-uploading"><span class="spinner-2xs"></span> Staging...</span>`;
+      } else if (item.status === "ready") {
+        statusHtml = `<span class="staging-indicator staging-ready"><i data-lucide="check" style="width:10px;height:10px;"></i> Ready</span>`;
+      } else {
+        statusHtml = `<span class="staging-indicator staging-error">Queued</span>`;
+      }
 
-    this.regPhotoFiles.forEach((f, fileIdx) => {
-      const url = URL.createObjectURL(f);
       html += `
-        <div class="biometric-photo-card">
-          <img src="${url}" alt="Photo ${idx}" />
-          <span class="photo-badge-idx">#${idx}</span>
-          <button type="button" class="delete-btn" onclick="StudentNewView.removeFile(${fileIdx})">&times;</button>
+        <div class="biometric-photo-card" data-photo-id="${item.id}">
+          <img src="${item.dataUrl}" alt="Photo ${num}" />
+          ${statusHtml}
+          <span class="photo-badge-idx">#${num}${item.type === 'snap' ? ' Cam' : ''}</span>
+          <button type="button" class="delete-btn" onclick="StudentNewView.removePhoto('${item.id}')" title="Retake / Delete photo">&times;</button>
         </div>
       `;
-      idx++;
-    });
-
-    this.capturedSnaps.forEach((dataUrl, snapIdx) => {
-      html += `
-        <div class="biometric-photo-card">
-          <img src="${dataUrl}" alt="Photo ${idx}" />
-          <span class="photo-badge-idx">#${idx} Cam</span>
-          <button type="button" class="delete-btn" onclick="StudentNewView.removeSnap(${snapIdx})">&times;</button>
-        </div>
-      `;
-      idx++;
     });
 
     grid.innerHTML = html;
-  },
-
-  removeFile(fileIdx) {
-    this.regPhotoFiles.splice(fileIdx, 1);
-    this.updatePhotoGrid();
-  },
-
-  removeSnap(snapIdx) {
-    this.capturedSnaps.splice(snapIdx, 1);
-    this.updatePhotoGrid();
+    if (window.lucide) window.lucide.createIcons();
   },
 
   async submitForm() {
-    const total = this.regPhotoFiles.length + this.capturedSnaps.length;
+    const total = this.stagedPhotos.length;
     if (total < 3) {
       App.showToast(`At least 3 face photos are required (Received: ${total}).`, "warning");
       return;
@@ -677,7 +800,16 @@ const StudentNewView = {
 
     const btn = document.getElementById("sn-submit-btn");
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-sm mr-2"></span> Processing biometric profiles...`;
+    btn.innerHTML = `<span class="spinner-sm mr-2"></span> Saving student profile...`;
+
+    // If any photos are still in background upload, wait up to 3 seconds for them to complete
+    const uploadingItems = this.stagedPhotos.filter(p => p.status === "uploading");
+    if (uploadingItems.length > 0) {
+      const waitStart = Date.now();
+      while (this.stagedPhotos.some(p => p.status === "uploading") && (Date.now() - waitStart < 3500)) {
+        await new Promise(r => setTimeout(r, 100));
+      }
+    }
 
     const fd = new FormData();
     fd.append("full_name", name);
@@ -702,11 +834,30 @@ const StudentNewView = {
       fd.append("class_ids", Array.from(this.selectedClassIds).join(","));
     }
 
-    if (this.regPhotoFiles.length > 0) {
-      this.regPhotoFiles.forEach(f => fd.append("photos", f));
+    // Attach staged photos (Instagram trick: already uploaded & embeddings pre-calculated on server!)
+    const readyStagedIds = this.stagedPhotos
+      .filter(p => p.status === "ready" && p.stagingId)
+      .map(p => p.stagingId);
+
+    if (readyStagedIds.length > 0) {
+      fd.append("staged_photo_ids", JSON.stringify(readyStagedIds));
     }
-    if (this.capturedSnaps.length > 0) {
-      fd.append("webcam_snapshots_json", JSON.stringify(this.capturedSnaps));
+
+    // Fallback: any photo that failed staging upload is attached directly via multipart
+    const fallbackFiles = [];
+    const fallbackSnaps = [];
+    this.stagedPhotos.forEach(p => {
+      if (p.status !== "ready" || !p.stagingId) {
+        if (p.type === "file" && p.file) fallbackFiles.push(p.file);
+        else if (p.dataUrl) fallbackSnaps.push(p.dataUrl);
+      }
+    });
+
+    if (fallbackFiles.length > 0) {
+      fallbackFiles.forEach(f => fd.append("photos", f));
+    }
+    if (fallbackSnaps.length > 0) {
+      fd.append("webcam_snapshots_json", JSON.stringify(fallbackSnaps));
     }
 
     if (this.resolvingUnknownFaceId) {
@@ -720,7 +871,7 @@ const StudentNewView = {
         App.showToast(`Student ${name} registered & attendance verified from unknown face!`, "success");
         App.navigate("unknown_faces");
       } else {
-        App.showToast(`Student ${name} registered successfully.`, "success");
+        App.showToast(`Student ${name} registered successfully!`, "success");
         App.navigate("students");
       }
     } catch (err) {

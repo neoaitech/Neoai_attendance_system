@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     UPLOAD_DIR: Path = (PROJECT_ROOT / "data" / "uploads") if (PROJECT_ROOT / "data" / "uploads").exists() else (BACKEND_DIR / "uploads")
     STUDENT_PHOTOS_DIR: Path = UPLOAD_DIR / "students"
     SESSION_PHOTOS_DIR: Path = UPLOAD_DIR / "sessions"
+    STAGING_PHOTOS_DIR: Path = UPLOAD_DIR / "staging"
     UNKNOWN_FACES_DIR: Path = UPLOAD_DIR / "unknown_faces"
     REPORTS_DIR: Path = (PROJECT_ROOT / "data" / "reports_cache") if (PROJECT_ROOT / "data" / "reports_cache").exists() else (BACKEND_DIR / "reports_cache")
     BACKUPS_DIR: Path = DATABASE_DIR / "backups"
@@ -70,6 +71,7 @@ for directory in [
     settings.UPLOAD_DIR,
     settings.STUDENT_PHOTOS_DIR,
     settings.SESSION_PHOTOS_DIR,
+    settings.STAGING_PHOTOS_DIR,
     settings.UNKNOWN_FACES_DIR,
     settings.REPORTS_DIR,
     settings.BACKUPS_DIR,

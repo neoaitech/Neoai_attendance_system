@@ -8,6 +8,8 @@ const CaptureView = {
   activeMode: "upload", // "upload", "camera"
   uploadedFiles: [],
   capturedClassroomSnaps: [],
+  stagedCameraSnaps: [],
+  stagedUploadFiles: [],
   processedResult: null,
   activePhotoIndex: 0,
   galleryMode: "focus",
@@ -46,6 +48,8 @@ const CaptureView = {
     this.activeMode = "upload";
     this.uploadedFiles = [];
     this.capturedClassroomSnaps = [];
+    this.stagedCameraSnaps = [];
+    this.stagedUploadFiles = [];
     this.processedResult = null;
     this.activePhotoIndex = 0;
     this.currentZoom = 1.0;
@@ -1273,6 +1277,53 @@ const CaptureView = {
     }
   },
 
+  async uploadSessionPhotoToStaging(item, mode = "camera") {
+    try {
+      const fd = new FormData();
+      if (item.file) {
+        fd.append("file", item.file);
+      } else if (item.dataUrl) {
+        fd.append("base64_data", item.dataUrl);
+      }
+      fd.append("purpose", "session");
+      fd.append("client_id", item.id);
+
+      const res = await API.request("/staging/upload", {
+        method: "POST",
+        body: fd,
+        signal: item.abortController.signal
+      });
+
+      if (res && res.staging_id) {
+        item.stagingId = res.staging_id;
+        item.status = "ready";
+        this.updateSessionSnapStatus(item.id, mode);
+      }
+    } catch (err) {
+      if (err.name === "AbortError" || (err.message && err.message.includes("abort"))) {
+        return; // User removed or retook photo, request intentionally cancelled
+      }
+      console.warn("[StagingSession] Background upload note:", err.message);
+      item.status = "error";
+      this.updateSessionSnapStatus(item.id, mode);
+    }
+  },
+
+  updateSessionSnapStatus(itemId, mode) {
+    const el = document.querySelector(`[data-snap-id="${itemId}"] .snap-thumb-status`);
+    if (!el) return;
+    const list = mode === "camera" ? this.stagedCameraSnaps : this.stagedUploadFiles;
+    const item = list.find(s => s.id === itemId);
+    if (!item) return;
+    if (item.status === "ready") {
+      el.className = "snap-thumb-status staged";
+      el.textContent = "✓ Staged";
+    } else if (item.status === "error") {
+      el.className = "snap-thumb-status";
+      el.textContent = "Queued";
+    }
+  },
+
   takeClassroomSnap() {
     const video = document.getElementById("multi-webcam-video");
     if (!video || !video.videoWidth) {
@@ -1301,27 +1352,69 @@ const CaptureView = {
     ctx.drawImage(video, 0, 0, w, h);
     const dataUrl = canvas.toDataURL("image/jpeg", 0.80);
 
-    if (this.capturedClassroomSnaps.length >= 8) {
+    if (this.stagedCameraSnaps.length >= 8) {
       App.showToast("Maximum 8 classroom angles reached", "info");
       return;
     }
 
-    this.capturedClassroomSnaps.push(dataUrl);
+    const item = {
+      id: "cam_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+      dataUrl: dataUrl,
+      stagingId: null,
+      status: "uploading",
+      abortController: new AbortController()
+    };
 
+    this.stagedCameraSnaps.push(item);
+    this.capturedClassroomSnaps = this.stagedCameraSnaps.map(s => s.dataUrl);
+
+    this.renderCameraSnapStrip();
+    this.uploadSessionPhotoToStaging(item, "camera");
+    App.showToast(`Angle #${this.stagedCameraSnaps.length} captured & pre-uploading!`, "success");
+  },
+
+  renderCameraSnapStrip() {
     const counter = document.getElementById("cam-snap-counter");
-    if (counter) counter.textContent = `${this.capturedClassroomSnaps.length} Angle(s) Snapped (Max 8)`;
+    if (counter) counter.textContent = `${this.stagedCameraSnaps.length} Angle(s) Snapped (Max 8)`;
 
     const strip = document.getElementById("cam-snap-strip");
-    if (strip) {
-      strip.innerHTML = this.capturedClassroomSnaps.map((s, idx) => `
-        <div class="snap-thumb-item">
-          <img src="${s}" />
-          <span class="snap-thumb-badge">Angle ${idx + 1}</span>
-        </div>
-      `).join("");
+    if (!strip) return;
+
+    strip.innerHTML = this.stagedCameraSnaps.map((item, idx) => `
+      <div class="snap-thumb-item" data-snap-id="${item.id}">
+        <img src="${item.dataUrl}" />
+        <span class="snap-thumb-status ${item.status === 'ready' ? 'staged' : 'staging'}">
+          ${item.status === 'ready' ? '✓ Staged' : 'Uploading...'}
+        </span>
+        <span class="snap-thumb-badge">Angle ${idx + 1}</span>
+        <button type="button" class="snap-thumb-remove" onclick="CaptureView.removeCameraSnap('${item.id}')" title="Retake / Remove this angle">&times;</button>
+      </div>
+    `).join("");
+  },
+
+  removeCameraSnap(itemId) {
+    const idx = this.stagedCameraSnaps.findIndex(s => s.id === itemId);
+    if (idx === -1) return;
+    const item = this.stagedCameraSnaps[idx];
+
+    // 1. INSTANT (0ms) UI removal
+    this.stagedCameraSnaps.splice(idx, 1);
+    this.capturedClassroomSnaps = this.stagedCameraSnaps.map(s => s.dataUrl);
+    this.renderCameraSnapStrip();
+
+    // 2. Abort upload if in progress
+    if (item.abortController) {
+      try { item.abortController.abort(); } catch (e) {}
     }
 
-    App.showToast(`Angle #${this.capturedClassroomSnaps.length} captured! (1–8 allowed)`, "success");
+    // 3. Immediately delete from server staging disk (0 junk left)
+    if (item.stagingId) {
+      API.delete(`/staging/${item.stagingId}`).catch(err => {
+        console.warn("[Staging] Angle delete note:", err.message);
+      });
+    }
+
+    App.showToast("Classroom angle removed & server staging cleared. Ready to retake.", "info");
   },
 
   compressImageFile(file, maxDim = 1280, quality = 0.80) {
@@ -1368,23 +1461,73 @@ const CaptureView = {
 
   onFilesSelected(input) {
     if (!input.files || input.files.length === 0) return;
-    if (input.files.length > 8) {
-      App.showToast("Maximum 8 photos allowed. First 8 photos selected.", "info");
+    const files = Array.from(input.files);
+    for (const f of files) {
+      if (this.stagedUploadFiles.length >= 8) {
+        App.showToast("Maximum 8 photos allowed.", "info");
+        break;
+      }
+      const item = {
+        id: "up_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+        file: f,
+        previewUrl: URL.createObjectURL(f),
+        stagingId: null,
+        status: "uploading",
+        abortController: new AbortController()
+      };
+      this.stagedUploadFiles.push(item);
+      this.uploadSessionPhotoToStaging(item, "upload");
     }
-    this.uploadedFiles = Array.from(input.files).slice(0, 8);
+    this.uploadedFiles = this.stagedUploadFiles.map(u => u.file);
+    input.value = ""; // Allow re-selecting
+    this.renderUploadPreviewStrip();
+    App.showToast(`${this.stagedUploadFiles.length} photo(s) selected & pre-uploading.`, "info");
+  },
 
+  renderUploadPreviewStrip() {
     const strip = document.getElementById("upload-preview-strip");
     if (!strip) return;
-
+    if (this.stagedUploadFiles.length === 0) {
+      strip.classList.add("hidden");
+      strip.innerHTML = "";
+      return;
+    }
     strip.classList.remove("hidden");
-    strip.innerHTML = this.uploadedFiles.map((file, idx) => `
-      <div class="snap-thumb-item">
-        <img src="${URL.createObjectURL(file)}" />
+    strip.innerHTML = this.stagedUploadFiles.map((item, idx) => `
+      <div class="snap-thumb-item" data-snap-id="${item.id}">
+        <img src="${item.previewUrl}" />
+        <span class="snap-thumb-status ${item.status === 'ready' ? 'staged' : 'staging'}">
+          ${item.status === 'ready' ? '✓ Staged' : 'Uploading...'}
+        </span>
         <span class="snap-thumb-badge">Angle ${idx + 1}</span>
+        <button type="button" class="snap-thumb-remove" onclick="CaptureView.removeUploadPhoto('${item.id}')" title="Retake / Remove this photo">&times;</button>
       </div>
     `).join("");
+  },
 
-    App.showToast(`${this.uploadedFiles.length} photo(s) selected (1–8 allowed).`, "info");
+  removeUploadPhoto(itemId) {
+    const idx = this.stagedUploadFiles.findIndex(u => u.id === itemId);
+    if (idx === -1) return;
+    const item = this.stagedUploadFiles[idx];
+
+    // 1. INSTANT (0ms) UI removal
+    this.stagedUploadFiles.splice(idx, 1);
+    this.uploadedFiles = this.stagedUploadFiles.map(u => u.file);
+    this.renderUploadPreviewStrip();
+
+    // 2. Abort upload if in progress
+    if (item.abortController) {
+      try { item.abortController.abort(); } catch (e) {}
+    }
+
+    // 3. Immediately delete from server staging disk
+    if (item.stagingId) {
+      API.delete(`/staging/${item.stagingId}`).catch(err => {
+        console.warn("[Staging] Upload file delete note:", err.message);
+      });
+    }
+
+    App.showToast("Photo removed & server staging cleared. Ready to retake.", "info");
   },
 
   setupForm() {
@@ -1512,55 +1655,101 @@ const CaptureView = {
           ? Array.from(fileInput.files)
           : (this.uploadedFiles || []);
 
-        if (this.activeMode === "upload" || isUploadVisible || filesToUpload.length > 0) {
-          if (filesToUpload.length === 0) {
+        if (this.activeMode === "upload" || isUploadVisible || (this.stagedUploadFiles && this.stagedUploadFiles.length > 0)) {
+          if (this.stagedUploadFiles.length === 0 && filesToUpload.length === 0) {
             App.showToast("Please select at least 1 classroom photo (1–8 photos)", "warning");
             scanBtn.disabled = false;
             scanBtn.innerHTML = `<i data-lucide="scan" class="w-4 h-4"></i><span>Scan & Aggregate Attendance</span>`;
+            if (window.lucide) window.lucide.createIcons();
             return;
           }
+
           scanBtn.disabled = true;
-          scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>Optimizing Photos for Mobile...</span>`;
-          const compressedFiles = await Promise.all(
-            filesToUpload.slice(0, 8).map(f => this.compressImageFile(f, 1280, 0.80))
-          );
-          compressedFiles.forEach(f => fd.append("photos", f));
+          scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>Processing Classroom Angles...</span>`;
+
+          // Wait briefly (up to 3s) for any in-flight background staging uploads to complete
+          const uploading = this.stagedUploadFiles.filter(u => u.status === "uploading");
+          if (uploading.length > 0) {
+            const startWait = Date.now();
+            while (this.stagedUploadFiles.some(u => u.status === "uploading") && (Date.now() - startWait < 3000)) {
+              await new Promise(r => setTimeout(r, 100));
+            }
+          }
+
+          const readyStagedIds = this.stagedUploadFiles
+            .filter(u => u.status === "ready" && u.stagingId)
+            .map(u => u.stagingId);
+
+          if (readyStagedIds.length > 0) {
+            fd.append("staged_photos_json", JSON.stringify(readyStagedIds));
+          }
+
+          // Fallback: any unstaged files
+          const unstaged = this.stagedUploadFiles.filter(u => u.status !== "ready" || !u.stagingId);
+          if (unstaged.length > 0) {
+            const compressed = await Promise.all(unstaged.map(u => this.compressImageFile(u.file, 1280, 0.80)));
+            compressed.forEach(f => fd.append("photos", f));
+          } else if (readyStagedIds.length === 0 && filesToUpload.length > 0) {
+            const compressed = await Promise.all(filesToUpload.slice(0, 8).map(f => this.compressImageFile(f, 1280, 0.80)));
+            compressed.forEach(f => fd.append("photos", f));
+          }
+
           scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>AI Biometric Face Verification...</span>`;
           session = await API.post("/sessions/create-and-process", fd);
         } else if (this.activeMode === "camera") {
-          if (this.capturedClassroomSnaps.length === 0) {
+          const totalSnaps = this.stagedCameraSnaps.length || this.capturedClassroomSnaps.length;
+          if (totalSnaps === 0) {
             App.showToast("Please snap at least 1 classroom angle first (1–8 angles)", "warning");
             scanBtn.disabled = false;
             scanBtn.innerHTML = `<i data-lucide="scan" class="w-4 h-4"></i><span>Scan & Aggregate Attendance</span>`;
+            if (window.lucide) window.lucide.createIcons();
             return;
           }
+
           scanBtn.disabled = true;
-          scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>Uploading Classroom Angles...</span>`;
-          const snapsToSend = this.capturedClassroomSnaps.slice(0, 8);
-          let convertedCount = 0;
-          for (let i = 0; i < snapsToSend.length; i++) {
-            const snap = snapsToSend[i];
-            if (snap && snap.startsWith("data:")) {
-              try {
-                const parts = snap.split(",");
-                const mime = (parts[0].match(/:(.*?);/) || [])[1] || "image/jpeg";
-                const bstr = atob(parts[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
-                while (n--) {
-                  u8arr[n] = bstr.charCodeAt(n);
-                }
-                const blob = new Blob([u8arr], { type: mime });
-                fd.append("photos", blob, `camera_angle_${i + 1}.jpg`);
-                convertedCount++;
-              } catch (e) {
-                console.warn("Failed to convert snap to blob:", e);
-              }
+          scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>Processing Classroom Angles...</span>`;
+
+          // Wait briefly (up to 3s) for any in-flight background staging uploads to complete
+          const uploading = this.stagedCameraSnaps.filter(s => s.status === "uploading");
+          if (uploading.length > 0) {
+            const startWait = Date.now();
+            while (this.stagedCameraSnaps.some(s => s.status === "uploading") && (Date.now() - startWait < 3000)) {
+              await new Promise(r => setTimeout(r, 100));
             }
           }
-          if (convertedCount === 0) {
-            fd.append("webcam_snapshots_json", JSON.stringify(snapsToSend));
+
+          const readyStagedIds = this.stagedCameraSnaps
+            .filter(s => s.status === "ready" && s.stagingId)
+            .map(s => s.stagingId);
+
+          if (readyStagedIds.length > 0) {
+            fd.append("staged_photos_json", JSON.stringify(readyStagedIds));
           }
+
+          // Fallback: any snap that failed staging
+          const unstaged = this.stagedCameraSnaps.filter(s => s.status !== "ready" || !s.stagingId);
+          if (unstaged.length > 0) {
+            for (let i = 0; i < unstaged.length; i++) {
+              const snap = unstaged[i].dataUrl;
+              if (snap && snap.startsWith("data:")) {
+                try {
+                  const parts = snap.split(",");
+                  const mime = (parts[0].match(/:(.*?);/) || [])[1] || "image/jpeg";
+                  const bstr = atob(parts[1]);
+                  let n = bstr.length;
+                  const u8arr = new Uint8Array(n);
+                  while (n--) u8arr[n] = bstr.charCodeAt(n);
+                  const blob = new Blob([u8arr], { type: mime });
+                  fd.append("photos", blob, `camera_angle_${i + 1}.jpg`);
+                } catch (e) {
+                  console.warn("Failed to convert snap to blob:", e);
+                }
+              }
+            }
+          } else if (readyStagedIds.length === 0 && this.capturedClassroomSnaps.length > 0) {
+            fd.append("webcam_snapshots_json", JSON.stringify(this.capturedClassroomSnaps.slice(0, 8)));
+          }
+
           scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span><span>AI Biometric Face Verification...</span>`;
           session = await API.post("/sessions/create-and-process", fd);
         }

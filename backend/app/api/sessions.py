@@ -13,6 +13,7 @@ from backend.app.db.models import AttendanceSession, AttendanceRecord, UnknownFa
 from backend.app.schemas.attendance import AttendanceSessionResponse
 from backend.app.services.attendance_service import attendance_service
 from backend.app.api.auth import get_current_user
+from backend.app.api.staging import get_staged_photo_info
 
 router = APIRouter(prefix="/sessions", tags=["Attendance Sessions"])
 
@@ -87,7 +88,7 @@ async def create_and_process_session(
     deduplicating students across all photos so each student is recorded once.
     Robustly parses multipart form data for both single and multiple files.
     """
-    form_data = await request.form(max_part_size=50 * 1024 * 1024, max_files=1000)
+    form_data = await request.form()
     
     class_id_val = str(form_data.get("class_id") or "").strip()
     if not class_id_val:
@@ -156,6 +157,46 @@ async def create_and_process_session(
 
     saved_disk_paths = []
     seen_filenames = set()
+
+    # 0. Support Instagram-style background pre-uploaded staged photos
+    staged_photos_raw = form_data.get("staged_photos_json") or form_data.get("staged_photo_ids")
+    staged_ids = []
+    if staged_photos_raw:
+        if isinstance(staged_photos_raw, str):
+            try:
+                parsed = json.loads(staged_photos_raw)
+                if isinstance(parsed, list):
+                    staged_ids = [str(x).strip() for x in parsed if str(x).strip()]
+                else:
+                    staged_ids = [s.strip() for s in staged_photos_raw.split(",") if s.strip()]
+            except Exception:
+                staged_ids = [s.strip() for s in staged_photos_raw.split(",") if s.strip()]
+        elif isinstance(staged_photos_raw, list):
+            staged_ids = [str(x).strip() for x in staged_photos_raw if str(x).strip()]
+    else:
+        staged_list = form_data.getlist("staged_photo_ids")
+        if staged_list:
+            staged_ids = [str(x).strip() for x in staged_list if str(x).strip()]
+
+    import shutil
+    for idx, sid in enumerate(staged_ids, 1):
+        info = get_staged_photo_info(sid)
+        if info and os.path.exists(info["disk_path"]):
+            try:
+                dest_name = f"raw_session_{uuid.uuid4().hex[:8]}_staged{idx}.jpg"
+                dest_path = settings.SESSION_PHOTOS_DIR / dest_name
+                shutil.copy2(info["disk_path"], dest_path)
+                saved_disk_paths.append(str(dest_path))
+                # Delete from staging immediately
+                try:
+                    os.remove(info["disk_path"])
+                    meta_p = Path(info["disk_path"]).parent / f"{sid}.meta.json"
+                    if meta_p.exists():
+                        meta_p.unlink(missing_ok=True)
+                except Exception:
+                    pass
+            except Exception as e:
+                print(f"[SessionCreate] Error migrating staged photo {sid}: {e}")
 
     # 1. Collect all uploaded files across all common keys
     file_candidates = []
