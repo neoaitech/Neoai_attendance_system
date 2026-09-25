@@ -329,7 +329,7 @@ const CaptureView = {
                   <div class="bracket-br"></div>
                 </div>
 
-                <!-- Top Camera HUD (Status + Angles count + Fullscreen toggle) -->
+                <!-- Top Camera HUD (Status + Angles count + Flash + Flip + Fullscreen/Close) -->
                 <div class="camera-hud-top">
                   <div class="camera-status-overlay">
                     <span class="camera-status-dot scanning" id="cam-status-dot"></span>
@@ -346,22 +346,22 @@ const CaptureView = {
                       <i data-lucide="zap-off" class="w-4 h-4 text-amber-400" id="cam-flash-icon"></i>
                     </button>
 
-                    <!-- Fullscreen Toggle Button -->
-                    <button type="button" class="camera-hud-btn" id="cam-fullscreen-toggle-btn" onclick="CaptureView.toggleFullscreenCamera(event)" title="Open Mobile Full Screen Camera View" aria-label="Toggle Fullscreen">
+                    <!-- Camera Flip Button (Front / Back) -->
+                    <button type="button" class="camera-hud-btn" id="cam-flip-hud-btn" onclick="CaptureView.switchCamera(event)" title="Switch Front / Back Camera" aria-label="Switch Camera">
+                      <i data-lucide="switch-camera" class="w-4 h-4 text-indigo-300" id="cam-flip-hud-icon"></i>
+                    </button>
+
+                    <!-- Fullscreen Toggle Button (Shown in inline mode) -->
+                    <button type="button" class="camera-hud-btn" id="cam-fullscreen-toggle-btn" onclick="CaptureView.toggleFullscreenCamera(event)" title="Open Full Screen View" aria-label="Toggle Fullscreen">
                       <i data-lucide="maximize-2" class="w-4 h-4" id="cam-fullscreen-icon"></i>
+                    </button>
+
+                    <!-- Fullscreen Overlay Close Button (Shown in Fullscreen Mode) -->
+                    <button type="button" class="camera-hud-btn camera-hud-close-btn hidden" id="cam-fullscreen-close-btn" onclick="CaptureView.exitFullscreenCamera(event)" title="Exit Fullscreen" aria-label="Close Fullscreen">
+                      <i data-lucide="x" class="w-4 h-4 text-rose-400"></i>
                     </button>
                   </div>
                 </div>
-
-                <!-- Touch-friendly Floating Camera Flip Button -->
-                <button type="button" class="camera-flip-overlay-btn" id="cam-flip-overlay-btn" onclick="CaptureView.switchCamera(event)" title="Switch Front / Back Camera" aria-label="Switch Camera">
-                  <i data-lucide="switch-camera" class="w-4 h-4"></i>
-                </button>
-
-                <!-- Fullscreen Overlay Close Button (Shown in Fullscreen Mode) -->
-                <button type="button" class="camera-fullscreen-close-btn hidden" id="cam-fullscreen-close-btn" onclick="CaptureView.exitFullscreenCamera(event)" title="Exit Fullscreen">
-                  <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
 
                 <!-- Bottom Native Smartphone Shutter Bar (Shown on Mobile & in Fullscreen) -->
                 <div class="camera-shutter-bar-overlay" id="cam-shutter-bar-overlay">
@@ -1489,10 +1489,9 @@ const CaptureView = {
     document.body.classList.add("camera-fullscreen-open");
     const closeBtn = document.getElementById("cam-fullscreen-close-btn");
     if (closeBtn) closeBtn.classList.remove("hidden");
-    const fsIcon = document.getElementById("cam-fullscreen-icon");
-    if (fsIcon) fsIcon.setAttribute("data-lucide", "minimize-2");
+    const toggleBtn = document.getElementById("cam-fullscreen-toggle-btn");
+    if (toggleBtn) toggleBtn.classList.add("hidden");
     if (window.lucide) window.lucide.createIcons();
-    // Zero toast popup on fullscreen enter to keep mobile screen completely clean!
   },
 
   exitFullscreenCamera(e) {
@@ -1506,8 +1505,8 @@ const CaptureView = {
     document.body.classList.remove("camera-fullscreen-open");
     const closeBtn = document.getElementById("cam-fullscreen-close-btn");
     if (closeBtn) closeBtn.classList.add("hidden");
-    const fsIcon = document.getElementById("cam-fullscreen-icon");
-    if (fsIcon) fsIcon.setAttribute("data-lucide", "maximize-2");
+    const toggleBtn = document.getElementById("cam-fullscreen-toggle-btn");
+    if (toggleBtn) toggleBtn.classList.remove("hidden");
     if (window.lucide) window.lucide.createIcons();
   },
 

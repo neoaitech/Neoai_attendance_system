@@ -281,34 +281,20 @@
   100% { opacity: 1; }
 }
 
-/* Fullscreen Close Button */
-.camera-fullscreen-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: #ffffff;
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 30;
-  transition: all 0.2s;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+/* Fullscreen Close Button (in HUD) */
+.camera-hud-btn.camera-hud-close-btn {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  color: #ef4444 !important;
 }
 
-.camera-fullscreen-close-btn:hover {
-  background: rgba(239, 68, 68, 0.9);
+.camera-hud-btn.camera-hud-close-btn:hover {
+  background: rgba(239, 68, 68, 0.9) !important;
+  color: #ffffff !important;
   transform: scale(1.08);
 }
 
-.camera-fullscreen-close-btn:active {
+.camera-hud-btn.camera-hud-close-btn:active {
   transform: scale(0.92);
 }
 
@@ -568,7 +554,45 @@
   100% { opacity: 0; }
 }
 
-/* Fullscreen Camera Mode Overrides */
+/* ==========================================================================
+   TRUE 100% IMMERSIVE FULLSCREEN CAMERA OVERRIDES
+   ========================================================================== */
+body.camera-fullscreen-open {
+  overflow: hidden !important;
+  touch-action: none !important;
+}
+
+/* Hide ALL app chrome in camera fullscreen mode: topbar, bottom nav, sidebar, floating fab, toast */
+body.camera-fullscreen-open .app-topbar,
+body.camera-fullscreen-open #mobile-bottom-nav,
+body.camera-fullscreen-open .mobile-bottom-nav,
+body.camera-fullscreen-open .mobile-nav-fab,
+body.camera-fullscreen-open .sidebar,
+body.camera-fullscreen-open .sidebar-backdrop,
+body.camera-fullscreen-open .toast-container {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Eliminate any CSS stacking context or container traps from parent wrappers */
+body.camera-fullscreen-open .main-wrapper,
+body.camera-fullscreen-open .view-content-wrapper,
+body.camera-fullscreen-open #view-container,
+body.camera-fullscreen-open .camera-viewport-card,
+body.camera-fullscreen-open #src-camera-box {
+  position: static !important;
+  transform: none !important;
+  filter: none !important;
+  contain: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 .camera-feed-container.is-fullscreen {
   position: fixed !important;
   top: 0 !important;
@@ -579,31 +603,51 @@
   height: 100dvh !important;
   max-height: 100dvh !important;
   border-radius: 0 !important;
-  z-index: 99999 !important;
+  z-index: 10000000 !important;
   margin: 0 !important;
+  padding: 0 !important;
   background: #000000 !important;
   box-shadow: none !important;
 }
 
 .camera-feed-container.is-fullscreen video {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
   width: 100vw !important;
   height: 100dvh !important;
   max-height: 100dvh !important;
   object-fit: cover !important;
+  z-index: 1 !important;
+}
+
+.camera-feed-container.is-fullscreen .camera-hud-top {
+  position: absolute !important;
+  top: calc(14px + env(safe-area-inset-top, 0px)) !important;
+  left: 14px !important;
+  right: 14px !important;
+  z-index: 10000010 !important;
+  pointer-events: none !important;
+}
+
+.camera-feed-container.is-fullscreen .camera-hud-top > * {
+  pointer-events: auto !important;
 }
 
 .camera-feed-container.is-fullscreen .camera-shutter-bar-overlay {
   display: flex !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 10000010 !important;
+  padding: 16px 24px calc(24px + env(safe-area-inset-bottom, 14px)) !important;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 60%, transparent 100%) !important;
+  pointer-events: auto !important;
 }
 
-.camera-feed-container.is-fullscreen .camera-flip-overlay-btn {
-  bottom: 96px !important;
-  right: 18px !important;
-}
-
-body.camera-fullscreen-open {
-  overflow: hidden !important;
-  touch-action: none !important;
+.camera-feed-container.is-fullscreen .camera-focus-brackets {
+  z-index: 5 !important;
 }
 
 /* Camera Controls Bar Below Viewport */
