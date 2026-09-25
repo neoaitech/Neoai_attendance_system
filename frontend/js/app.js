@@ -1489,10 +1489,6 @@ const App = {
         installBtn.classList.remove("hidden");
         installBtn.classList.add("inline-flex");
       }
-      const mobileBanner = document.getElementById("pwa-mobile-banner");
-      if (mobileBanner && !window.matchMedia('(display-mode: standalone)').matches) {
-        mobileBanner.classList.remove("hidden");
-      }
     });
 
     // 3. Show button on iOS Safari if not already installed as standalone
@@ -1504,18 +1500,12 @@ const App = {
         installBtn.classList.remove("hidden");
         installBtn.classList.add("inline-flex");
       }
-      const mobileBanner = document.getElementById("pwa-mobile-banner");
-      if (mobileBanner) {
-        mobileBanner.classList.remove("hidden");
-      }
     }
 
     window.addEventListener("appinstalled", () => {
       window._deferredPwaPrompt = null;
       const installBtn = document.getElementById("pwa-install-btn");
       if (installBtn) installBtn.classList.add("hidden");
-      const mobileBanner = document.getElementById("pwa-mobile-banner");
-      if (mobileBanner) mobileBanner.classList.add("hidden");
       App.showToast("Neo AI Attendance Portal App installed successfully! You can launch it from your home screen.", "success");
     });
   },
@@ -1530,8 +1520,6 @@ const App = {
       window._deferredPwaPrompt = null;
       const installBtn = document.getElementById("pwa-install-btn");
       if (installBtn) installBtn.classList.add("hidden");
-      const mobileBanner = document.getElementById("pwa-mobile-banner");
-      if (mobileBanner) mobileBanner.classList.add("hidden");
     } else {
       // iOS Safari guided prompt or manual instructions
       const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;

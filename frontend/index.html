@@ -29,8 +29,8 @@
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Enterprise Design System -->
-  <link rel="stylesheet" href="css/styles.css?v=15.0" />
-  <link rel="stylesheet" href="css/pages/permissions.css?v=15.0" />
+  <link rel="stylesheet" href="css/styles.css?v=15.1" />
+  <link rel="stylesheet" href="css/pages/permissions.css?v=15.1" />
 </head>
 <body>
   
@@ -228,20 +228,6 @@
         </div>
       </header>
 
-      <!-- Mobile PWA Install Floating Banner (Shown only when uninstalled on mobile) -->
-      <div id="pwa-mobile-banner" class="pwa-mobile-banner hidden">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <img src="images/icon-192.png?v=2" alt="NeoAI Tech" class="w-7 h-7 rounded-lg shadow-xs flex-shrink-0" />
-          <div class="min-w-0">
-            <div class="font-bold text-slate-900 text-xs truncate">Install NeoAI Tech App</div>
-            <div class="text-[10px] text-slate-500 truncate">Add to Home Screen for fast full-screen access</div>
-          </div>
-        </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <button class="btn-primary text-xs py-1 px-3 font-bold" style="border-radius: 8px;" onclick="App.triggerPwaInstall()">Install</button>
-          <button class="text-slate-400 hover:text-slate-600 text-base p-1" onclick="document.getElementById('pwa-mobile-banner').classList.add('hidden')">&times;</button>
-        </div>
-      </div>
 
       <!-- Dynamic View Container (SPA Render Target) -->
       <main id="view-container" class="view-content-wrapper">
@@ -305,6 +291,6 @@
   <script defer src="js/views/profile.js?v=15.0"></script>
   <script defer src="js/views/student_attendance.js?v=15.0"></script>
   <script defer src="js/views/requisitions.js?v=15.0"></script>
-  <script defer src="js/app.js?v=15.0"></script>
+  <script defer src="js/app.js?v=15.1"></script>
 </body>
 </html>
