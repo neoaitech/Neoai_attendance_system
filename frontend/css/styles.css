@@ -15,12 +15,12 @@
 @import url("./components/badges.css");
 @import url("./components/forms.css");
 @import url("./components/modals.css");
-@import url("./components/toasts.css");
+@import url("./components/toasts.css?v=23.0");
 
 /* 3. Page-Specific Styles */
 @import url("./pages/auth.css");
 @import url("./pages/dashboard.css");
-@import url("./pages/capture.css?v=22.0");
+@import url("./pages/capture.css?v=23.0");
 @import url("./pages/review.css");
 @import url("./pages/students.css");
 @import url("./pages/classes.css");

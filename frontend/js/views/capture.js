@@ -341,19 +341,25 @@ const CaptureView = {
                       <span id="cam-snap-counter" class="font-mono text-emerald-400">0 / 8 Angles</span>
                     </div>
 
-                    <button type="button" class="camera-hud-btn" id="cam-fullscreen-toggle-btn" onclick="CaptureView.toggleFullscreenCamera()" title="Open Mobile Full Screen Camera View" aria-label="Toggle Fullscreen">
+                    <!-- Flash / Torch Toggle Button -->
+                    <button type="button" class="camera-hud-btn" id="cam-flash-toggle-btn" onclick="CaptureView.toggleFlash(event)" title="Toggle Camera Flash / Torch" aria-label="Toggle Flash">
+                      <i data-lucide="zap-off" class="w-4 h-4 text-amber-400" id="cam-flash-icon"></i>
+                    </button>
+
+                    <!-- Fullscreen Toggle Button -->
+                    <button type="button" class="camera-hud-btn" id="cam-fullscreen-toggle-btn" onclick="CaptureView.toggleFullscreenCamera(event)" title="Open Mobile Full Screen Camera View" aria-label="Toggle Fullscreen">
                       <i data-lucide="maximize-2" class="w-4 h-4" id="cam-fullscreen-icon"></i>
                     </button>
                   </div>
                 </div>
 
                 <!-- Touch-friendly Floating Camera Flip Button -->
-                <button type="button" class="camera-flip-overlay-btn" id="cam-flip-overlay-btn" onclick="CaptureView.switchCamera()" title="Switch Front / Back Camera" aria-label="Switch Camera">
+                <button type="button" class="camera-flip-overlay-btn" id="cam-flip-overlay-btn" onclick="CaptureView.switchCamera(event)" title="Switch Front / Back Camera" aria-label="Switch Camera">
                   <i data-lucide="switch-camera" class="w-4 h-4"></i>
                 </button>
 
                 <!-- Fullscreen Overlay Close Button (Shown in Fullscreen Mode) -->
-                <button type="button" class="camera-fullscreen-close-btn hidden" id="cam-fullscreen-close-btn" onclick="CaptureView.exitFullscreenCamera()" title="Exit Fullscreen">
+                <button type="button" class="camera-fullscreen-close-btn hidden" id="cam-fullscreen-close-btn" onclick="CaptureView.exitFullscreenCamera(event)" title="Exit Fullscreen">
                   <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
 
@@ -391,11 +397,15 @@ const CaptureView = {
                     <i data-lucide="camera" class="w-3.5 h-3.5"></i>
                     <span>Snap Angle</span>
                   </button>
-                  <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.toggleFullscreenCamera()" id="btn-fullscreen-inline">
+                  <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.toggleFullscreenCamera(event)" id="btn-fullscreen-inline">
                     <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-indigo-600"></i>
                     <span>Full Screen</span>
                   </button>
-                  <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.switchCamera()" id="cam-facing-btn" title="Switch Front / Back Camera">
+                  <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.toggleFlash(event)" id="btn-flash-inline" title="Toggle Flash / Torch">
+                    <i data-lucide="zap-off" class="w-3.5 h-3.5 text-amber-500" id="btn-flash-inline-icon"></i>
+                    <span id="btn-flash-inline-label">Flash Off</span>
+                  </button>
+                  <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5" onclick="CaptureView.switchCamera(event)" id="cam-facing-btn" title="Switch Front / Back Camera">
                     <i data-lucide="switch-camera" class="w-3.5 h-3.5 text-indigo-600"></i>
                     <span id="cam-facing-label">Back Cam</span>
                   </button>
@@ -1263,30 +1273,132 @@ const CaptureView = {
   },
 
   currentFacingMode: "environment",
+  isFlashOn: false,
+  torchSupported: false,
 
-  async switchCamera() {
+  stopWebcamTracks() {
+    if (this.webcamStream) {
+      try {
+        this.webcamStream.getTracks().forEach(t => t.stop());
+      } catch (e) {}
+      this.webcamStream = null;
+    }
+  },
+
+  async switchCamera(e) {
+    if (e) {
+      e.preventDefault?.();
+      e.stopPropagation?.();
+    }
+    const currentScrollY = window.scrollY;
+    const container = document.getElementById("camera-feed-container");
+    const isFullscreen = container?.classList.contains("is-fullscreen");
+
     this.currentFacingMode = (this.currentFacingMode === "environment") ? "user" : "environment";
+    const mode = this.currentFacingMode;
+
     const label = document.getElementById("cam-facing-label");
     if (label) {
-      label.textContent = (this.currentFacingMode === "environment") ? "Back Cam" : "Front Cam";
+      label.textContent = (mode === "environment") ? "Back Cam" : "Front Cam";
     }
     const flipBtn = document.getElementById("cam-flip-overlay-btn");
     if (flipBtn) {
       flipBtn.style.transform = "rotate(180deg)";
-      setTimeout(() => { if (flipBtn) flipBtn.style.transform = ""; }, 300);
+      setTimeout(() => { if (flipBtn) flipBtn.style.transform = ""; }, 250);
     }
-    await this.startCamera();
-    if (window.App && typeof window.App.showToast === 'function') {
-      window.App.showToast(`Camera switched to: ${this.currentFacingMode === "environment" ? "Back Camera" : "Front Camera (Selfie)"}`, "info");
+
+    // Stop ONLY tracks, NEVER exit fullscreen or disrupt the page layout
+    this.stopWebcamTracks();
+
+    // Re-start camera stream without changing fullscreen state
+    await this.startCamera({ autoFullscreen: false });
+
+    // Re-apply flash torch if flash was active
+    if (this.isFlashOn) {
+      await this.applyFlashTorch(true);
+    }
+
+    // Strictly preserve scroll position if in inline view to avoid any auto-scroll
+    if (!isFullscreen) {
+      window.scrollTo({ top: currentScrollY, behavior: "instant" });
     }
   },
 
-  async startCamera() {
+  async toggleFlash(e) {
+    if (e) {
+      e.preventDefault?.();
+      e.stopPropagation?.();
+    }
+    this.isFlashOn = !this.isFlashOn;
+    await this.applyFlashTorch(this.isFlashOn);
+    this.updateFlashUI();
+  },
+
+  async applyFlashTorch(enable) {
+    const track = this.webcamStream?.getVideoTracks()?.[0];
+    if (track) {
+      try {
+        const caps = (typeof track.getCapabilities === "function") ? track.getCapabilities() : {};
+        if ("torch" in caps) {
+          await track.applyConstraints({
+            advanced: [{ torch: !!enable }]
+          });
+          this.torchSupported = true;
+        } else {
+          this.torchSupported = false;
+        }
+      } catch (err) {
+        console.warn("[Camera Torch] Hardware torch not available:", err.message);
+        this.torchSupported = false;
+      }
+    }
+
+    // High-luminance screen torch for front camera or devices without hardware torch
+    const container = document.getElementById("camera-feed-container");
+    if (container) {
+      if (enable && (!this.torchSupported || this.currentFacingMode === "user")) {
+        container.classList.add("screen-torch-active");
+      } else {
+        container.classList.remove("screen-torch-active");
+      }
+    }
+  },
+
+  updateFlashUI() {
+    const flashHudBtn = document.getElementById("cam-flash-toggle-btn");
+    const flashHudIcon = document.getElementById("cam-flash-icon");
+    const inlineFlashBtn = document.getElementById("btn-flash-inline");
+    const inlineFlashIcon = document.getElementById("btn-flash-inline-icon");
+    const inlineFlashLabel = document.getElementById("btn-flash-inline-label");
+
+    if (this.isFlashOn) {
+      if (flashHudBtn) {
+        flashHudBtn.classList.add("flash-active-hud");
+        flashHudBtn.title = "Turn Flash / Torch Off";
+      }
+      if (flashHudIcon) flashHudIcon.setAttribute("data-lucide", "zap");
+      if (inlineFlashBtn) inlineFlashBtn.classList.add("active");
+      if (inlineFlashIcon) inlineFlashIcon.setAttribute("data-lucide", "zap");
+      if (inlineFlashLabel) inlineFlashLabel.textContent = "Flash On";
+    } else {
+      if (flashHudBtn) {
+        flashHudBtn.classList.remove("flash-active-hud");
+        flashHudBtn.title = "Turn Flash / Torch On";
+      }
+      if (flashHudIcon) flashHudIcon.setAttribute("data-lucide", "zap-off");
+      if (inlineFlashBtn) inlineFlashBtn.classList.remove("active");
+      if (inlineFlashIcon) inlineFlashIcon.setAttribute("data-lucide", "zap-off");
+      if (inlineFlashLabel) inlineFlashLabel.textContent = "Flash Off";
+    }
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  async startCamera(options = {}) {
     const video = document.getElementById("multi-webcam-video");
     if (!video) return;
     
-    // Stop any existing stream first
-    this.stopCamera();
+    // Stop any existing tracks without touching layout
+    this.stopWebcamTracks();
 
     // Check if mediaDevices is supported in this browser context (requires HTTPS or localhost on mobile)
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -1313,16 +1425,34 @@ const CaptureView = {
       if (label) {
         label.textContent = (mode === "environment") ? "Back Cam" : "Front Cam";
       }
-      if (window.innerWidth <= 768) {
-        this.enterFullscreenCamera();
+
+      // Check hardware torch capabilities
+      const track = this.webcamStream.getVideoTracks()?.[0];
+      const caps = (track && typeof track.getCapabilities === "function") ? track.getCapabilities() : {};
+      this.torchSupported = ("torch" in caps);
+
+      // Reapply torch if enabled
+      if (this.isFlashOn) {
+        await this.applyFlashTorch(true);
+      }
+
+      // Auto fullscreen on mobile ONLY for initial launch (not when user switches camera)
+      if (options.autoFullscreen !== false && window.innerWidth <= 768) {
+        const container = document.getElementById("camera-feed-container");
+        if (container && !container.classList.contains("is-fullscreen")) {
+          this.enterFullscreenCamera();
+        }
       }
     } catch (e) {
       console.warn("Webcam access error with ideal constraints, trying fallback:", e);
       try {
         this.webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = this.webcamStream;
-        if (window.innerWidth <= 768) {
-          this.enterFullscreenCamera();
+        if (options.autoFullscreen !== false && window.innerWidth <= 768) {
+          const container = document.getElementById("camera-feed-container");
+          if (container && !container.classList.contains("is-fullscreen")) {
+            this.enterFullscreenCamera();
+          }
         }
       } catch (err) {
         App.showToast("Camera streaming unavailable. Please use 'Upload / Take Photo' button.", "warning");
@@ -1333,13 +1463,16 @@ const CaptureView = {
 
   stopCamera() {
     this.exitFullscreenCamera();
-    if (this.webcamStream) {
-      this.webcamStream.getTracks().forEach(t => t.stop());
-      this.webcamStream = null;
-    }
+    this.stopWebcamTracks();
+    this.isFlashOn = false;
+    this.updateFlashUI();
   },
 
-  toggleFullscreenCamera() {
+  toggleFullscreenCamera(e) {
+    if (e) {
+      e.preventDefault?.();
+      e.stopPropagation?.();
+    }
     const container = document.getElementById("camera-feed-container");
     if (!container) return;
     if (container.classList.contains("is-fullscreen")) {
@@ -1359,10 +1492,14 @@ const CaptureView = {
     const fsIcon = document.getElementById("cam-fullscreen-icon");
     if (fsIcon) fsIcon.setAttribute("data-lucide", "minimize-2");
     if (window.lucide) window.lucide.createIcons();
-    App.showToast("Full Screen Camera active. Tap white shutter button to snap.", "info");
+    // Zero toast popup on fullscreen enter to keep mobile screen completely clean!
   },
 
-  exitFullscreenCamera() {
+  exitFullscreenCamera(e) {
+    if (e) {
+      e.preventDefault?.();
+      e.stopPropagation?.();
+    }
     const container = document.getElementById("camera-feed-container");
     if (!container) return;
     container.classList.remove("is-fullscreen");

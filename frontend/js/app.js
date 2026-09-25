@@ -1427,6 +1427,13 @@ const App = {
     const container = document.getElementById("toast-container");
     if (!container) return;
 
+    // Limit active toasts: at most 1 on mobile, at most 2 on desktop to prevent screen clutter
+    const isMobile = window.innerWidth <= 768;
+    const maxToasts = isMobile ? 1 : 2;
+    while (container.children.length >= maxToasts) {
+      container.firstElementChild.remove();
+    }
+
     const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
 
@@ -1437,20 +1444,21 @@ const App = {
 
     toast.innerHTML = `
       <i data-lucide="${iconName}" class="w-4 h-4 flex-shrink-0"></i>
-      <span class="flex-1">${message}</span>
-      <button class="toast-close" onclick="this.parentElement.remove()"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+      <span class="flex-1 leading-snug">${message}</span>
+      <button class="toast-close" onclick="this.parentElement.remove()" aria-label="Close notification"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
     `;
 
     container.appendChild(toast);
     if (window.lucide) window.lucide.createIcons();
 
+    const duration = isMobile ? 2800 : 4000;
     setTimeout(() => {
       if (toast.parentElement) {
         toast.style.opacity = "0";
-        toast.style.transform = "translateY(-8px)";
+        toast.style.transform = isMobile ? "translateY(-8px)" : "translateY(8px)";
         setTimeout(() => toast.remove(), 250);
       }
-    }, 4500);
+    }, duration);
   },
 
   // ================= Progressive Web App (PWA) Setup =================

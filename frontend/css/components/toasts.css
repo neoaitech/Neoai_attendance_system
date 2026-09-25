@@ -70,3 +70,37 @@
   from { opacity: 0; transform: translateY(12px) scale(0.96); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Mobile Toast Notifications: Placed at top so bottom controls and shutter are never blocked */
+@media (max-width: 768px) {
+  .toast-container {
+    top: 64px;
+    bottom: auto;
+    left: 14px;
+    right: 14px;
+    align-items: center;
+    gap: 6px;
+    z-index: 100002;
+  }
+
+  body.camera-fullscreen-open .toast-container {
+    top: 14px !important;
+  }
+
+  .toast {
+    min-width: 0;
+    width: 100%;
+    max-width: 360px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    animation: toastSlideMobile 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    font-size: 0.8rem;
+  }
+}
+
+@keyframes toastSlideMobile {
+  from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
