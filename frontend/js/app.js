@@ -1346,8 +1346,12 @@ const App = {
     // Render target view
     const container = document.getElementById("view-container");
     if (container) {
+      container.scrollTop = 0;
+      window.scrollTo(0, 0);
       try {
         await this.views[viewName].render(container, params);
+        container.scrollTop = 0;
+        window.scrollTo(0, 0);
       } catch (err) {
         container.innerHTML = `
           <div class="glass-panel text-center py-12" style="border-color: var(--rose-border);">
@@ -1479,8 +1483,10 @@ const App = {
 
       // When a new service worker takes over, seamlessly refresh to latest assets
       let refreshing = false;
+      const initialController = navigator.serviceWorker.controller;
       navigator.serviceWorker.addEventListener("controllerchange", () => {
-        if (!refreshing) {
+        // Only reload if this was an update to an existing service worker
+        if (initialController && !refreshing) {
           refreshing = true;
           console.log("PWA updated to latest version. Reloading...");
           window.location.reload();

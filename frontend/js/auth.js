@@ -38,14 +38,42 @@ const Auth = {
 
     // Instant Fast-Boot: If user profile is already cached in localStorage,
     // show the App Shell immediately in 0ms without waiting for network roundtrip!
-    let hasFastBooted = false;
     const cachedUserJson = localStorage.getItem("va_cached_user");
     if (cachedUserJson) {
       try {
-        this.currentUser = JSON.parse(cachedUserJson);
-        this.showAppShell();
-        this.updateUserInterface();
-        hasFastBooted = true;
+        const cachedUser = JSON.parse(cachedUserJson);
+        if (cachedUser && cachedUser.id) {
+          this.currentUser = cachedUser;
+          this.showAppShell();
+          this.updateUserInterface();
+
+          // Background revalidation: verify session asynchronously without blocking UI render
+          API.get("/auth/me").then(user => {
+            if (user) {
+              this.currentUser = user;
+              localStorage.setItem("va_cached_user", JSON.stringify(user));
+              this.updateUserInterface();
+              if (window.App && window.App.onUserLogin) {
+                window.App.onUserLogin();
+              }
+              if (user.must_change_password) {
+                this.showSetPermanentPasswordModal();
+              }
+            }
+          }).catch(err => {
+            if (err && (err.status === 401 || (err.message && err.message.includes("401")))) {
+              this.logout("Session expired. Please sign in again.");
+            }
+          });
+
+          // Trigger notification poller in background
+          if (window.App && window.App.onUserLogin) {
+            window.App.onUserLogin();
+          }
+
+          // Return true immediately so App.navigate() renders in 0ms!
+          return true;
+        }
       } catch (e) {}
     }
 
@@ -66,9 +94,6 @@ const Auth = {
       if (e && (e.status === 401 || (e.message && e.message.includes("401")))) {
         this.logout();
         return false;
-      }
-      if (hasFastBooted) {
-        return true;
       }
       this.showLoginScreen();
       return false;

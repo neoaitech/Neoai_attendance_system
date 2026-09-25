@@ -742,4 +742,16 @@
     font-size: 10.5px !important;
     padding: 2px 4px !important;
   }
+
+  /* Remove nested scroll trap on mobile: let entire page scroll smoothly */
+  .review-roster-container {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure footer action buttons have generous bottom clearance */
+  .review-roster-footer {
+    padding-bottom: 28px !important;
+    margin-bottom: 16px !important;
+  }
 }

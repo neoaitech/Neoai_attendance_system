@@ -1,17 +1,17 @@
-const CACHE_NAME = 'neoai-tech-v24.0';
+const CACHE_NAME = 'neoai-tech-v25.0';
 const STATIC_ASSETS = [
   '/',
   'index.html',
   'manifest.json',
-  'css/styles.css?v=24.0',
-  'css/pages/dashboard.css?v=21.0',
-  'css/pages/review.css?v=20.0',
+  'css/styles.css?v=25.0',
+  'css/pages/dashboard.css?v=25.0',
+  'css/pages/review.css?v=25.0',
   'images/icon-192.png',
   'images/icon-512.png',
   'images/visionattend_logo.png'
 ];
 
-// Install Event
+// Install Event - Pre-cache core shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -23,7 +23,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate Event
+// Activate Event - Clean old caches & claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -39,24 +39,31 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch Event - Network first for API, cache fallback for static
+// Fetch Event - Stale-While-Revalidate for instant 0ms mobile loads
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Skip caching for API endpoints and camera uploads to preserve real-time biometrics
+  // Skip caching for API endpoints and uploads to preserve real-time biometrics
   if (url.pathname.startsWith('/api') || url.pathname.startsWith('/uploads') || event.request.method !== 'GET') {
     return;
   }
 
+  // Stale-While-Revalidate: Return instant cached response (0ms) while updating in background
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-        }
-        return networkResponse;
-      })
-      .catch(() => caches.match(event.request))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.match(event.request).then((cachedResponse) => {
+        const networkFetch = fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(event.request, networkResponse.clone());
+            }
+            return networkResponse;
+          })
+          .catch(() => cachedResponse);
+
+        // Serve cached response immediately if available; otherwise wait for network
+        return cachedResponse || networkFetch;
+      });
+    })
   );
 });
