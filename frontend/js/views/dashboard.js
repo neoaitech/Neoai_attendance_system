@@ -47,59 +47,59 @@ const DashboardView = {
       <div class="kpi-grid mb-5">
         
         <!-- 1. Total Students -->
-        <div class="kpi-card">
+        <div class="kpi-card card-students">
           <div class="kpi-card-header">
             <span class="kpi-title">TOTAL STUDENTS</span>
-            <div class="kpi-icon-wrap" style="background: rgba(99, 102, 241, 0.08); color: #4f46e5;">
+            <div class="kpi-icon-wrap icon-students">
               <i data-lucide="users" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="kpi-value" id="kpi-total-students">
             <span class="skeleton-shimmer"></span>
           </div>
-          <div class="kpi-caption">Active biometric profiles</div>
+          <div class="kpi-caption"><span class="kpi-dot dot-students"></span> Active biometric profiles</div>
         </div>
 
         <!-- 2. Active Courses -->
-        <div class="kpi-card">
+        <div class="kpi-card card-classes">
           <div class="kpi-card-header">
             <span class="kpi-title">ACTIVE COURSES</span>
-            <div class="kpi-icon-wrap" style="background: rgba(139, 92, 246, 0.08); color: #7c3aed;">
+            <div class="kpi-icon-wrap icon-classes">
               <i data-lucide="book-open" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="kpi-value" id="kpi-total-classes">
             <span class="skeleton-shimmer"></span>
           </div>
-          <div class="kpi-caption">Scheduled academic sections</div>
+          <div class="kpi-caption"><span class="kpi-dot dot-classes"></span> Scheduled sections</div>
         </div>
 
         <!-- 3. Average Attendance -->
-        <div class="kpi-card">
+        <div class="kpi-card card-rate">
           <div class="kpi-card-header">
-            <span class="kpi-title">AVERAGE ATTENDANCE</span>
-            <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.08); color: #10b981;">
+            <span class="kpi-title">AVG ATTENDANCE</span>
+            <div class="kpi-icon-wrap icon-rate">
               <i data-lucide="percent" class="w-4 h-4"></i>
             </div>
           </div>
-          <div class="kpi-value" id="kpi-overall-rate" style="color: #10b981;">
+          <div class="kpi-value" id="kpi-overall-rate">
             <span class="skeleton-shimmer"></span>
           </div>
-          <div class="kpi-caption">Institutional attendance overall</div>
+          <div class="kpi-caption"><span class="kpi-dot dot-rate"></span> Overall compliance</div>
         </div>
 
         <!-- 4. Unknown Faces -->
-        <div class="kpi-card interactive-kpi" onclick="App.navigate('unknown_faces')" title="Click to view Unknown Faces Queue">
+        <div class="kpi-card card-unknown interactive-kpi" onclick="App.navigate('unknown_faces')" title="Click to view Unknown Faces Queue">
           <div class="kpi-card-header">
             <span class="kpi-title">UNKNOWN FACES</span>
-            <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.08); color: #d97706;">
+            <div class="kpi-icon-wrap icon-unknown">
               <i data-lucide="scan-face" class="w-4 h-4"></i>
             </div>
           </div>
-          <div class="kpi-value" id="kpi-unknown-count" style="color: #d97706;">
+          <div class="kpi-value" id="kpi-unknown-count">
             <span class="skeleton-shimmer"></span>
           </div>
-          <div class="kpi-caption" id="kpi-unknown-caption">Requires verification</div>
+          <div class="kpi-caption"><span class="kpi-dot dot-unknown"></span> <span id="kpi-unknown-caption">Requires verification</span></div>
         </div>
 
       </div>
