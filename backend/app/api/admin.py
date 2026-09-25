@@ -231,6 +231,18 @@ def create_faculty_user(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # Trigger in-app notification & automated credentials welcome email
+    try:
+        notification_service.notify_faculty_created(
+            db=db,
+            faculty_user=new_user,
+            raw_password=payload.password,
+            actor=current_user
+        )
+    except Exception as e:
+        print(f"[AdminAPI] Failed to trigger faculty created notification: {e}")
+
     return new_user.to_dict()
 
 @router.put("/faculty/{faculty_id}")
@@ -293,7 +305,8 @@ def update_faculty_user(
             db=db,
             faculty_user=target,
             updated_fields=updated_fields,
-            actor=current_user
+            actor=current_user,
+            raw_password=payload.password if payload.password else None
         )
 
     return target.to_dict()

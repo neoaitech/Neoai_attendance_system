@@ -586,3 +586,525 @@ def send_single_student_report(
         print(f"[EmailService] Failed to save EmailLog: {e}")
 
     return success, error
+
+
+# =========================================================================
+# Faculty & Academic Operational Email Builders & Background Dispatchers
+# =========================================================================
+
+PORTAL_BASE_URL = os.getenv("PORTAL_URL", "http://40.80.87.73:8000")
+
+
+def build_faculty_welcome_email(
+    faculty_name: str,
+    username: str,
+    password: str,
+    role_display: str,
+    email: str,
+    login_url: Optional[str] = None
+) -> tuple[str, str]:
+    """
+    Builds a high-fidelity, responsive HTML welcome email for newly created faculty/admin accounts
+    containing their User ID, Initial Password, Role, and Portal Login Link.
+    """
+    portal_link = login_url or PORTAL_BASE_URL
+    subject = f"🎓 Welcome to VisionAttend — Your Institutional Account Credentials"
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 30px 15px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 620px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+          
+          <!-- Gradient Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #3730a3 0%, #4f46e5 100%); padding: 36px 30px; text-align: center;">
+              <div style="display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 999px; padding: 4px 14px; margin-bottom: 12px;">
+                <span style="color: #ffffff; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">VisionAttend &bull; AI Attendance Portal</span>
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em;">Welcome to the Academic Portal</h1>
+              <p style="color: #c7d2fe; margin: 8px 0 0; font-size: 13px;">Your official institutional login credentials have been provisioned.</p>
+            </td>
+          </tr>
+
+          <!-- Main Body -->
+          <tr>
+            <td style="padding: 32px 30px;">
+              <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #334155;">
+                Dear <strong>{faculty_name}</strong>,
+              </p>
+              <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #475569;">
+                An institutional faculty account has been established for you on the <strong>VisionAttend AI Classroom Attendance Platform</strong>. Below are your official system credentials to access your teaching dashboard and academic services.
+              </p>
+
+              <!-- Credentials Card -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 24px; overflow: hidden;">
+                <tr>
+                  <td style="background: #eef2ff; padding: 12px 20px; border-bottom: 1px solid #e0e7ff;">
+                    <span style="font-size: 12px; font-weight: 700; color: #3730a3; text-transform: uppercase; letter-spacing: 0.05em;">🔐 Official Account Credentials</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px;">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 6px 0; font-size: 13px; color: #64748b; width: 140px;">Institutional Role:</td>
+                        <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #4338ca;">
+                          <span style="background: rgba(99,102,241,0.1); padding: 3px 10px; border-radius: 999px; border: 1px solid rgba(99,102,241,0.25);">{role_display}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; font-size: 13px; color: #64748b;">User ID / Login ID:</td>
+                        <td style="padding: 8px 0;">
+                          <span style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 14px; font-weight: 700; color: #1e1b4b; background: #e0e7ff; padding: 4px 10px; border-radius: 6px; border: 1px solid #c7d2fe;">{username}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Initial Password:</td>
+                        <td style="padding: 8px 0;">
+                          <span style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 14px; font-weight: 700; color: #065f46; background: #d1fae5; padding: 4px 10px; border-radius: 6px; border: 1px solid #a7f3d0;">{password}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Registered Email:</td>
+                        <td style="padding: 6px 0; font-size: 13px; color: #0f172a; font-weight: 600;">{email}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Call To Action Button -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td align="center">
+                    <a href="{portal_link}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">
+                      Sign In to Institutional Portal &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Security Notice -->
+              <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #92400e;">
+                  <strong>🛡️ Security Guidelines:</strong> Please keep your credentials strictly confidential. For institutional compliance and security, we strongly recommend updating your initial password after logging into the system for the first time.
+                </p>
+              </div>
+
+              <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #64748b;">
+                If you encounter any issues logging in or require technical support, please contact the University System Administrator or IT Support Desk.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 22px 30px; text-align: center;">
+              <p style="margin: 0 0 6px; font-size: 12px; font-weight: 600; color: #64748b;">VisionAttend Pro &bull; AI Classroom Attendance & Analytics Platform</p>
+              <p style="margin: 0; font-size: 11px; color: #94a3b8;">This is an automated institutional service email dispatched by university administration. Please do not reply directly to this email address.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+    return subject, html
+
+
+def build_faculty_password_reset_email(
+    faculty_name: str,
+    username: str,
+    new_password: str,
+    actor_name: str,
+    login_url: Optional[str] = None
+) -> tuple[str, str]:
+    """
+    Builds a secure HTML notification email informing faculty that their login credentials/password have been updated.
+    """
+    portal_link = login_url or PORTAL_BASE_URL
+    subject = f"🔐 VisionAttend Security Notice — Your Password Has Been Updated"
+    from backend.app.core.datetime_utils import format_ist_datetime, get_utc_now
+    timestamp_ist = format_ist_datetime(get_utc_now())
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 30px 15px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 620px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+          
+          <!-- Gradient Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 32px 30px; text-align: center;">
+              <div style="display: inline-block; background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4); border-radius: 999px; padding: 4px 14px; margin-bottom: 10px;">
+                <span style="color: #fcd34d; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Security Alert &bull; Credentials Update</span>
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.02em;">Password Reset Notice</h1>
+              <p style="color: #94a3b8; margin: 6px 0 0; font-size: 12px;">Your institutional account password was recently updated.</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding: 30px;">
+              <p style="margin: 0 0 14px; font-size: 15px; color: #334155;">
+                Dear <strong>{faculty_name}</strong>,
+              </p>
+              <p style="margin: 0 0 18px; font-size: 14px; line-height: 1.6; color: #475569;">
+                This notice confirms that your login password for the VisionAttend AI Attendance Portal was updated on <strong>{timestamp_ist}</strong> by <strong>{actor_name}</strong>.
+              </p>
+
+              <!-- Credentials Box -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 22px;">
+                <tr>
+                  <td style="padding: 18px 20px;">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 6px 0; font-size: 13px; color: #64748b; width: 140px;">Login ID / Username:</td>
+                        <td style="padding: 6px 0;">
+                          <span style="font-family: monospace; font-size: 14px; font-weight: 700; color: #3730a3; background: #e0e7ff; padding: 3px 8px; border-radius: 5px;">{username}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; font-size: 13px; color: #64748b;">New Password:</td>
+                        <td style="padding: 6px 0;">
+                          <span style="font-family: monospace; font-size: 14px; font-weight: 700; color: #065f46; background: #d1fae5; padding: 3px 8px; border-radius: 5px;">{new_password}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Button -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 22px;">
+                <tr>
+                  <td align="center">
+                    <a href="{portal_link}" target="_blank" style="display: inline-block; background: #4f46e5; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 700;">
+                      Sign In with New Password &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px;">
+                <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #991b1b;">
+                  <strong>⚠️ Unauthorized Activity:</strong> If you did not request or expect this change, please report this immediately to your university IT administrator.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 30px; text-align: center;">
+              <p style="margin: 0; font-size: 11px; color: #94a3b8;">VisionAttend Pro &bull; Institutional Security Center</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+    return subject, html
+
+
+def build_course_allocation_email(
+    faculty_name: str,
+    course_code: str,
+    course_name: str,
+    department: str,
+    program: str,
+    semester: str,
+    divisions: List[str],
+    role: str = "Primary Faculty",
+    academic_year: str = "2026-27",
+    assigned_by: str = "Administrator",
+    login_url: Optional[str] = None
+) -> tuple[str, str]:
+    """
+    Builds a comprehensive HTML email detailing a new course/subject allocation to a faculty member.
+    """
+    portal_link = login_url or PORTAL_BASE_URL
+    div_str = ", ".join(sorted(divisions)) if divisions else "A"
+    subject = f"📚 Academic Allocation: Teaching Assignment for {course_code} — {course_name}"
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 30px 15px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 620px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 34px 30px; text-align: center;">
+              <div style="display: inline-block; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; padding: 4px 14px; margin-bottom: 10px;">
+                <span style="color: #ffffff; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Academic Allocation Notice</span>
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 23px; font-weight: 800; letter-spacing: -0.02em;">New Course Teaching Allocation</h1>
+              <p style="color: #a7f3d0; margin: 6px 0 0; font-size: 13px;">Official subject & division assignment confirmation.</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding: 30px;">
+              <p style="margin: 0 0 14px; font-size: 15px; color: #334155;">
+                Dear <strong>{faculty_name}</strong>,
+              </p>
+              <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #475569;">
+                You have been assigned to teach the following academic course offering by <strong>{assigned_by}</strong>. You can now conduct AI face biometric attendance sessions and manage student rosters for this course.
+              </p>
+
+              <!-- Course Metadata Table -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 24px; overflow: hidden;">
+                <tr>
+                  <td colspan="2" style="background: #f1f5f9; padding: 12px 18px; border-bottom: 1px solid #e2e8f0;">
+                    <span style="font-size: 12px; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 0.05em;">📖 Course Offering Details</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #64748b; width: 150px; border-bottom: 1px solid #f1f5f9;">Course Name:</td>
+                  <td style="padding: 10px 18px; font-size: 14px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #f1f5f9;">{course_name}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Course Code:</td>
+                  <td style="padding: 10px 18px; font-size: 13px; font-family: monospace; font-weight: 700; color: #4338ca; border-bottom: 1px solid #f1f5f9;">{course_code}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Department:</td>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #334155; font-weight: 600; border-bottom: 1px solid #f1f5f9;">{department}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Degree / Program:</td>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #334155; font-weight: 600; border-bottom: 1px solid #f1f5f9;">{program} &bull; {semester}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Division(s) Allocated:</td>
+                  <td style="padding: 10px 18px; font-size: 13px; font-weight: 700; color: #047857; border-bottom: 1px solid #f1f5f9;">Division {div_str}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Assigned Role:</td>
+                  <td style="padding: 10px 18px; font-size: 13px; font-weight: 700; color: #4338ca; border-bottom: 1px solid #f1f5f9;">
+                    <span style="background: rgba(99,102,241,0.1); padding: 3px 10px; border-radius: 999px;">{role}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #64748b;">Academic Year:</td>
+                  <td style="padding: 10px 18px; font-size: 13px; color: #334155; font-weight: 600;">{academic_year}</td>
+                </tr>
+              </table>
+
+              <!-- Button -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
+                <tr>
+                  <td align="center">
+                    <a href="{portal_link}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; text-decoration: none; padding: 13px 30px; border-radius: 8px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(5,150,105,0.3);">
+                      Open My Courses in Portal &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #64748b;">
+                You can now log in to the portal to view your enrolled student list, generate QR attendance sessions, or conduct automated live camera scans.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 30px; text-align: center;">
+              <p style="margin: 0; font-size: 11px; color: #94a3b8;">VisionAttend Pro &bull; Office of Academic Administration</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+    return subject, html
+
+
+def send_email_in_background(
+    to_email: str,
+    subject: str,
+    html_content: str,
+    recipient_name: str,
+    report_type: str,
+    student_id: Optional[int] = None
+):
+    """
+    Dispatches an HTML email asynchronously in a background daemon thread with automatic EmailLog tracking.
+    Never blocks or throws exceptions to the caller.
+    """
+    if not to_email or "@" not in to_email:
+        return
+
+    def _worker():
+        from backend.app.db.session import SessionLocal
+        db = SessionLocal()
+        try:
+            settings_obj = get_or_create_email_settings(db)
+            if not settings_obj.is_email_enabled or not settings_obj.smtp_user or not settings_obj.smtp_password:
+                log = EmailLog(
+                    student_id=student_id,
+                    recipient_name=recipient_name,
+                    recipient_email=to_email.strip(),
+                    subject=subject,
+                    report_type=report_type,
+                    period_label=datetime.utcnow().strftime("%B %Y"),
+                    status="SKIPPED",
+                    error_message="SMTP configuration is incomplete. Configure Host, User, and App Password in Admin Settings.",
+                    has_attachment=False,
+                    sent_at=datetime.utcnow()
+                )
+                db.add(log)
+                db.commit()
+                return
+
+            success, error = send_raw_smtp_email(
+                settings_obj=settings_obj,
+                to_email=to_email.strip(),
+                subject=subject,
+                html_content=html_content
+            )
+
+            log = EmailLog(
+                student_id=student_id,
+                recipient_name=recipient_name,
+                recipient_email=to_email.strip(),
+                subject=subject,
+                report_type=report_type,
+                period_label=datetime.utcnow().strftime("%B %Y"),
+                status="SUCCESS" if success else "FAILED",
+                error_message=error,
+                has_attachment=False,
+                sent_at=datetime.utcnow()
+            )
+            db.add(log)
+            db.commit()
+        except Exception as e:
+            print(f"[EmailService] Background email worker error: {e}")
+        finally:
+            db.close()
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+
+
+def send_faculty_welcome_email_async(
+    faculty_name: str,
+    username: str,
+    password: str,
+    role_display: str,
+    email: str,
+    login_url: Optional[str] = None
+):
+    """Asynchronously dispatches the welcome email with credentials."""
+    subject, html_body = build_faculty_welcome_email(
+        faculty_name=faculty_name,
+        username=username,
+        password=password,
+        role_display=role_display,
+        email=email,
+        login_url=login_url
+    )
+    send_email_in_background(
+        to_email=email,
+        subject=subject,
+        html_content=html_body,
+        recipient_name=faculty_name,
+        report_type="FACULTY_WELCOME"
+    )
+
+
+def send_faculty_password_reset_email_async(
+    faculty_name: str,
+    username: str,
+    new_password: str,
+    actor_name: str,
+    email: str,
+    login_url: Optional[str] = None
+):
+    """Asynchronously dispatches the password reset notice email."""
+    subject, html_body = build_faculty_password_reset_email(
+        faculty_name=faculty_name,
+        username=username,
+        new_password=new_password,
+        actor_name=actor_name,
+        login_url=login_url
+    )
+    send_email_in_background(
+        to_email=email,
+        subject=subject,
+        html_content=html_body,
+        recipient_name=faculty_name,
+        report_type="PASSWORD_RESET"
+    )
+
+
+def send_course_allocation_email_async(
+    faculty_name: str,
+    email: str,
+    course_code: str,
+    course_name: str,
+    department: str,
+    program: str,
+    semester: str,
+    divisions: List[str],
+    role: str = "Primary Faculty",
+    academic_year: str = "2026-27",
+    assigned_by: str = "Administrator",
+    login_url: Optional[str] = None
+):
+    """Asynchronously dispatches the course allocation email."""
+    subject, html_body = build_course_allocation_email(
+        faculty_name=faculty_name,
+        course_code=course_code,
+        course_name=course_name,
+        department=department,
+        program=program,
+        semester=semester,
+        divisions=divisions,
+        role=role,
+        academic_year=academic_year,
+        assigned_by=assigned_by,
+        login_url=login_url
+    )
+    send_email_in_background(
+        to_email=email,
+        subject=subject,
+        html_content=html_body,
+        recipient_name=faculty_name,
+        report_type="COURSE_ALLOCATION"
+    )
+

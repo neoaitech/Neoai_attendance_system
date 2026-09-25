@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from backend.app.db.session import get_db
@@ -413,6 +414,56 @@ def unenroll_student_from_class(
     return {
         "message": f"Successfully removed student '{student.full_name}' from '{course.code}'.",
         "total_enrolled": len(course.students)
+    }
+
+class ClassFacultyAssignPayload(BaseModel):
+    faculty_id: int
+    role: Optional[str] = "Primary Faculty"
+
+@router.post("/{class_id}/faculty")
+def assign_faculty_to_class(
+    class_id: int,
+    payload: ClassFacultyAssignPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    course = db.query(ClassCourse).filter(ClassCourse.id == class_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Class not found.")
+
+    faculty = db.query(User).filter(User.id == payload.faculty_id).first()
+    if not faculty:
+        raise HTTPException(status_code=404, detail="Faculty user not found.")
+
+    assigned_role = payload.role or "Primary Faculty"
+
+    # Add to course teachers association list if not present
+    teacher_ids = [t.id for t in (course.teachers or [])]
+    if faculty.id not in teacher_ids:
+        course.teachers.append(faculty)
+
+    # Set as primary if requested or if course currently has no primary teacher
+    if assigned_role == "Primary Faculty" or not course.teacher_id:
+        course.teacher_id = faculty.id
+
+    db.commit()
+    db.refresh(course)
+
+    # Trigger In-App Notification and Automated Academic Allocation Email
+    notification_service.notify_course_assignment(
+        db=db,
+        faculty_id=faculty.id,
+        course=course,
+        divisions=[course.section or "A"],
+        role=assigned_role,
+        actor=current_user
+    )
+
+    return {
+        "message": f"Faculty '{faculty.full_name}' assigned as {assigned_role} to '{course.code}'.",
+        "class_id": course.id,
+        "faculty_id": faculty.id,
+        "role": assigned_role
     }
 
 @router.delete("/{class_id}")

@@ -167,7 +167,7 @@ class NotificationService:
             commit=False
         )
 
-        return self.create_notification(
+        notif = self.create_notification(
             db=db,
             recipient_user_id=faculty_id,
             notification_type="COURSE_ASSIGNED",
@@ -183,6 +183,29 @@ class NotificationService:
             details=details,
             commit=True
         )
+
+        # Automatically dispatch course allocation email in background
+        faculty_user = db.query(User).filter(User.id == faculty_id).first()
+        if faculty_user and faculty_user.email and "@" in faculty_user.email:
+            try:
+                from backend.app.services.email_service import send_course_allocation_email_async
+                send_course_allocation_email_async(
+                    faculty_name=faculty_user.full_name or faculty_user.username,
+                    email=faculty_user.email.strip(),
+                    course_code=course.code,
+                    course_name=course.name,
+                    department=course.department or "Academic Dept",
+                    program=course.program or "B.Tech",
+                    semester=course.semester or "Semester",
+                    divisions=sorted(divisions) if divisions else [course.section or "A"],
+                    role=role,
+                    academic_year=getattr(course, "academic_year", "2026-27"),
+                    assigned_by=actor_name
+                )
+            except Exception as e:
+                print(f"[NotificationService] Failed to dispatch course allocation email: {e}")
+
+        return notif
 
     def notify_course_assignment_updated(
         self,
@@ -307,12 +330,83 @@ class NotificationService:
             commit=True
         )
 
+    def notify_faculty_created(
+        self,
+        db: Session,
+        faculty_user: User,
+        raw_password: str,
+        actor: Optional[User] = None
+    ) -> Optional[Notification]:
+        """
+        Notifies a newly created faculty/admin user with an in-app welcome notification
+        and dispatches their initial login credentials (User ID and Password) via email.
+        """
+        actor_name = actor.full_name if actor else "Administrator"
+        role_label = faculty_user.to_dict().get("role_display", "Faculty")
+
+        title = "Welcome to VisionAttend AI Attendance Portal"
+        message = f"Your institutional account has been established with role '{role_label}'. You can now log into the portal using your Login ID '{faculty_user.username}'."
+
+        details = {
+            "faculty_id": faculty_user.id,
+            "username": faculty_user.username,
+            "email": faculty_user.email,
+            "role": faculty_user.role,
+            "role_display": role_label,
+            "created_by": actor_name,
+            "created_at": format_ist_datetime(get_utc_now()),
+            "created_at_iso": format_iso_utc(get_utc_now())
+        }
+
+        self.record_audit_log(
+            db=db,
+            action="FACULTY_ACCOUNT_CREATED",
+            entity="User",
+            entity_id=faculty_user.id,
+            user_id=actor.id if actor else None,
+            details=details,
+            commit=False
+        )
+
+        notif = self.create_notification(
+            db=db,
+            recipient_user_id=faculty_user.id,
+            notification_type="ACCOUNT_CREATED",
+            priority="SUCCESS",
+            category="Security",
+            title=title,
+            message=message,
+            actor_user_id=actor.id if actor else None,
+            entity_type="User",
+            entity_id=faculty_user.id,
+            action_view="profile",
+            details=details,
+            commit=True
+        )
+
+        # Dispatch Welcome Credentials Email Asynchronously
+        if faculty_user.email and "@" in faculty_user.email:
+            try:
+                from backend.app.services.email_service import send_faculty_welcome_email_async
+                send_faculty_welcome_email_async(
+                    faculty_name=faculty_user.full_name or faculty_user.username,
+                    username=faculty_user.username,
+                    password=raw_password,
+                    role_display=role_label,
+                    email=faculty_user.email.strip()
+                )
+            except Exception as e:
+                print(f"[NotificationService] Failed to dispatch welcome email: {e}")
+
+        return notif
+
     def notify_faculty_profile_updated(
         self,
         db: Session,
         faculty_user: User,
         updated_fields: List[str],
-        actor: Optional[User] = None
+        actor: Optional[User] = None,
+        raw_password: Optional[str] = None
     ) -> Optional[Notification]:
         """
         Notifies faculty when their profile, role, or account status is updated by an administrator.
@@ -331,9 +425,13 @@ class NotificationService:
                 prio = "CRITICAL"
         elif "role" in updated_fields:
             title = "Your Institutional Role Was Updated"
-            role_label = "System Administrator" if faculty_user.role == "admin" else "Course Faculty"
+            role_label = "Super Administrator" if faculty_user.role in ("super_admin", "superadmin") else ("System Administrator" if faculty_user.role == "admin" else "Course Faculty")
             msg = f"Your institutional role has been updated to '{role_label}' by {actor_name}."
             prio = "INFO"
+        elif "password" in updated_fields:
+            title = "Security Alert: Password Updated"
+            msg = f"Your institutional account password was reset by {actor_name}."
+            prio = "WARNING"
         else:
             title = "Your Faculty Profile Was Updated"
             msg = f"Your institutional profile was updated by an administrator."
@@ -358,7 +456,7 @@ class NotificationService:
             commit=False
         )
 
-        return self.create_notification(
+        notif = self.create_notification(
             db=db,
             recipient_user_id=faculty_user.id,
             notification_type="FACULTY_PROFILE_UPDATED",
@@ -373,6 +471,22 @@ class NotificationService:
             details=details,
             commit=True
         )
+
+        # Dispatch Password Reset Email Asynchronously
+        if "password" in updated_fields and raw_password and faculty_user.email and "@" in faculty_user.email:
+            try:
+                from backend.app.services.email_service import send_faculty_password_reset_email_async
+                send_faculty_password_reset_email_async(
+                    faculty_name=faculty_user.full_name or faculty_user.username,
+                    username=faculty_user.username,
+                    new_password=raw_password,
+                    actor_name=actor_name,
+                    email=faculty_user.email.strip()
+                )
+            except Exception as e:
+                print(f"[NotificationService] Failed to dispatch password reset email: {e}")
+
+        return notif
 
     def notify_unknown_faces_detected(
         self,
