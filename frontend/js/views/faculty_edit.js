@@ -60,7 +60,7 @@ const FacultyEditView = {
         return;
       }
 
-      const isRootAdmin = Auth.canManageAuthority();
+      const isRootAdmin = Auth.canManageAuthority() || Auth.isAdmin() || Auth.isSuperAdmin();
 
       container.innerHTML = `
         <div class="dedicated-form-page">
@@ -125,7 +125,10 @@ const FacultyEditView = {
                   <label class="form-label">System Role *</label>
                   <select id="fe-role" class="form-select text-xs">
                     <option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Faculty / Teacher</option>
-                    ${isRootAdmin ? `<option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrator (Full Privileges)</option>` : ''}
+                    ${isRootAdmin ? `
+                      <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrator (Full Privileges)</option>
+                      <option value="super_admin" ${(user.role === 'super_admin' || user.role === 'superadmin') ? 'selected' : ''}>Super Administrator (Root Authority)</option>
+                    ` : ''}
                   </select>
                 </div>
                 <div class="form-group mb-0">

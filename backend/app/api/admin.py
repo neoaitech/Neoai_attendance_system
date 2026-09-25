@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from backend.app.core.config import settings
 from backend.app.core.datetime_utils import format_iso_utc
 from backend.app.db.session import get_db
-from backend.app.db.models import User, AuditLog, SystemSetting
+from backend.app.db.models import User, AuditLog, SystemSetting, Role
 from backend.app.services.backup_service import backup_service
 from backend.app.services.face_engine import face_engine
 from backend.app.api.auth import get_current_user, require_admin
@@ -186,10 +186,16 @@ def create_faculty_user(
     if existing:
         raise HTTPException(status_code=400, detail="Faculty with this Login ID / Username or Email already exists.")
 
-    is_super = current_user.role in ("super_admin", "superadmin")
     assigned_role = payload.role or "teacher"
-    if is_super and assigned_role not in ("teacher", "faculty"):
+    if assigned_role not in ("teacher", "faculty", "admin", "super_admin", "superadmin"):
         assigned_role = "teacher"
+    if assigned_role == "superadmin":
+        assigned_role = "super_admin"
+
+    role_name = "faculty" if assigned_role in ("teacher", "faculty") else assigned_role
+    role_obj = db.query(Role).filter((Role.name == role_name) | (Role.name == assigned_role)).first()
+
+    is_active_val = payload.is_active if payload.is_active is not None else True
 
     new_user = User(
         username=payload.username.strip(),
@@ -197,7 +203,9 @@ def create_faculty_user(
         hashed_password=get_password_hash(payload.password),
         full_name=payload.full_name.strip(),
         role=assigned_role,
-        is_active=payload.is_active if payload.is_active is not None else True
+        role_id=role_obj.id if role_obj else None,
+        is_active=is_active_val,
+        status="Active" if is_active_val else "Deactivated"
     )
 
     # Optional photo biometrics
@@ -237,20 +245,19 @@ def update_faculty_user(
     if not target:
         raise HTTPException(status_code=404, detail="Faculty user not found.")
 
-    is_super = current_user.role in ("super_admin", "superadmin")
-    if is_super:
-        # Rule: Super Admin cannot edit or modify Administrator profiles
-        if target.role == "admin":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Security Protection: Super Administrators cannot modify Administrator profiles."
-            )
-        # Rule: Super Admin cannot promote anyone to Admin or Super Admin
-        if payload.role and payload.role not in ("teacher", "faculty"):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Security Protection: Super Administrators can only assign Faculty role."
-            )
+    # Prevent demoting or deactivating the last active super admin
+    if target.role in ("super_admin", "superadmin"):
+        if (payload.role and payload.role not in ("super_admin", "superadmin")) or (payload.is_active is False):
+            super_count = db.query(User).filter(
+                User.role.in_(["super_admin", "superadmin"]),
+                User.is_active == True,
+                User.id != target.id
+            ).count()
+            if super_count == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Security Protection: Cannot demote or deactivate the last remaining Super Administrator."
+                )
 
     updated_fields = []
     if payload.full_name is not None and payload.full_name.strip() != target.full_name:
@@ -260,11 +267,20 @@ def update_faculty_user(
         updated_fields.append("email")
         target.email = payload.email.strip()
     if payload.role is not None and payload.role != target.role:
+        new_role = payload.role
+        if new_role not in ("teacher", "faculty", "admin", "super_admin", "superadmin"):
+            new_role = "teacher"
+        if new_role == "superadmin":
+            new_role = "super_admin"
         updated_fields.append("role")
-        target.role = payload.role
+        target.role = new_role
+        role_name = "faculty" if new_role in ("teacher", "faculty") else new_role
+        role_obj = db.query(Role).filter((Role.name == role_name) | (Role.name == new_role)).first()
+        target.role_id = role_obj.id if role_obj else None
     if payload.is_active is not None and payload.is_active != target.is_active:
         updated_fields.append("is_active")
         target.is_active = payload.is_active
+        target.status = "Active" if payload.is_active else "Suspended"
     if payload.password:
         updated_fields.append("password")
         target.hashed_password = get_password_hash(payload.password)

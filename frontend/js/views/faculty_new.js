@@ -20,7 +20,7 @@ const FacultyNewView = {
       this.cachedClasses = [];
     }
 
-    const isRootAdmin = Auth.canManageAuthority();
+    const isRootAdmin = Auth.canManageAuthority() || Auth.isAdmin() || Auth.isSuperAdmin();
 
     container.innerHTML = `
       <div class="dedicated-form-page">
@@ -83,7 +83,10 @@ const FacultyNewView = {
                 <label class="form-label">System Role *</label>
                 <select id="fn-role" class="form-select text-xs">
                   <option value="teacher" selected>Faculty / Teacher</option>
-                  ${isRootAdmin ? '<option value="admin">Administrator (Full Privileges)</option>' : ''}
+                  ${isRootAdmin ? `
+                    <option value="admin">Administrator (Full Privileges)</option>
+                    <option value="super_admin">Super Administrator (Root Authority)</option>
+                  ` : ''}
                 </select>
               </div>
             </div>
