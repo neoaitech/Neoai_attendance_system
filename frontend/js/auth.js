@@ -44,6 +44,9 @@ const Auth = {
       if (window.App && window.App.onUserLogin) {
         window.App.onUserLogin();
       }
+      if (user && user.must_change_password) {
+        this.showSetPermanentPasswordModal();
+      }
       return true;
     } catch (e) {
       this.showLoginScreen();
@@ -351,6 +354,12 @@ const Auth = {
         const roleLabel = this.isSuperAdmin() ? "Super Administrator" : (this.isAdmin() ? "System Administrator" : "Course Faculty");
         window.App.showToast(`Welcome back, ${this.currentUser.full_name || data.full_name}! Logged in as ${roleLabel}.`, "success");
       }
+
+      // Check if user must change their temporary password
+      if (data.must_change_password || (this.currentUser && this.currentUser.must_change_password)) {
+        this.showSetPermanentPasswordModal();
+      }
+
       return true;
     } catch (error) {
       if (btn) {
@@ -566,6 +575,178 @@ const Auth = {
         btn.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5 mr-1"></i><span>Request Access</span>`;
         if (window.lucide) window.lucide.createIcons();
       }
+    }
+  },
+
+  showSetPermanentPasswordModal() {
+    const user = this.currentUser || {};
+    const name = user.full_name || user.username || "Faculty";
+
+    const modalHtml = `
+      <div class="modal-card" style="max-width: 480px; width: 95%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(99,102,241,0.25);">
+        <div class="modal-header" style="background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.04) 100%); border-bottom: 1px solid rgba(0,0,0,0.06); padding: 18px 24px;">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 flex-shrink-0">
+              <i data-lucide="key-round" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="modal-title text-base font-bold text-slate-900" style="margin: 0;">Set Your Permanent Password</h3>
+              <p class="text-xs text-slate-500" style="margin: 2px 0 0;">First-time institutional security setup</p>
+            </div>
+          </div>
+        </div>
+
+        <form id="set-permanent-password-form" onsubmit="event.preventDefault(); Auth.submitPermanentPassword();">
+          <div class="modal-body" style="padding: 24px;">
+            <div class="p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl text-xs text-indigo-900 leading-relaxed mb-4">
+              Welcome, <b>${name}</b>! You have logged in using an initial temporary password. Please create your personal permanent password below.
+            </div>
+
+            <div id="perm-pwd-error" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium mb-3"></div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="form-label text-xs font-semibold text-slate-700 block mb-1.5" for="new-permanent-pwd">
+                  New Permanent Password *
+                </label>
+                <div class="relative flex items-center">
+                  <input 
+                    type="password" 
+                    id="new-permanent-pwd" 
+                    class="form-input text-sm w-full" 
+                    style="padding-right: 40px;"
+                    placeholder="Enter new permanent password (min 6 characters)" 
+                    required 
+                    minlength="6"
+                    autocomplete="new-password"
+                  />
+                  <button 
+                    type="button" 
+                    class="absolute right-3 text-slate-400 hover:text-slate-600"
+                    onclick="Auth.toggleInputVisibility('new-permanent-pwd', this)"
+                    tabindex="-1"
+                  >
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label text-xs font-semibold text-slate-700 block mb-1.5" for="confirm-permanent-pwd">
+                  Confirm Permanent Password *
+                </label>
+                <div class="relative flex items-center">
+                  <input 
+                    type="password" 
+                    id="confirm-permanent-pwd" 
+                    class="form-input text-sm w-full" 
+                    style="padding-right: 40px;"
+                    placeholder="Re-enter permanent password" 
+                    required 
+                    minlength="6"
+                    autocomplete="new-password"
+                  />
+                  <button 
+                    type="button" 
+                    class="absolute right-3 text-slate-400 hover:text-slate-600"
+                    onclick="Auth.toggleInputVisibility('confirm-permanent-pwd', this)"
+                    tabindex="-1"
+                  >
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-[11px] text-slate-500 mt-4 flex items-start gap-1.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+              <span>Upon saving, a confirmation email containing your User ID and permanent password will be dispatched to your registered email address.</span>
+            </div>
+          </div>
+
+          <div class="modal-footer flex items-center justify-end gap-2" style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid rgba(0,0,0,0.06);">
+            <button type="submit" id="save-permanent-pwd-btn" class="btn-primary text-xs font-bold px-5 py-2.5 flex items-center gap-2">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Save Permanent Password & Enter Portal</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    if (window.App && window.App.showModal) {
+      window.App.showModal(modalHtml, false); // dismissable = false: modal cannot be closed by clicking outside
+      if (window.lucide) window.lucide.createIcons();
+    }
+  },
+
+  toggleInputVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const isPwd = input.type === "password";
+    input.type = isPwd ? "text" : "password";
+    if (btn) {
+      btn.innerHTML = `<i data-lucide="${isPwd ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+  },
+
+  async submitPermanentPassword() {
+    const pwd1 = document.getElementById("new-permanent-pwd");
+    const pwd2 = document.getElementById("confirm-permanent-pwd");
+    const errBox = document.getElementById("perm-pwd-error");
+    const btn = document.getElementById("save-permanent-pwd-btn");
+
+    const val1 = pwd1 ? pwd1.value : "";
+    const val2 = pwd2 ? pwd2.value : "";
+
+    const showError = (msg) => {
+      if (errBox) {
+        errBox.textContent = msg;
+        errBox.classList.remove("hidden");
+      } else {
+        alert(msg);
+      }
+    };
+
+    if (errBox) errBox.classList.add("hidden");
+
+    if (!val1 || val1.length < 6) {
+      showError("Permanent password must be at least 6 characters long.");
+      return;
+    }
+
+    if (val1 !== val2) {
+      showError("Passwords do not match. Please ensure both fields are identical.");
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-sm mr-2"></span><span>Saving & Verifying...</span>`;
+    }
+
+    try {
+      await API.post("/auth/set-permanent-password", {
+        new_password: val1
+      });
+
+      if (this.currentUser) {
+        this.currentUser.must_change_password = false;
+      }
+
+      if (window.App) {
+        window.App.closeModal();
+        window.App.showToast("Permanent password saved successfully! Confirmation email has been sent.", "success");
+        window.App.navigate("dashboard");
+      }
+    } catch (e) {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i><span>Save Permanent Password & Enter Portal</span>`;
+        if (window.lucide) window.lucide.createIcons();
+      }
+      showError(e.message || "Failed to update permanent password. Please try again.");
     }
   }
 };

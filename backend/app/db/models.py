@@ -235,6 +235,7 @@ class User(Base):
     photo_url = Column(Text, nullable=True)
     _face_embedding = Column("face_embedding", Text, nullable=True)
     is_active = Column(Boolean, default=True)
+    must_change_password = Column(Boolean, default=False)
     last_login_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -277,6 +278,7 @@ class User(Base):
             "photo_url": self.photo_url,
             "has_face_embedding": bool(self._face_embedding),
             "is_active": self.is_active,
+            "must_change_password": bool(self.must_change_password),
             "last_login_at": format_iso_utc(self.last_login_at) if self.last_login_at else None,
             "assigned_classes_count": len(self.assigned_classes) if self.assigned_classes else (len(self.classes) if self.classes else 0),
             "permissions_count": len(self.permission_overrides) if self.permission_overrides else 0,

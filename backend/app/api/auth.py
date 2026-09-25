@@ -8,7 +8,7 @@ from backend.app.core.config import settings
 from backend.app.core.security import verify_password, create_access_token, decode_access_token, oauth2_scheme
 from backend.app.db.session import get_db
 from backend.app.db.models import User
-from backend.app.schemas.auth import Token, LoginRequest, UserResponse, UserCreate
+from backend.app.schemas.auth import Token, LoginRequest, UserResponse, UserCreate, SetPermanentPasswordRequest
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -97,7 +97,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         "role": user.role,
         "user_id": user.id,
         "full_name": user.full_name,
-        "username": user.username
+        "username": user.username,
+        "must_change_password": bool(user.must_change_password)
     }
 
 @router.post("/login-json", response_model=Token)
@@ -125,7 +126,51 @@ def login_json(payload: LoginRequest, db: Session = Depends(get_db)):
         "role": user.role,
         "user_id": user.id,
         "full_name": user.full_name,
-        "username": user.username
+        "username": user.username,
+        "must_change_password": bool(user.must_change_password)
+    }
+
+@router.post("/set-permanent-password")
+def set_permanent_password(
+    payload: SetPermanentPasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Allows a faculty or user logging in with a temporary password to establish their
+    own personal permanent password. Automatically sends an email confirmation.
+    """
+    from backend.app.core.security import get_password_hash
+    from backend.app.services.email_service import send_faculty_permanent_password_email_async
+
+    new_pwd = payload.new_password.strip() if payload.new_password else ""
+    if len(new_pwd) < 6:
+        raise HTTPException(
+            status_code=400,
+            detail="Permanent password must be at least 6 characters long."
+        )
+
+    current_user.hashed_password = get_password_hash(new_pwd)
+    current_user.must_change_password = False
+    db.commit()
+    db.refresh(current_user)
+
+    # Dispatch confirmation email with new permanent password
+    if current_user.email and "@" in current_user.email:
+        try:
+            send_faculty_permanent_password_email_async(
+                faculty_name=current_user.full_name or current_user.username,
+                username=current_user.username,
+                permanent_password=new_pwd,
+                email=current_user.email.strip()
+            )
+        except Exception as e:
+            print(f"[AuthAPI] Error dispatching permanent password confirmation email: {e}")
+
+    return {
+        "status": "success",
+        "message": "Permanent password set successfully.",
+        "user": current_user.to_dict()
     }
 
 @router.get("/me")

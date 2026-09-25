@@ -205,7 +205,8 @@ def create_faculty_user(
         role=assigned_role,
         role_id=role_obj.id if role_obj else None,
         is_active=is_active_val,
-        status="Active" if is_active_val else "Deactivated"
+        status="Active" if is_active_val else "Deactivated",
+        must_change_password=True
     )
 
     # Optional photo biometrics

@@ -8,6 +8,7 @@ class Token(BaseModel):
     user_id: int
     full_name: str
     username: str
+    must_change_password: bool = False
 
 class TokenPayload(BaseModel):
     sub: Optional[str] = None
@@ -16,6 +17,9 @@ class TokenPayload(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+class SetPermanentPasswordRequest(BaseModel):
+    new_password: str
 
 class UserCreate(BaseModel):
     username: str
@@ -31,4 +35,5 @@ class UserResponse(BaseModel):
     full_name: str
     role: str
     is_active: bool
+    must_change_password: Optional[bool] = False
     created_at: Optional[str] = None

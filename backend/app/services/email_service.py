@@ -686,7 +686,7 @@ def build_faculty_welcome_email(
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Initial Password:</td>
+                        <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Temporary Password:</td>
                         <td style="padding: 8px 0;">
                           <span style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 14px; font-weight: 700; color: #065f46; background: #d1fae5; padding: 4px 10px; border-radius: 6px; border: 1px solid #a7f3d0;">{password}</span>
                         </td>
@@ -705,7 +705,7 @@ def build_faculty_welcome_email(
                 <tr>
                   <td align="center">
                     <a href="{portal_link}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">
-                      Sign In to Institutional Portal &rarr;
+                      Sign In with Temporary Password &rarr;
                     </a>
                   </td>
                 </tr>
@@ -714,7 +714,7 @@ def build_faculty_welcome_email(
               <!-- Security Notice -->
               <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;">
                 <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #92400e;">
-                  <strong>🛡️ Security Guidelines:</strong> Please keep your credentials strictly confidential. For institutional compliance and security, we strongly recommend updating your initial password after logging into the system for the first time.
+                  <strong>🛡️ First-Time Login Notice:</strong> The credential above is an initial temporary password. When you sign in to the portal for the first time, you will be prompted to set your personal permanent password.
                 </p>
               </div>
 
@@ -1125,5 +1125,149 @@ def send_course_allocation_email_async(
         html_content=html_body,
         recipient_name=faculty_name,
         report_type="COURSE_ALLOCATION"
+    )
+
+
+def build_faculty_permanent_password_confirmation_email(
+    faculty_name: str,
+    username: str,
+    permanent_password: str,
+    email: str,
+    login_url: Optional[str] = None
+) -> tuple[str, str]:
+    """
+    Builds a clean, responsive HTML email confirming that the faculty user has
+    successfully established their permanent account password, providing their
+    User ID and Permanent Password for future reference.
+    """
+    portal_link = login_url or PORTAL_BASE_URL
+    subject = f"Neo AI Attendance Portal - Permanent Password Set Successfully for {faculty_name}"
+    from backend.app.core.datetime_utils import format_ist_datetime, get_utc_now
+    timestamp_ist = format_ist_datetime(get_utc_now())
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 30px 15px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 620px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+          
+          <!-- Gradient Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 34px 30px; text-align: center;">
+              <div style="display: inline-block; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; padding: 4px 14px; margin-bottom: 10px;">
+                <span style="color: #ffffff; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Security Confirmation &bull; Account Activated</span>
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 23px; font-weight: 800; letter-spacing: -0.02em;">Permanent Password Established</h1>
+              <p style="color: #a7f3d0; margin: 6px 0 0; font-size: 13px;">Your personal login credentials are now active.</p>
+            </td>
+          </tr>
+
+          <!-- Main Body -->
+          <tr>
+            <td style="padding: 32px 30px;">
+              <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #334155;">
+                Dear <strong>{faculty_name}</strong>,
+              </p>
+              <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #475569;">
+                You have successfully set your personal permanent password on <strong>{timestamp_ist}</strong>. Your institutional account is now fully confirmed. Please retain the permanent credentials below for all future sign-ins.
+              </p>
+
+              <!-- Credentials Card -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 24px; overflow: hidden;">
+                <tr>
+                  <td style="background: #ecfdf5; padding: 12px 20px; border-bottom: 1px solid #d1fae5;">
+                    <span style="font-size: 12px; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 0.05em;">Your Permanent Login Credentials</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px;">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 8px 0; font-size: 13px; color: #64748b; width: 140px;">User ID / Login ID:</td>
+                        <td style="padding: 8px 0;">
+                          <span style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 14px; font-weight: 700; color: #1e1b4b; background: #e0e7ff; padding: 4px 10px; border-radius: 6px; border: 1px solid #c7d2fe;">{username}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Permanent Password:</td>
+                        <td style="padding: 8px 0;">
+                          <span style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 14px; font-weight: 700; color: #065f46; background: #d1fae5; padding: 4px 10px; border-radius: 6px; border: 1px solid #a7f3d0;">{permanent_password}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Registered Email:</td>
+                        <td style="padding: 6px 0; font-size: 13px; color: #0f172a; font-weight: 600;">{email}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Account Status:</td>
+                        <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #059669;">Active & Confirmed</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Call To Action Button -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td align="center">
+                    <a href="{portal_link}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; box-shadow: 0 4px 12px rgba(5,150,105,0.3);">
+                      Access Teaching Workspace &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #64748b;">
+                You can now log in using your permanent password anytime to conduct classroom biometric scans and review student records.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 22px 30px; text-align: center;">
+              <p style="margin: 0 0 6px; font-size: 12px; font-weight: 600; color: #64748b;">Neo AI Attendance Portal &bull; AI Classroom Attendance & Analytics Platform</p>
+              <p style="margin: 0; font-size: 11px; color: #94a3b8;">This is an automated institutional service email dispatched by university administration. Please do not reply directly to this email address.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+    return subject, html
+
+
+def send_faculty_permanent_password_email_async(
+    faculty_name: str,
+    username: str,
+    permanent_password: str,
+    email: str,
+    login_url: Optional[str] = None
+):
+    """Asynchronously dispatches the permanent password confirmation email."""
+    subject, html_body = build_faculty_permanent_password_confirmation_email(
+        faculty_name=faculty_name,
+        username=username,
+        permanent_password=permanent_password,
+        email=email,
+        login_url=login_url
+    )
+    send_email_in_background(
+        to_email=email,
+        subject=subject,
+        html_content=html_body,
+        recipient_name=faculty_name,
+        report_type="PERMANENT_PASSWORD"
     )
 
