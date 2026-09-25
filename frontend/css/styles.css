@@ -1778,5 +1778,23 @@
   background: #f0fdf4;
 }
 
+/* ===================================================================
+   Predictive 0ms Smooth View Transitions
+   =================================================================== */
+.view-content-wrapper {
+  animation: fadeInQuick 0.12s ease-out;
+}
+
+@keyframes fadeInQuick {
+  from {
+    opacity: 0.88;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
 

@@ -246,10 +246,166 @@ const App = {
     }
   ],
 
+  // ===================================================================
+  // Predictive Pre-Loading & Instant 0ms Navigation Engine (Instagram Style)
+  // ===================================================================
+  viewPrefetchMap: {
+    dashboard: ["/analytics/dashboard"],
+    capture: ["/academic/metadata", "/classes", "/admin/system-settings/matching-sensitivity"],
+    students: ["/students", "/academic/metadata", "/classes"],
+    classes: ["/classes", "/academic/metadata", "/students"],
+    review: ["/sessions"],
+    reports: ["/academic/metadata", "/reports/filters"],
+    unknown_faces: ["/unknown-faces?status_filter=pending", "/students"],
+    faculty: ["/admin/faculty", "/auth/users", "/academic/metadata"],
+    requisitions: ["/academic/metadata", "/attendance/requisition-history"],
+    permissions: ["/authority/matrix", "/authority/users"],
+    profile: ["/auth/me", "/classes", "/analytics/dashboard"],
+    model_benchmark: ["/analytics/model-performance"],
+    admin_panel: ["/admin/health", "/admin/audit-logs", "/admin/system-settings/face-ai-architecture"]
+  },
+
+  isViewPreloaded(viewName) {
+    const endpoints = this.viewPrefetchMap[viewName];
+    if (!endpoints || endpoints.length === 0) return false;
+    return API.hasValidCache(endpoints[0]);
+  },
+
+  prefetchForView(viewName) {
+    const endpoints = this.viewPrefetchMap[viewName];
+    if (!endpoints) return;
+    endpoints.forEach(ep => API.prefetch(ep));
+  },
+
+  initPrefetching() {
+    let prefetchDebounceTimer = null;
+
+    const triggerPrefetch = (viewName) => {
+      if (!viewName || !this.views[viewName]) return;
+      if (this.currentView === viewName) return;
+      this.prefetchForView(viewName);
+    };
+
+    // 1. Mouse hover on sidebar and navigation items (50ms debounce)
+    document.addEventListener("mouseover", (e) => {
+      const target = e.target.closest("[data-view], [data-prefetch-view]");
+      if (!target) return;
+      const viewName = target.getAttribute("data-prefetch-view") || target.getAttribute("data-view");
+      if (!viewName) return;
+
+      if (prefetchDebounceTimer) clearTimeout(prefetchDebounceTimer);
+      prefetchDebounceTimer = setTimeout(() => {
+        triggerPrefetch(viewName);
+      }, 50);
+    }, { passive: true });
+
+    // Cancel debounce if mouse quickly leaves
+    document.addEventListener("mouseout", (e) => {
+      const target = e.target.closest("[data-view], [data-prefetch-view]");
+      if (target && prefetchDebounceTimer) {
+        clearTimeout(prefetchDebounceTimer);
+      }
+    }, { passive: true });
+
+    // 2. Touch devices: prefetch immediately on touchstart (mobile users have ~100ms before tap triggers click)
+    document.addEventListener("touchstart", (e) => {
+      const target = e.target.closest("[data-view], [data-prefetch-view]");
+      if (!target) return;
+      const viewName = target.getAttribute("data-prefetch-view") || target.getAttribute("data-view");
+      if (viewName) {
+        triggerPrefetch(viewName);
+      }
+    }, { passive: true });
+
+    // 3. Search dropdown results item hover
+    const searchResults = document.getElementById("global-search-results");
+    if (searchResults) {
+      searchResults.addEventListener("mouseover", (e) => {
+        const item = e.target.closest(".search-result-item");
+        if (item && item.dataset.view) {
+          triggerPrefetch(item.dataset.view);
+        }
+      }, { passive: true });
+    }
+
+    // 4. Idle pre-warming: 1.5 seconds after page loads, warm up common views in background
+    const scheduleIdlePrewarm = () => {
+      const runIdleTasks = () => {
+        if (!API.getToken()) return;
+        API.prefetch("/academic/metadata");
+        API.prefetch("/classes");
+        setTimeout(() => {
+          if (!API.getToken()) return;
+          API.prefetch("/students");
+          API.prefetch("/sessions");
+        }, 1200);
+      };
+
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(runIdleTasks, { timeout: 3000 });
+      } else {
+        setTimeout(runIdleTasks, 1500);
+      }
+    };
+
+    scheduleIdlePrewarm();
+
+    // 5. Record-level Hover & Touch Intent (Students, Sessions, Classes)
+    document.addEventListener("mouseover", (e) => {
+      // Student row/card hover -> pre-warm profile & attendance dossier
+      const studentEl = e.target.closest("[data-student-id]");
+      if (studentEl) {
+        const studentId = studentEl.getAttribute("data-student-id");
+        if (studentId) {
+          API.prefetch(`/students/${studentId}`);
+          API.prefetch(`/reports/student/${studentId}`);
+        }
+      }
+
+      // Session row/card hover -> pre-warm session bounding boxes and detections
+      const sessionEl = e.target.closest("[data-session-id]");
+      if (sessionEl) {
+        const sessionId = sessionEl.getAttribute("data-session-id");
+        if (sessionId) {
+          API.prefetch(`/sessions/${sessionId}`);
+        }
+      }
+
+      // Class/Offering row/card hover -> pre-warm class details
+      const classEl = e.target.closest("[data-class-id]");
+      if (classEl) {
+        const classId = classEl.getAttribute("data-class-id");
+        if (classId) {
+          API.prefetch(`/classes/${classId}`);
+        }
+      }
+    }, { passive: true });
+
+    document.addEventListener("touchstart", (e) => {
+      const studentEl = e.target.closest("[data-student-id]");
+      if (studentEl) {
+        const studentId = studentEl.getAttribute("data-student-id");
+        if (studentId) {
+          API.prefetch(`/students/${studentId}`);
+          API.prefetch(`/reports/student/${studentId}`);
+        }
+      }
+
+      const sessionEl = e.target.closest("[data-session-id]");
+      if (sessionEl) {
+        const sessionId = sessionEl.getAttribute("data-session-id");
+        if (sessionId) {
+          API.prefetch(`/sessions/${sessionId}`);
+        }
+      }
+    }, { passive: true });
+  },
+
   init() {
     this.bindEvents();
     this.initGlobalSearch();
     this.initPwa();
+    this.initPrefetching();
     if (window.lucide) window.lucide.createIcons();
     Auth.init().then(authenticated => {
       if (authenticated) {
@@ -634,6 +790,9 @@ const App = {
     if (dropdown) {
       dropdown.innerHTML = "";
       dropdown.classList.add("hidden");
+    }
+    if (window.API && API.clearCache) {
+      API.clearCache();
     }
   },
 
@@ -1187,12 +1346,23 @@ const App = {
     // Render target view
     const container = document.getElementById("view-container");
     if (container) {
-      container.innerHTML = `
-        <div class="glass-panel text-center py-16">
-          <div class="spinner-sm text-indigo-600 mb-2"></div>
-          <p class="text-xs text-slate-500">Loading ${meta.title}...</p>
-        </div>
-      `;
+      const isPreloaded = this.isViewPreloaded(viewName);
+      let spinnerTimer = null;
+
+      // Only show spinner if not already preloaded in memory and rendering takes > 80ms
+      if (!isPreloaded) {
+        spinnerTimer = setTimeout(() => {
+          if (this.currentView === viewName) {
+            container.innerHTML = `
+              <div class="glass-panel text-center py-16">
+                <div class="spinner-sm text-indigo-600 mb-2"></div>
+                <p class="text-xs text-slate-500">Loading ${meta.title}...</p>
+              </div>
+            `;
+          }
+        }, 80);
+      }
+
       try {
         await this.views[viewName].render(container, params);
       } catch (err) {
@@ -1207,6 +1377,8 @@ const App = {
           </div>
         `;
         if (window.lucide) window.lucide.createIcons();
+      } finally {
+        if (spinnerTimer) clearTimeout(spinnerTimer);
       }
     }
   },

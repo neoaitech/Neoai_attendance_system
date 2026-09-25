@@ -354,7 +354,7 @@ const ClassesView = {
                 <!-- Division Sections List -->
                 <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
                   ${g.sections.map(s => `
-                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: all 0.15s ease;" class="hover:border-indigo-200">
+                    <div data-class-id="${s.id}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: all 0.15s ease;" class="hover:border-indigo-200">
                       <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
                         <span style="background: #eef2ff; color: #4338ca; font-weight: 800; font-size: 0.70rem; padding: 2px 7px; border-radius: 5px; border: 1px solid #c7d2fe; flex-shrink: 0;">
                           Div ${s.section || 'A'}
@@ -432,7 +432,7 @@ const ClassesView = {
               ${courseGroups.map(g => {
                 const firstSec = g.sections[0] || {};
                 return `
-                  <tr>
+                  <tr data-class-id="${firstSec.id || ''}">
                     <td>
                       <span class="course-code-badge">${g.baseCode || firstSec.code || 'CS-301'}</span>
                     </td>

@@ -64,6 +64,79 @@ const API = {
     localStorage.removeItem("visionattend_token");
   },
 
+  // In-memory SWR (Stale-While-Revalidate) Cache & De-duplication Store
+  cache: new Map(),
+  CACHE_TTL: 60 * 1000, // 60 seconds fresh TTL
+  REVALIDATE_THRESHOLD: 15 * 1000, // 15 seconds background revalidate threshold
+
+  hasValidCache(endpoint) {
+    if (!this.cache.has(endpoint)) return false;
+    const entry = this.cache.get(endpoint);
+    if (!entry || !entry.data) return false;
+    return (Date.now() - entry.timestamp) < this.CACHE_TTL;
+  },
+
+  getCachedData(endpoint) {
+    if (this.hasValidCache(endpoint)) {
+      return this.cache.get(endpoint).data;
+    }
+    return null;
+  },
+
+  invalidateCache(pattern) {
+    if (!pattern) {
+      this.cache.clear();
+      return;
+    }
+    const keysToDelete = [];
+    for (const key of this.cache.keys()) {
+      if (typeof pattern === "string") {
+        if (key.includes(pattern)) keysToDelete.push(key);
+      } else if (pattern instanceof RegExp) {
+        if (pattern.test(key)) keysToDelete.push(key);
+      }
+    }
+    keysToDelete.forEach(k => this.cache.delete(k));
+  },
+
+  autoInvalidateOnMutation(endpoint) {
+    if (!endpoint) return;
+    if (endpoint.includes("/students")) {
+      this.invalidateCache("/students");
+      this.invalidateCache("/analytics");
+      this.invalidateCache("/reports");
+      this.invalidateCache("/classes");
+      this.invalidateCache("/attendance");
+    } else if (endpoint.includes("/sessions") || endpoint.includes("/attendance")) {
+      this.invalidateCache("/sessions");
+      this.invalidateCache("/analytics");
+      this.invalidateCache("/reports");
+      this.invalidateCache("/attendance");
+    } else if (endpoint.includes("/classes") || endpoint.includes("/academic") || endpoint.includes("/courses")) {
+      this.invalidateCache("/classes");
+      this.invalidateCache("/academic");
+      this.invalidateCache("/students");
+      this.invalidateCache("/reports");
+    } else if (endpoint.includes("/unknown-faces")) {
+      this.invalidateCache("/unknown-faces");
+      this.invalidateCache("/students");
+      this.invalidateCache("/sessions");
+      this.invalidateCache("/analytics");
+    } else if (endpoint.includes("/authority") || endpoint.includes("/permissions")) {
+      this.invalidateCache("/authority");
+    } else if (endpoint.includes("/faculty") || endpoint.includes("/auth/users") || endpoint.includes("/admin/faculty")) {
+      this.invalidateCache("/admin/faculty");
+      this.invalidateCache("/auth/users");
+      this.invalidateCache("/classes");
+    } else if (endpoint.includes("/admin/system-settings")) {
+      this.invalidateCache("/admin/system-settings");
+    }
+  },
+
+  clearCache() {
+    this.cache.clear();
+  },
+
   async request(endpoint, options = {}) {
     let url = `${this.baseUrl}${endpoint}`;
     const headers = options.headers || {};
@@ -127,7 +200,14 @@ const API = {
         return await response.blob();
       }
 
-      return await response.json();
+      const result = await response.json();
+
+      // If mutation succeeded, auto-invalidate related cache tags
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+        this.autoInvalidateOnMutation(endpoint);
+      }
+
+      return result;
     } catch (error) {
       console.warn(`[API] ${options.method || 'GET'} ${endpoint} failed:`, error.message);
       if (error.message && (error.message.includes("Failed to fetch") || error.message.includes("NetworkError") || error.message.includes("Load failed"))) {
@@ -137,8 +217,90 @@ const API = {
     }
   },
 
-  get(endpoint) {
-    return this.request(endpoint, { method: "GET" });
+  async get(endpoint, options = {}) {
+    const isFresh = options.fresh === true;
+    const isPrefetch = options.isPrefetch === true;
+
+    // Check if response is cached
+    if (!isFresh && this.cache.has(endpoint)) {
+      const entry = this.cache.get(endpoint);
+      const age = Date.now() - entry.timestamp;
+
+      // In-flight de-duplication: if request is already in-flight, return the same promise
+      if (entry.promise && !entry.data) {
+        return entry.promise;
+      }
+
+      // If cached data exists and is younger than TTL (60s)
+      if (entry.data && age < this.CACHE_TTL) {
+        // Background revalidation if older than threshold
+        if (age > this.REVALIDATE_THRESHOLD && !options.skipRevalidate && !isPrefetch) {
+          this.revalidateInBackground(endpoint);
+        }
+        return entry.data;
+      }
+    }
+
+    // In-flight de-duplication
+    if (this.cache.has(endpoint)) {
+      const entry = this.cache.get(endpoint);
+      if (entry.promise) {
+        return entry.promise;
+      }
+    }
+
+    const fetchPromise = (async () => {
+      try {
+        const result = await this.request(endpoint, { ...options, method: "GET" });
+        if (result && !(result instanceof Blob)) {
+          this.cache.set(endpoint, {
+            data: result,
+            timestamp: Date.now(),
+            promise: null
+          });
+        }
+        return result;
+      } catch (err) {
+        this.cache.delete(endpoint);
+        throw err;
+      }
+    })();
+
+    const existing = this.cache.get(endpoint);
+    this.cache.set(endpoint, {
+      data: existing ? existing.data : null,
+      timestamp: existing ? existing.timestamp : 0,
+      promise: fetchPromise
+    });
+
+    return fetchPromise;
+  },
+
+  async revalidateInBackground(endpoint) {
+    try {
+      const freshData = await this.request(endpoint, { method: "GET" });
+      if (freshData && !(freshData instanceof Blob)) {
+        this.cache.set(endpoint, {
+          data: freshData,
+          timestamp: Date.now(),
+          promise: null
+        });
+      }
+    } catch (e) {
+      // Silent error on background revalidation
+    }
+  },
+
+  prefetch(endpoint, options = {}) {
+    if (!endpoint || typeof endpoint !== "string") return Promise.resolve(null);
+    if (!this.getToken()) return Promise.resolve(null);
+
+    // If cache already valid, return resolved promise
+    if (this.hasValidCache(endpoint)) {
+      return Promise.resolve(this.cache.get(endpoint).data);
+    }
+
+    return this.get(endpoint, { ...options, isPrefetch: true }).catch(() => null);
   },
 
   post(endpoint, body) {

@@ -416,7 +416,7 @@ const StudentsView = {
                 const isFrozen = Boolean(s.is_frozen || s.attendance_status === "FROZEN");
 
                 return `
-                  <tr class="${isSelected ? 'bg-indigo-50/40' : ''} ${isFrozen ? 'bg-cyan-50/20' : ''}">
+                  <tr class="${isSelected ? 'bg-indigo-50/40' : ''} ${isFrozen ? 'bg-cyan-50/20' : ''}" data-student-id="${s.id}">
                     <!-- 0. Checkbox -->
                     <td style="text-align: center;">
                       <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="StudentsView.toggleStudentSelection(${s.id}, this.checked)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
@@ -556,7 +556,7 @@ const StudentsView = {
           const isFrozen = Boolean(s.is_frozen || s.attendance_status === "FROZEN");
 
           return `
-            <div class="student-grid-card ${isSelected ? 'selected' : ''}" style="background: ${isFrozen ? '#f0fdfa' : '#ffffff'}; border: 1px solid ${isSelected ? '#6366f1' : (isFrozen ? '#a5f3fc' : '#e2e8f0')}; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: all 0.2s ease;">
+            <div class="student-grid-card ${isSelected ? 'selected' : ''}" data-student-id="${s.id}" style="background: ${isFrozen ? '#f0fdfa' : '#ffffff'}; border: 1px solid ${isSelected ? '#6366f1' : (isFrozen ? '#a5f3fc' : '#e2e8f0')}; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: all 0.2s ease;">
               <div>
                 <!-- Top Header: Checkbox + Avatar + Name + Status Badge -->
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px;">

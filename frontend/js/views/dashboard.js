@@ -322,7 +322,7 @@ const DashboardView = {
           tbody.innerHTML = data.recent_sessions.map(s => {
             const actualTime = s.actual_time || (s.created_at && window.DateTimeUtils ? window.DateTimeUtils.formatTime(s.created_at) : (s.start_time || '09:00 AM'));
             return `
-            <tr>
+            <tr data-session-id="${s.id}">
               <td>
                 <div class="font-semibold text-slate-900 text-xs">${window.DateTimeUtils ? window.DateTimeUtils.formatDate(s.session_date || s.created_at) : s.session_date}</div>
                 <div class="text-[11px] text-slate-600 font-mono font-medium">${actualTime}</div>
