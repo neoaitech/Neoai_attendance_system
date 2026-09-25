@@ -238,7 +238,7 @@ const Auth = {
 
   promptChangeApiUrl() {
     const current = API.baseUrl;
-    const newUrl = prompt("Enter Neo AI Attendance Portal Backend API URL:\n(e.g., https://physicians-anderson-bumper-musical.trycloudflare.com/api)", current);
+    const newUrl = prompt("Enter Neo AI Attendance Portal Backend API URL:\n(e.g., https://attendance.neoaitech.com/api)", current);
     if (newUrl && newUrl.trim() && newUrl.trim() !== current) {
       API.baseUrl = newUrl.trim();
       alert("Backend API URL updated to:\n" + API.baseUrl + "\n\nReloading interface...");

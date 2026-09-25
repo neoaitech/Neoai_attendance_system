@@ -2,7 +2,7 @@
 // VisionAttend - Centralized API Client Layer
 // ===================================================================
 
-const DEFAULT_BACKEND_URL = "https://physicians-anderson-bumper-musical.trycloudflare.com/api";
+const DEFAULT_BACKEND_URL = "https://attendance.neoaitech.com/api";
 
 const API = {
   getBaseUrl() {
