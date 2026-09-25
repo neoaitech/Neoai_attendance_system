@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     PROJECT_ROOT: Path = PROJECT_ROOT
     BACKEND_DIR: Path = BACKEND_DIR
     BASE_DIR: Path = BACKEND_DIR
-    PROJECT_NAME: str = "VisionAttend Pro - AI Classroom Attendance System"
+    PROJECT_NAME: str = "Neo AI Attendance Portal"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api"
     SECRET_KEY: str = "super-secret-key-vision-attend-pro-2026-production-ready"

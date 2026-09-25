@@ -73,7 +73,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setFillColor(colors.HexColor("#475569"))
         
         # Header (Top line)
-        self.drawString(28, 818, "VISIONATTEND PRO — STUDENT ATTENDANCE & ACADEMIC AUDIT DOSSIER")
+        self.drawString(28, 818, "NEO AI ATTENDANCE PORTAL — STUDENT ATTENDANCE & ACADEMIC AUDIT DOSSIER")
         self.setFont("Helvetica", 7)
         self.drawRightString(595 - 28, 818, "Official Institutional Record")
         self.setStrokeColor(colors.HexColor("#CBD5E1"))
@@ -949,7 +949,7 @@ class ReportService:
         elements = []
 
         # Title Banner
-        elements.append(Paragraph("VisionAttend Pro — Official Student Attendance Transcript", title_style))
+        elements.append(Paragraph("Neo AI Attendance Portal — Official Student Attendance Transcript", title_style))
         elements.append(Paragraph(f"Academic Biometric Audit Record &bull; Session Year {data.get('academic_year', '2026-27')}", subtitle_style))
 
         # Compact Photo Loader (~30mm)
@@ -1291,7 +1291,7 @@ class ReportService:
         ws_sum.views.sheetView[0].showGridLines = True
 
         ws_sum.merge_cells("A1:I1")
-        ws_sum["A1"] = f"VisionAttend Pro — Institutional Attendance Dossier"
+        ws_sum["A1"] = f"Neo AI Attendance Portal — Institutional Attendance Dossier"
         ws_sum["A1"].font = white_title_font
         ws_sum["A1"].fill = navy_header_fill
         ws_sum["A1"].alignment = Alignment(horizontal="center", vertical="center")
@@ -1658,7 +1658,7 @@ class ReportService:
         )
 
         elements = []
-        elements.append(Paragraph("VisionAttend Pro — Comprehensive Attendance Dossier", title_style))
+        elements.append(Paragraph("Neo AI Attendance Portal — Comprehensive Attendance Dossier", title_style))
         elements.append(Paragraph(f"Academic Scope: {data['scope_title']} &bull; Date Range: {data['start_date'] or 'Start'} to {data['end_date'] or 'Present'} &bull; Generated: {datetime.now().strftime('%d-%b-%Y %H:%M')}", sub_style))
         elements.append(Spacer(1, 6))
 

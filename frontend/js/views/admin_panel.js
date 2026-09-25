@@ -172,7 +172,7 @@ const AdminPanelView = {
             </div>
             <div>
               <label class="form-label text-xs font-semibold">Sender Display Name</label>
-              <input type="text" id="smtp-from-name-input" class="form-input text-xs" placeholder="VisionAttend AI Portal" />
+              <input type="text" id="smtp-from-name-input" class="form-input text-xs" placeholder="Neo AI Attendance Portal" />
             </div>
           </div>
 
@@ -625,7 +625,7 @@ const AdminPanelView = {
       if (hostIn) hostIn.value = s.smtp_host || "smtp.gmail.com";
       if (portIn) portIn.value = s.smtp_port || 587;
       if (userIn) userIn.value = s.smtp_user || "";
-      if (fromNameIn) fromNameIn.value = s.smtp_from_name || "VisionAttend AI Portal";
+      if (fromNameIn) fromNameIn.value = s.smtp_from_name || "Neo AI Attendance Portal";
       if (tlsCheck) tlsCheck.checked = s.smtp_use_tls !== false;
       if (sslCheck) sslCheck.checked = Boolean(s.smtp_use_ssl);
       if (autoCheck) autoCheck.checked = Boolean(s.auto_monthly_dispatch);
@@ -649,7 +649,7 @@ const AdminPanelView = {
       smtp_port: portIn ? parseInt(portIn.value, 10) || 587 : 587,
       smtp_user: userIn ? userIn.value.trim() : "",
       smtp_password: pwdIn && pwdIn.value.trim() ? pwdIn.value.trim() : null,
-      smtp_from_name: fromNameIn ? fromNameIn.value.trim() : "VisionAttend AI Portal",
+      smtp_from_name: fromNameIn ? fromNameIn.value.trim() : "Neo AI Attendance Portal",
       smtp_use_tls: tlsCheck ? tlsCheck.checked : true,
       smtp_use_ssl: sslCheck ? sslCheck.checked : false,
       is_email_enabled: true,

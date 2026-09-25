@@ -1351,7 +1351,7 @@ const App = {
       if (installBtn) installBtn.classList.add("hidden");
       const mobileBanner = document.getElementById("pwa-mobile-banner");
       if (mobileBanner) mobileBanner.classList.add("hidden");
-      App.showToast("VisionAttend App installed successfully! You can launch it from your home screen.", "success");
+      App.showToast("Neo AI Attendance Portal App installed successfully! You can launch it from your home screen.", "success");
     });
   },
 
@@ -1360,7 +1360,7 @@ const App = {
       window._deferredPwaPrompt.prompt();
       const choice = await window._deferredPwaPrompt.userChoice;
       if (choice && choice.outcome === "accepted") {
-        App.showToast("Installing VisionAttend App...", "info");
+        App.showToast("Installing Neo AI Attendance Portal App...", "info");
       }
       window._deferredPwaPrompt = null;
       const installBtn = document.getElementById("pwa-install-btn");
@@ -1372,10 +1372,10 @@ const App = {
       const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
       if (isIos) {
         App.showModal(
-          "Install VisionAttend on iPhone",
+          "Install Neo AI Attendance Portal on iPhone",
           `
             <div class="text-xs text-slate-600 space-y-3 py-2">
-              <p class="font-semibold text-slate-800">To install VisionAttend as a native app on your iPhone:</p>
+              <p class="font-semibold text-slate-800">To install Neo AI Attendance Portal as a native app on your iPhone:</p>
               <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-lg border border-slate-200">
                 <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0">1</span>
                 <span>Tap the <b>Share</b> button <i data-lucide="share" class="w-3.5 h-3.5 inline text-indigo-600"></i> in Safari's bottom toolbar.</span>

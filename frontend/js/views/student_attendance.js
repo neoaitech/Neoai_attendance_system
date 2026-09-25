@@ -306,14 +306,14 @@ const StudentAttendanceView = {
           <div class="transcript-running-header">
             <span style="display: flex; align-items: center; gap: 8px;">
               <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #818cf8;"></i>
-              <span>VISIONATTEND PRO — STUDENT ATTENDANCE & ACADEMIC AUDIT DOSSIER</span>
+              <span>NEO AI ATTENDANCE PORTAL — STUDENT ATTENDANCE & ACADEMIC AUDIT DOSSIER</span>
             </span>
             <span style="color: #94a3b8;">Official Institutional Record</span>
           </div>
 
           <!-- Main Title Box -->
           <div class="transcript-title-box">
-            <h1 class="transcript-main-title">VisionAttend Pro — Official Student Attendance Transcript</h1>
+            <h1 class="transcript-main-title">Neo AI Attendance Portal — Official Student Attendance Transcript</h1>
             <p class="transcript-subtitle">Academic Biometric Audit Record &bull; Session Year ${d.academic_year || '2026-27'}</p>
           </div>
 

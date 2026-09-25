@@ -25,7 +25,7 @@ class EmailSettingsPayload(BaseModel):
     smtp_port: int
     smtp_user: str
     smtp_password: Optional[str] = None  # If None, retain existing password
-    smtp_from_name: str = "VisionAttend AI Attendance Portal"
+    smtp_from_name: str = "Neo AI Attendance Portal"
     smtp_from_email: Optional[str] = None
     smtp_use_tls: bool = True
     smtp_use_ssl: bool = False
@@ -110,10 +110,10 @@ def test_email_connection(
     <body style="font-family: sans-serif; background-color: #f8fafc; padding: 25px; color: #0f172a;">
         <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
             <div style="background: #4f46e5; color: white; padding: 12px 18px; border-radius: 8px; font-weight: bold; font-size: 16px; margin-bottom: 16px;">
-                ✅ VisionAttend AI &bull; SMTP Verification Test
+                ✅ Neo AI Attendance Portal &bull; SMTP Verification Test
             </div>
             <p>Hello <b>{payload.recipient_name}</b>,</p>
-            <p>Your SMTP mail configuration on <b>VisionAttend AI Attendance Portal</b> is functioning perfectly!</p>
+            <p>Your SMTP mail configuration on <b>Neo AI Attendance Portal</b> is functioning perfectly!</p>
             <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; font-size: 13px; margin: 15px 0;">
                 <div><b>SMTP Host:</b> {settings_obj.smtp_host}:{settings_obj.smtp_port}</div>
                 <div><b>Sender Account:</b> {settings_obj.smtp_user}</div>
@@ -128,7 +128,7 @@ def test_email_connection(
     success, error = send_raw_smtp_email(
         settings_obj=settings_obj,
         to_email=payload.recipient_email.strip(),
-        subject="✅ VisionAttend AI: SMTP Mail Server Connection Test",
+        subject="✅ Neo AI Attendance Portal: SMTP Mail Server Connection Test",
         html_content=test_html
     )
 

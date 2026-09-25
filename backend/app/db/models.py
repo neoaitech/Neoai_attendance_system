@@ -970,7 +970,7 @@ class EmailSetting(Base):
     smtp_port = Column(Integer, default=587)
     smtp_user = Column(String(120), default="")
     smtp_password = Column(String(255), default="")
-    smtp_from_name = Column(String(120), default="VisionAttend AI Attendance Portal")
+    smtp_from_name = Column(String(120), default="Neo AI Attendance Portal")
     smtp_from_email = Column(String(120), default="")
     smtp_use_tls = Column(Boolean, default=True)
     smtp_use_ssl = Column(Boolean, default=False)

@@ -344,7 +344,7 @@ class NotificationService:
         actor_name = actor.full_name if actor else "Administrator"
         role_label = faculty_user.to_dict().get("role_display", "Faculty")
 
-        title = "Welcome to VisionAttend AI Attendance Portal"
+        title = "Welcome to Neo AI Attendance Portal"
         message = f"Your institutional account has been established with role '{role_label}'. You can now log into the portal using your Login ID '{faculty_user.username}'."
 
         details = {
