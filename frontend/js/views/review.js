@@ -8,7 +8,11 @@ const ReviewView = {
   currentSessionData: null,
   rosterSearchQuery: "",
 
-  async render(container) {
+  async render(container, params = {}) {
+    if (params && (params.session_id || params.sessionId)) {
+      this.currentSessionId = parseInt(params.session_id || params.sessionId);
+    }
+
     container.innerHTML = `
       <!-- Page Header -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
@@ -46,6 +50,29 @@ const ReviewView = {
     if (!select) return;
 
     try {
+      if (this.currentSessionId) {
+        const [sessions] = await Promise.all([
+          API.get("/sessions"),
+          this.loadSessionDetails(this.currentSessionId)
+        ]);
+
+        if (!sessions || sessions.length === 0) {
+          select.innerHTML = `<option value="">No sessions recorded yet</option>`;
+          return;
+        }
+
+        select.innerHTML = sessions.map(s => {
+          const actualTime = s.actual_time || (s.created_at && window.DateTimeUtils ? window.DateTimeUtils.formatTime(s.created_at) : (s.start_time || '09:00 AM'));
+          return `
+            <option value="${s.id}" ${this.currentSessionId === s.id ? 'selected' : ''}>
+              ${window.DateTimeUtils ? window.DateTimeUtils.formatDate(s.session_date || s.created_at) : s.session_date} (${actualTime}) | ${s.class_code || 'Course'} - ${s.session_name}
+            </option>
+          `;
+        }).join("");
+        select.value = this.currentSessionId;
+        return;
+      }
+
       const sessions = await API.get("/sessions");
       if (!sessions || sessions.length === 0) {
         select.innerHTML = `<option value="">No sessions recorded yet</option>`;
@@ -55,10 +82,10 @@ const ReviewView = {
       select.innerHTML = sessions.map(s => {
         const actualTime = s.actual_time || (s.created_at && window.DateTimeUtils ? window.DateTimeUtils.formatTime(s.created_at) : (s.start_time || '09:00 AM'));
         return `
-        <option value="${s.id}" ${this.currentSessionId === s.id ? 'selected' : ''}>
-          ${window.DateTimeUtils ? window.DateTimeUtils.formatDate(s.session_date || s.created_at) : s.session_date} (${actualTime}) | ${s.class_code || 'Course'} - ${s.session_name}
-        </option>
-      `;
+          <option value="${s.id}" ${this.currentSessionId === s.id ? 'selected' : ''}>
+            ${window.DateTimeUtils ? window.DateTimeUtils.formatDate(s.session_date || s.created_at) : s.session_date} (${actualTime}) | ${s.class_code || 'Course'} - ${s.session_name}
+          </option>
+        `;
       }).join("");
 
       const targetId = this.currentSessionId || sessions[0].id;

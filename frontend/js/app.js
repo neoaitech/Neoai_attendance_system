@@ -1346,23 +1346,6 @@ const App = {
     // Render target view
     const container = document.getElementById("view-container");
     if (container) {
-      const isPreloaded = this.isViewPreloaded(viewName);
-      let spinnerTimer = null;
-
-      // Only show spinner if not already preloaded in memory and rendering takes > 80ms
-      if (!isPreloaded) {
-        spinnerTimer = setTimeout(() => {
-          if (this.currentView === viewName) {
-            container.innerHTML = `
-              <div class="glass-panel text-center py-16">
-                <div class="spinner-sm text-indigo-600 mb-2"></div>
-                <p class="text-xs text-slate-500">Loading ${meta.title}...</p>
-              </div>
-            `;
-          }
-        }, 80);
-      }
-
       try {
         await this.views[viewName].render(container, params);
       } catch (err) {
@@ -1377,8 +1360,6 @@ const App = {
           </div>
         `;
         if (window.lucide) window.lucide.createIcons();
-      } finally {
-        if (spinnerTimer) clearTimeout(spinnerTimer);
       }
     }
   },

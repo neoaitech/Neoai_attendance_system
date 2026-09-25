@@ -2737,7 +2737,7 @@ const CaptureView = {
     if (window.ReportsView) {
       window.ReportsView.currentReportData = null;
     }
-    App.navigate("review");
+    App.navigate("review", { session_id: sessionId });
   },
 
   async discardDraftSession(sessionId) {
