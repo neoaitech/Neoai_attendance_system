@@ -7,6 +7,8 @@ const ReviewView = {
   currentSessionId: null,
   currentSessionData: null,
   rosterSearchQuery: "",
+  sessionPhotoUrls: [],
+  activeAngleIndex: 0,
 
   async render(container, params = {}) {
     if (params && (params.session_id || params.sessionId)) {
@@ -128,9 +130,27 @@ const ReviewView = {
       this.currentSessionData = session;
       this.rosterSearchQuery = "";
 
-      const photoUrl = session.processed_photo_path ? API.getFileUrl(`/uploads/sessions/${session.processed_photo_path.split(/[\/\\]/).pop()}`) : null;
-      const rawPhotoUrl = session.raw_photo_path ? API.getFileUrl(`/uploads/sessions/${session.raw_photo_path.split(/[\/\\]/).pop()}`) : null;
-      const displayPhoto = photoUrl || rawPhotoUrl;
+      // Multi-angle photo extraction
+      const toUrl = (p) => {
+        if (!p) return null;
+        const filename = p.split(/[\/\\]/).pop();
+        return API.getFileUrl(`/uploads/sessions/${filename}`);
+      };
+
+      let photoList = [];
+      if (Array.isArray(session.processed_photo_paths) && session.processed_photo_paths.length > 0) {
+        photoList = session.processed_photo_paths.map(toUrl).filter(Boolean);
+      } else if (Array.isArray(session.photo_paths) && session.photo_paths.length > 0) {
+        photoList = session.photo_paths.map(toUrl).filter(Boolean);
+      } else if (session.processed_photo_path) {
+        photoList = [toUrl(session.processed_photo_path)].filter(Boolean);
+      } else if (session.raw_photo_path) {
+        photoList = [toUrl(session.raw_photo_path)].filter(Boolean);
+      }
+
+      this.sessionPhotoUrls = photoList;
+      this.activeAngleIndex = 0;
+      const displayPhoto = photoList.length > 0 ? photoList[0] : null;
 
       const regularRecords = (session.records || []).filter(r => !r.is_extra_lecture && r.verification_type !== 'EXTRA_LECTURE' && r.attendance_type !== 'EXTRA_LECTURE');
       const extraRecords = (session.records || []).filter(r => r.is_extra_lecture || r.verification_type === 'EXTRA_LECTURE' || r.attendance_type === 'EXTRA_LECTURE');
@@ -199,16 +219,33 @@ const ReviewView = {
               <div class="flex items-center gap-2">
                 <span class="text-[11px] text-slate-400">Click image to enlarge</span>
                 ${displayPhoto ? `
-                  <button type="button" class="btn-secondary text-[11px] py-1 px-2" onclick="App.showImageLightbox('${displayPhoto}', 'Annotated Classroom Biometrics')">
+                  <button type="button" id="review-lightbox-btn" class="btn-secondary text-[11px] py-1 px-2" onclick="App.showImageLightbox(ReviewView.sessionPhotoUrls[ReviewView.activeAngleIndex] || '${displayPhoto}', 'Annotated Classroom Biometrics')">
                     <i data-lucide="maximize" class="w-3 h-3"></i> Lightbox
                   </button>
                 ` : ''}
               </div>
             </div>
 
+            ${photoList.length > 1 ? `
+              <div class="photo-angle-tabs mb-3 flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1">
+                  <i data-lucide="layers" class="w-3.5 h-3.5 text-indigo-500"></i> Captured Angles:
+                </span>
+                ${photoList.map((url, idx) => `
+                  <button type="button" 
+                          class="angle-tab-btn ${idx === 0 ? 'active' : ''}" 
+                          id="review-angle-btn-${idx}" 
+                          onclick="ReviewView.switchAngle(${idx})">
+                    <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                    <span>Angle ${idx + 1}</span>
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
+
             <div class="annotated-viewer-bounded">
               ${displayPhoto ? `
-                <img src="${displayPhoto}" alt="Classroom Recognition" onclick="App.showImageLightbox(this.src, 'Annotated Classroom Biometrics')" title="Click for Full Resolution View" />
+                <img id="review-active-photo" src="${displayPhoto}" alt="Classroom Recognition" onclick="App.showImageLightbox(this.src, 'Annotated Classroom Biometrics')" title="Click for Full Resolution View" />
               ` : `
                 <div class="p-16 text-slate-400 text-sm">No photo stored for this session</div>
               `}
@@ -417,6 +454,32 @@ const ReviewView = {
       await this.loadSessionDetails(this.currentSessionData.id);
     } catch (e) {
       App.showToast(e.message || "Failed to update attendance", "error");
+    }
+  },
+
+  switchAngle(idx) {
+    if (!this.sessionPhotoUrls || !this.sessionPhotoUrls[idx]) return;
+    this.activeAngleIndex = idx;
+
+    const imgEl = document.getElementById("review-active-photo");
+    if (imgEl) {
+      imgEl.src = this.sessionPhotoUrls[idx];
+    }
+
+    this.sessionPhotoUrls.forEach((_, i) => {
+      const btn = document.getElementById(`review-angle-btn-${i}`);
+      if (btn) {
+        if (i === idx) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      }
+    });
+
+    const lbBtn = document.getElementById("review-lightbox-btn");
+    if (lbBtn) {
+      lbBtn.onclick = () => App.showImageLightbox(this.sessionPhotoUrls[idx], `Annotated Classroom Biometrics - Angle ${idx + 1}`);
     }
   },
 
