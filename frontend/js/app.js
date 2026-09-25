@@ -1455,16 +1455,28 @@ const App = {
 
   // ================= Progressive Web App (PWA) Setup =================
   initPwa() {
-    // 1. Register Service Worker
+    // 1. Register Service Worker with instant background update check
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("/service-worker.js")
           .then((reg) => {
             console.log("VisionAttend PWA Service Worker Registered:", reg.scope);
+            // Proactively check for newer versions on server
+            reg.update().catch(() => {});
           })
           .catch((err) => {
             console.warn("Service Worker registration skipped:", err);
           });
+      });
+
+      // When a new service worker takes over, seamlessly refresh to latest assets
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!refreshing) {
+          refreshing = true;
+          console.log("PWA updated to latest version. Reloading...");
+          window.location.reload();
+        }
       });
     }
 
