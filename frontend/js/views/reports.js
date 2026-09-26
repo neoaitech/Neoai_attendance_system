@@ -57,188 +57,192 @@ const ReportsView = {
 
     container.innerHTML = `
       <!-- Page Header -->
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
-          <div class="flex items-center gap-2 mb-1">
-            <h2 class="text-xl font-bold text-slate-900">Attendance Reports & Academic Analytics</h2>
-            <span class="badge badge-ai">Program &bull; Semester &bull; Division Analytics</span>
+          <div class="flex items-center gap-2 mb-0.5">
+            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Attendance Reports & Analytics</h2>
+            <span class="badge badge-ai" style="font-size: 0.65rem; padding: 2px 8px;">Academic Matrix</span>
           </div>
           <p class="text-xs text-slate-500">
-            Live attendance matrix, student search & bunk timeline, Normal vs Extra Lecture tracking, and automated monthly/quarterly email dossiers.
+            Comprehensive attendance matrix, student bunk logs, and academic compliance dossiers.
           </p>
         </div>
-        <div class="flex items-center gap-2.5 flex-wrap">
-          <button type="button" class="btn-secondary text-xs flex items-center gap-1.5 py-2 px-3" onclick="ReportsView.applyFilters()" title="Refresh Attendance Matrix & Analytics" id="report-refresh-btn">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button type="button" class="btn-secondary text-xs flex items-center gap-1.5 py-1.5 px-3" onclick="ReportsView.applyFilters()" title="Refresh Attendance Matrix & Analytics" id="report-refresh-btn">
             <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-600"></i>
-            <span>Refresh Report</span>
+            <span>Refresh</span>
           </button>
-          <button type="button" class="btn-secondary text-xs flex items-center gap-1.5 py-2 px-3" onclick="ReportsView.openEmailLogsModal()" title="View Sent Email History & Logs">
+          <button type="button" class="btn-secondary text-xs flex items-center gap-1.5 py-1.5 px-3" onclick="ReportsView.openEmailLogsModal()" title="View Sent Email History & Logs">
             <i data-lucide="history" class="w-3.5 h-3.5 text-slate-600"></i>
-            <span>Email History</span>
+            <span>Email Logs</span>
           </button>
-          <button type="button" class="btn-primary text-xs flex items-center gap-1.5 py-2 px-3.5" onclick="ReportsView.openEmailDispatchModal()" style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);">
+          <button type="button" class="btn-primary text-xs flex items-center gap-1.5 py-1.5 px-3.5" onclick="ReportsView.openEmailDispatchModal()" style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);">
             <i data-lucide="mail" class="w-3.5 h-3.5"></i>
-            <span>📧 Email Student Reports</span>
+            <span>Email Reports</span>
           </button>
         </div>
       </div>
 
-      <!-- Quick Student Search Bar -->
-      <div class="glass-panel p-4 mb-6 bg-indigo-50/40 border-indigo-100">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-2 flex-grow max-w-xl relative">
+      <!-- Unified Reports Control & Filter Panel -->
+      <div class="reports-control-panel" id="reports-filter-panel">
+        
+        <!-- Top Toolbar: Quick Student Deep-Dive Search -->
+        <div class="reports-search-toolbar">
+          <div class="reports-search-wrap">
             <i data-lucide="search" class="w-4 h-4 text-indigo-600 absolute left-3 top-1/2 -translate-y-1/2"></i>
             <input 
               type="text" 
               id="student-search-input" 
-              class="form-input pl-9 text-xs py-2 w-full rounded-xl bg-white border-indigo-200 focus:border-indigo-500" 
-              placeholder="Search student by Name or Roll Number to view complete attendance & bunk log..."
+              class="form-input" 
+              placeholder="Quick Student Search (Name or Roll No)..."
               oninput="ReportsView.handleStudentSearch(this.value)"
             />
             <div id="student-search-results" class="hidden absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-slate-200 max-h-60 overflow-y-auto z-50"></div>
           </div>
-          <span class="text-[11px] text-indigo-700 font-semibold flex items-center gap-1">
-            <i data-lucide="info" class="w-3.5 h-3.5"></i>
-            Click any student in tables or search to see subject-by-subject bunk log
-          </span>
-        </div>
-      </div>
-
-      <!-- Advanced Multi-Select Filters Panel -->
-      <div class="glass-panel p-5 mb-6" id="reports-filter-panel">
-        
-        <!-- Row 1: Academic Hierarchy Context (Dept, Multi-Program, Multi-Semester, Multi-Division) -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 14px;">
-          
-          <!-- 1. Department Selector (Default: Empty) -->
-          <div class="form-group mb-0">
-            <label class="form-label text-xs font-semibold">Department</label>
-            <select id="report-dept-select" class="form-select text-xs" onchange="ReportsView.onDeptChange(this.value)">
-              <option value="" selected>Select Department...</option>
-              <option value="ALL">All Departments</option>
-            </select>
+          <div class="flex items-center gap-2 text-[11px] text-indigo-700 font-semibold">
+            <i data-lucide="info" class="w-3.5 h-3.5 flex-shrink-0"></i>
+            <span>Click any student in tables or search to inspect bunk timeline</span>
           </div>
+        </div>
 
-          <!-- 2. Program / Degree (MULTI-SELECT) -->
-          <div class="form-group mb-0">
-            <label class="form-label text-xs font-semibold">Program / Degree (Multi-Select)</label>
-            <div class="multi-select-container" id="report-prog-container">
-              <div class="multi-select-box" id="report-prog-trigger" onclick="ReportsView.toggleDropdown('prog')">
-                <div class="multi-select-chips" id="report-prog-chips"></div>
-                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+        <!-- Section 1: Academic Scope -->
+        <div class="reports-filter-card-section">
+          <div class="reports-group-title">
+            <i data-lucide="graduation-cap"></i>
+            <span>1. Academic Scope</span>
+          </div>
+          <div class="reports-filter-grid">
+            <!-- 1. Department -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-semibold">Department</label>
+              <select id="report-dept-select" class="form-select text-xs" onchange="ReportsView.onDeptChange(this.value)">
+                <option value="" selected>Select Department...</option>
+                <option value="ALL">All Departments</option>
+              </select>
+            </div>
+
+            <!-- 2. Program -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-semibold">Program / Degree</label>
+              <div class="multi-select-container" id="report-prog-container">
+                <div class="multi-select-box" id="report-prog-trigger" onclick="ReportsView.toggleDropdown('prog')">
+                  <div class="multi-select-chips" id="report-prog-chips"></div>
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                </div>
+                <div class="multi-select-dropdown hidden" id="report-prog-menu">
+                  <div id="report-prog-items" class="space-y-1"></div>
+                  <div class="multi-select-actions">
+                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('prog')">Select All</button>
+                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('prog')">Clear All</button>
+                  </div>
+                </div>
               </div>
-              <div class="multi-select-dropdown hidden" id="report-prog-menu">
-                <div id="report-prog-items" class="space-y-1"></div>
-                <div class="multi-select-actions">
-                  <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('prog')">Select All</button>
-                  <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('prog')">Clear All</button>
+            </div>
+
+            <!-- 3. Semester -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-semibold">Semester</label>
+              <div class="multi-select-container" id="report-sem-container">
+                <div class="multi-select-box" id="report-sem-trigger" onclick="ReportsView.toggleDropdown('sem')">
+                  <div class="multi-select-chips" id="report-sem-chips"></div>
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                </div>
+                <div class="multi-select-dropdown hidden" id="report-sem-menu">
+                  <div id="report-sem-items" class="space-y-1"></div>
+                  <div class="multi-select-actions">
+                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('sem')">Select All</button>
+                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('sem')">Clear All</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Division -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-semibold">Division / Section</label>
+              <div class="multi-select-container" id="report-div-container">
+                <div class="multi-select-box" id="report-div-trigger" onclick="ReportsView.toggleDropdown('div')">
+                  <div class="multi-select-chips" id="report-div-chips"></div>
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                </div>
+                <div class="multi-select-dropdown hidden" id="report-div-menu">
+                  <div id="report-div-items" class="space-y-1"></div>
+                  <div class="multi-select-actions">
+                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('div')">Select All</button>
+                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('div')">Clear All</button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- 3. Semester (MULTI-SELECT) -->
-          <div class="form-group mb-0">
-            <label class="form-label text-xs font-semibold">Semester (Multi-Select)</label>
-            <div class="multi-select-container" id="report-sem-container">
-              <div class="multi-select-box" id="report-sem-trigger" onclick="ReportsView.toggleDropdown('sem')">
-                <div class="multi-select-chips" id="report-sem-chips"></div>
-                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-              </div>
-              <div class="multi-select-dropdown hidden" id="report-sem-menu">
-                <div id="report-sem-items" class="space-y-1"></div>
-                <div class="multi-select-actions">
-                  <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('sem')">Select All</button>
-                  <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('sem')">Clear All</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4. Division / Section (MULTI-SELECT) -->
-          <div class="form-group mb-0">
-            <label class="form-label text-xs font-semibold">Division / Section (Multi-Select)</label>
-            <div class="multi-select-container" id="report-div-container">
-              <div class="multi-select-box" id="report-div-trigger" onclick="ReportsView.toggleDropdown('div')">
-                <div class="multi-select-chips" id="report-div-chips"></div>
-                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-              </div>
-              <div class="multi-select-dropdown hidden" id="report-div-menu">
-                <div id="report-div-items" class="space-y-1"></div>
-                <div class="multi-select-actions">
-                  <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('div')">Select All</button>
-                  <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('div')">Clear All</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
 
-        <!-- Row 2: Course / Subject Filter, Attendance Type & Date Range -->
-        <div style="display: grid; grid-template-columns: 1.4fr 1.2fr 1fr 1fr; gap: 14px; margin-bottom: 14px;">
-          
-          <!-- Course / Subject Option -->
-          <div class="form-group mb-0">
-            <label class="form-label text-xs font-semibold">Course / Subject</label>
-            <select id="report-course-select" class="form-select text-xs" onchange="ReportsView.onCourseChange(this.value)">
-              <option value="" selected>All Courses in Selection Scope</option>
-            </select>
+        <!-- Section 2: Subject & Timeframe Refinements -->
+        <div class="reports-filter-card-section">
+          <div class="reports-group-title">
+            <i data-lucide="calendar"></i>
+            <span>2. Subject & Timeframe</span>
           </div>
+          <div class="reports-filter-grid">
+            <!-- Course / Subject -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-semibold">Course / Subject</label>
+              <select id="report-course-select" class="form-select text-xs" onchange="ReportsView.onCourseChange(this.value)">
+                <option value="" selected>All Courses in Scope</option>
+              </select>
+            </div>
 
-          <!-- Attendance Type Filter -->
-          <div class="form-group mb-0">
-            <label class="form-label text-xs font-semibold">Attendance Type</label>
-            <select id="report-att-type-select" class="form-select text-xs" onchange="ReportsView.onAttendanceTypeChange(this.value)">
-              <option value="ALL" selected>All Attendance Records</option>
-              <option value="REGULAR">Normal Course Attendance</option>
-              <option value="EXTRA_LECTURE">🟠 Extra Lecture Attendance</option>
-            </select>
+            <!-- Attendance Type -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-semibold">Attendance Type</label>
+              <select id="report-att-type-select" class="form-select text-xs" onchange="ReportsView.onAttendanceTypeChange(this.value)">
+                <option value="ALL" selected>All Attendance Records</option>
+                <option value="REGULAR">Normal Course Attendance</option>
+                <option value="EXTRA_LECTURE">🟠 Extra Lecture Attendance</option>
+              </select>
+            </div>
+
+            <!-- From Date -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-semibold">From Date</label>
+              <input type="date" id="report-start-date" class="form-input text-xs" onchange="ReportsView.state.startDate = this.value;" />
+            </div>
+
+            <!-- To Date -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-semibold">To Date</label>
+              <input type="date" id="report-end-date" class="form-input text-xs" onchange="ReportsView.state.endDate = this.value;" />
+            </div>
           </div>
-
-          <!-- From Date -->
-          <div class="form-group mb-0">
-            <label class="form-label text-xs font-semibold">From Date (Optional)</label>
-            <input type="date" id="report-start-date" class="form-input text-xs" onchange="ReportsView.state.startDate = this.value;" />
-          </div>
-
-          <!-- To Date -->
-          <div class="form-group mb-0">
-            <label class="form-label text-xs font-semibold">To Date (Optional)</label>
-            <input type="date" id="report-end-date" class="form-input text-xs" onchange="ReportsView.state.endDate = this.value;" />
-          </div>
-
         </div>
 
-        <!-- Row 3: Quick Date Presets & Export Actions -->
-        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200">
-          
-          <!-- Presets -->
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="text-[11px] font-bold text-slate-500 mr-1 uppercase">Date Presets:</span>
-            <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="ReportsView.setPreset('today')">Today</button>
-            <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="ReportsView.setPreset('this_week')">This Week</button>
-            <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="ReportsView.setPreset('this_month')">This Month</button>
-            <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="ReportsView.setPreset('all_time')">Full Term (All)</button>
-            <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="ReportsView.resetFilters()">Reset All</button>
+        <!-- Bottom Action Bar: Presets & Filter Buttons -->
+        <div class="reports-bottom-bar">
+          <!-- Quick Presets -->
+          <div class="reports-presets-row">
+            <span class="text-[11px] font-bold text-slate-500 mr-1 uppercase">Presets:</span>
+            <button type="button" class="preset-chip-btn" onclick="ReportsView.setPreset('today')">Today</button>
+            <button type="button" class="preset-chip-btn" onclick="ReportsView.setPreset('this_week')">This Week</button>
+            <button type="button" class="preset-chip-btn" onclick="ReportsView.setPreset('this_month')">This Month</button>
+            <button type="button" class="preset-chip-btn" onclick="ReportsView.setPreset('all_time')">Full Term</button>
+            <button type="button" class="preset-chip-btn text-rose-600 hover:bg-rose-50 border-rose-200" onclick="ReportsView.resetFilters()">Reset All</button>
           </div>
 
           <!-- Main Actions -->
-          <div class="flex items-center gap-2">
-            <button type="button" class="btn-secondary btn-sm" onclick="ReportsView.applyFilters()">
-              <i data-lucide="filter" class="w-3.5 h-3.5 text-indigo-600"></i>
+          <div class="reports-export-actions">
+            <button type="button" class="btn-primary btn-sm flex items-center gap-1.5" onclick="ReportsView.applyFilters()">
+              <i data-lucide="filter" class="w-3.5 h-3.5"></i>
               <span>Apply Filter</span>
             </button>
-            <button type="button" class="btn-secondary btn-sm text-emerald-700 hover:bg-emerald-50 border-emerald-300" onclick="ReportsView.downloadExcel()">
+            <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5 text-emerald-700 hover:bg-emerald-50 border-emerald-300" onclick="ReportsView.downloadExcel()" title="Export data as Excel spreadsheet">
               <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
-              <span>Download Excel</span>
+              <span>Excel</span>
             </button>
-            <button type="button" class="btn-primary btn-sm" onclick="ReportsView.downloadPdf()">
-              <i data-lucide="file-text" class="w-3.5 h-3.5 text-white"></i>
-              <span>Download PDF</span>
+            <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5 text-indigo-700 hover:bg-indigo-50 border-indigo-200" onclick="ReportsView.downloadPdf()" title="Export official printable PDF dossier">
+              <i data-lucide="file-text" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <span>PDF</span>
             </button>
           </div>
-
         </div>
 
       </div>
