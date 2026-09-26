@@ -1545,20 +1545,24 @@ const ReportsView = {
     ];
 
     const modalHtml = `
-      <div class="modal-card modal-md" style="max-width: 600px; width: 95%;">
+      <div class="modal-card modal-md email-dispatch-modal">
         <!-- Header -->
-        <div class="modal-header" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: white; border-radius: var(--radius-lg, 12px) var(--radius-lg, 12px) 0 0; padding: 14px 18px;">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-              <i data-lucide="mail" class="w-4 h-4 text-indigo-100"></i>
+        <div class="email-modal-header">
+          <div class="email-modal-header-left">
+            <div class="email-modal-icon-badge">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
             </div>
             <div>
               <span class="text-sm font-bold text-white block leading-tight">Email Attendance Reports to Students</span>
               <span class="text-[11px] text-indigo-200 block mt-0.5">Personalized HTML summary with signed PDF attachment</span>
             </div>
           </div>
-          <button type="button" onclick="App.closeModal()" class="btn-icon" style="color: white; opacity: 0.85; margin-left: auto;">
-            <i data-lucide="x" class="w-4 h-4"></i>
+          <button type="button" onclick="App.closeModal()" class="email-modal-close-btn" title="Close">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
           </button>
         </div>
 
@@ -1723,48 +1727,92 @@ const ReportsView = {
 
       if (bodyEl) {
         bodyEl.innerHTML = `
-          <div class="py-8 px-2 text-center space-y-4">
-            <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto animate-pulse">
-              <i data-lucide="mail" class="w-6 h-6"></i>
-            </div>
-            <div>
-              <h4 class="text-sm font-bold text-slate-900">Dispatching Attendance Emails...</h4>
-              <p class="text-xs text-slate-500 mt-0.5" id="dispatch-current-label">Preparing PDF reports for ${res.total_target_students} student(s)...</p>
-            </div>
-
-            <!-- Progress Bar -->
-            <div class="w-full bg-slate-100 rounded-full h-3.5 border border-slate-200 overflow-hidden relative">
-              <div id="dispatch-progress-bar" class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: 5%;"></div>
-            </div>
-
-            <!-- Progress Counters -->
-            <div class="grid grid-cols-4 gap-2 text-center pt-2">
-              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                <div class="text-[10px] text-slate-500 font-bold uppercase">Total</div>
-                <div class="text-base font-bold text-slate-900" id="dispatch-cnt-total">${res.total_target_students}</div>
-              </div>
-              <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-                <div class="text-[10px] text-emerald-800 font-bold uppercase">Sent</div>
-                <div class="text-base font-bold text-emerald-700" id="dispatch-cnt-sent">0</div>
-              </div>
-              <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl">
-                <div class="text-[10px] text-amber-800 font-bold uppercase">Skipped</div>
-                <div class="text-base font-bold text-amber-700" id="dispatch-cnt-skipped">0</div>
-              </div>
-              <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-xl">
-                <div class="text-[10px] text-rose-800 font-bold uppercase">Failed</div>
-                <div class="text-base font-bold text-rose-700" id="dispatch-cnt-failed">0</div>
+          <div class="py-3 px-1 text-center">
+            <!-- Central Pulse Sending Hub -->
+            <div class="email-pulse-hub" id="email-dispatch-hub">
+              <div class="email-pulse-ring"></div>
+              <div class="email-pulse-ring-inner"></div>
+              <div class="email-pulse-circle" id="email-pulse-icon">
+                <svg class="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
               </div>
             </div>
 
-            <div id="dispatch-status-note" class="text-xs text-slate-400 font-mono">Connecting to SMTP server...</div>
+            <div class="mb-3">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold mb-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="dispatch-pipeline-status">Live SMTP Pipeline Active</span>
+              </div>
+              <h4 class="text-base font-bold text-slate-900" id="dispatch-status-title">Dispatching Attendance Emails...</h4>
+              <p class="text-xs text-slate-500 mt-1" id="dispatch-current-label">Preparing PDF reports for ${res.total_target_students} student(s)...</p>
+            </div>
+
+            <!-- Modern Glowing Progress Bar -->
+            <div class="email-progress-container">
+              <div class="flex items-center justify-between text-[11px] text-slate-600 mb-1.5 px-0.5">
+                <span class="font-bold" id="dispatch-progress-percent">0% Completed</span>
+                <span class="font-mono text-slate-500" id="dispatch-progress-ratio">0 / ${res.total_target_students}</span>
+              </div>
+              <div class="email-progress-track">
+                <div id="dispatch-progress-bar" class="email-progress-fill" style="width: 4%;"></div>
+              </div>
+            </div>
+
+            <!-- 4-Card Metric Grid -->
+            <div class="email-kpi-grid">
+              <div class="email-kpi-box kpi-total">
+                <div class="email-kpi-lbl text-slate-600">Total</div>
+                <div class="email-kpi-val text-slate-900" id="dispatch-cnt-total">${res.total_target_students}</div>
+              </div>
+              <div class="email-kpi-box kpi-sent">
+                <div class="email-kpi-lbl text-emerald-700">Delivered</div>
+                <div class="email-kpi-val text-emerald-600" id="dispatch-cnt-sent">0</div>
+              </div>
+              <div class="email-kpi-box kpi-skipped">
+                <div class="email-kpi-lbl text-amber-700">No Email</div>
+                <div class="email-kpi-val text-amber-600" id="dispatch-cnt-skipped">0</div>
+              </div>
+              <div class="email-kpi-box kpi-failed">
+                <div class="email-kpi-lbl text-rose-700">Failed</div>
+                <div class="email-kpi-val text-rose-600" id="dispatch-cnt-failed">0</div>
+              </div>
+            </div>
+
+            <!-- Real-Time Activity Console Terminal -->
+            <div class="email-live-console">
+              <div class="email-console-header">
+                <div class="email-console-title">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span>Live Activity Console</span>
+                </div>
+                <span class="text-[10px] text-slate-400 font-mono" id="dispatch-console-counter">Streaming SMTP logs...</span>
+              </div>
+              <div class="email-console-body" id="dispatch-console-body">
+                <div class="email-console-row">
+                  <span class="email-console-time">${new Date().toLocaleTimeString()}</span>
+                  <span class="email-console-pill pill-sent">INIT</span>
+                  <span class="email-console-student">System Engine</span>
+                  <span class="email-console-detail">Job initialized • Target: ${res.total_target_students} students</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="dispatch-status-note" class="text-xs text-slate-400 font-mono mt-3">Connecting to mail server over TLS...</div>
           </div>
         `;
       }
 
       if (footerEl) {
         footerEl.innerHTML = `
-          <span class="text-xs text-slate-400 font-mono">Job ID: ${jobId}</span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400 font-mono">Job: ${jobId.substring(0, 10)}...</span>
+            <button type="button" class="btn-icon p-1 text-slate-400 hover:text-indigo-600" title="Copy Job ID" onclick="navigator.clipboard.writeText('${jobId}'); App.showToast('Job ID copied to clipboard', 'info');">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+              </svg>
+            </button>
+          </div>
           <button type="button" class="btn-secondary text-xs" onclick="App.closeModal()">Run in Background</button>
         `;
       }
@@ -1789,23 +1837,90 @@ const ReportsView = {
 
         const bar = document.getElementById("dispatch-progress-bar");
         const lblCurrent = document.getElementById("dispatch-current-label");
+        const progressPctEl = document.getElementById("dispatch-progress-percent");
+        const progressRatioEl = document.getElementById("dispatch-progress-ratio");
         const cntSent = document.getElementById("dispatch-cnt-sent");
         const cntSkipped = document.getElementById("dispatch-cnt-skipped");
         const cntFailed = document.getElementById("dispatch-cnt-failed");
         const note = document.getElementById("dispatch-status-note");
+        const consoleBody = document.getElementById("dispatch-console-body");
 
-        if (bar) bar.style.width = `${Math.max(5, pct)}%`;
-        if (lblCurrent && status.current_student) lblCurrent.textContent = `Processing: ${status.current_student} (${processed}/${total})`;
+        if (bar) bar.style.width = `${Math.max(4, pct)}%`;
+        if (progressPctEl) progressPctEl.textContent = `${pct}% Completed`;
+        if (progressRatioEl) progressRatioEl.textContent = `${processed} / ${total}`;
+
+        if (lblCurrent && status.current_student) {
+          lblCurrent.textContent = `Processing: ${status.current_student} (${processed}/${total})`;
+        }
         if (cntSent) cntSent.textContent = status.sent || 0;
         if (cntSkipped) cntSkipped.textContent = status.skipped || 0;
         if (cntFailed) cntFailed.textContent = status.failed || 0;
-        if (note) note.textContent = `${pct}% completed &bull; ${status.sent} delivered`;
+        if (note) {
+          note.textContent = `${pct}% completed • ${status.sent} delivered • ${status.skipped} skipped • ${status.failed} failed`;
+        }
+
+        // Render live streaming logs into terminal
+        if (consoleBody && status.recent_logs && status.recent_logs.length > 0) {
+          consoleBody.innerHTML = status.recent_logs.map(l => {
+            let pillClass = "pill-sent";
+            if (l.status === "SKIPPED") pillClass = "pill-skipped";
+            if (l.status === "FAILED") pillClass = "pill-failed";
+            return `
+              <div class="email-console-row">
+                <span class="email-console-time">${l.time || ""}</span>
+                <span class="email-console-pill ${pillClass}">${l.status}</span>
+                <span class="email-console-student" title="${l.student}">${l.student}</span>
+                <span class="email-console-detail" title="${l.detail}">${l.detail}</span>
+              </div>
+            `;
+          }).join("");
+          const container = consoleBody.parentElement;
+          if (container) container.scrollTop = container.scrollHeight;
+        }
 
         if (status.is_completed) {
           clearInterval(interval);
-          if (bar) bar.className = "bg-emerald-600 h-full rounded-full transition-all duration-300";
-          if (lblCurrent) lblCurrent.textContent = `🎉 Email dispatch completed successfully for ${status.period_label}!`;
-          if (note) note.textContent = `Finished: ${status.sent} Sent, ${status.skipped} Skipped (no email), ${status.failed} Failed.`;
+          if (bar) {
+            bar.className = "email-progress-fill completed";
+            bar.style.width = "100%";
+          }
+          const hubEl = document.getElementById("email-dispatch-hub");
+          if (hubEl) {
+            hubEl.innerHTML = `
+              <div class="email-pulse-circle completed" style="transform: scale(1.1);">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+            `;
+          }
+          const pipelineStatus = document.getElementById("dispatch-pipeline-status");
+          if (pipelineStatus) {
+            pipelineStatus.textContent = "Pipeline Completed Successfully";
+            pipelineStatus.parentElement.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[11px] font-bold mb-2";
+          }
+          const statusTitle = document.getElementById("dispatch-status-title");
+          if (statusTitle) statusTitle.textContent = "🎉 Attendance Reports Dispatched!";
+          if (lblCurrent) lblCurrent.textContent = `Completed delivery for ${status.period_label || 'selected period'}.`;
+          if (note) note.textContent = `Final Summary: ${status.sent} Sent • ${status.skipped} Skipped (no email) • ${status.failed} Failed.`;
+
+          const footerEl = document.getElementById("email-modal-footer");
+          if (footerEl) {
+            footerEl.innerHTML = `
+              <button type="button" class="btn-secondary text-xs flex items-center gap-1.5" onclick="App.closeModal(); ReportsView.openEmailLogsModal();">
+                <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>📋 View Delivery Logs</span>
+              </button>
+              <button type="button" class="btn-primary text-xs py-2 px-5 font-bold flex items-center gap-1.5" onclick="App.closeModal()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span>✓ Done / Close</span>
+              </button>
+            `;
+          }
 
           App.showToast(`Bulk email dispatch completed! Sent ${status.sent} reports.`, "success");
         }

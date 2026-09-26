@@ -36,6 +36,7 @@ class EmailDispatchTracker:
                 "is_completed": False,
                 "current_student": "",
                 "errors": [],
+                "recent_logs": [],
                 "started_at": datetime.utcnow().isoformat(),
                 "completed_at": None
             }
@@ -47,14 +48,32 @@ class EmailDispatchTracker:
                 job = cls._jobs[job_id]
                 job["processed"] += 1
                 job["current_student"] = student_name
+                now_str = datetime.now().strftime("%H:%M:%S")
                 if skipped:
                     job["skipped"] += 1
+                    status_type = "SKIPPED"
+                    detail = error or "Missing email address"
                 elif sent:
                     job["sent"] += 1
+                    status_type = "SENT"
+                    detail = "PDF compiled & delivered successfully via SMTP"
                 else:
                     job["failed"] += 1
+                    status_type = "FAILED"
+                    detail = error or "SMTP dispatch failed"
                     if error:
                         job["errors"].append({"student": student_name, "error": error})
+
+                if "recent_logs" not in job:
+                    job["recent_logs"] = []
+                job["recent_logs"].append({
+                    "time": now_str,
+                    "student": student_name,
+                    "status": status_type,
+                    "detail": detail
+                })
+                if len(job["recent_logs"]) > 40:
+                    job["recent_logs"] = job["recent_logs"][-40:]
 
     @classmethod
     def finish_job(cls, job_id: str):

@@ -592,3 +592,309 @@
   }
 }
 
+/* ================= Modern Interactive Email Dispatch Modal ================= */
+.email-dispatch-modal {
+  max-width: 620px;
+  width: 95%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+}
+
+.email-modal-header {
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  color: #ffffff;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.email-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.email-modal-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.email-modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.email-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.05);
+}
+
+/* Central Radar / Pulse Sending Hub */
+.email-pulse-hub {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.email-pulse-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(99, 102, 241, 0.45);
+  animation: emailPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.email-pulse-ring-inner {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(99, 102, 241, 0.25);
+  animation: emailPing 2s cubic-bezier(0, 0, 0.2, 1) 0.5s infinite;
+}
+
+@keyframes emailPing {
+  0% { transform: scale(0.85); opacity: 0.85; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+.email-pulse-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.email-pulse-circle.completed {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+}
+
+/* Modern Glowing Progress Bar */
+.email-progress-container {
+  width: 100%;
+  margin: 16px 0;
+}
+
+.email-progress-track {
+  width: 100%;
+  height: 10px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.email-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #10b981 100%);
+  background-size: 200% 100%;
+  animation: emailGradientMove 2s linear infinite;
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.email-progress-fill.completed {
+  background: linear-gradient(90deg, #10b981, #059669);
+  animation: none;
+}
+
+@keyframes emailGradientMove {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* 4-Column Metric KPI Grid */
+.email-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+}
+
+@media (max-width: 520px) {
+  .email-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.email-kpi-box {
+  padding: 10px 8px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.email-kpi-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.email-kpi-box.kpi-total {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.email-kpi-box.kpi-sent {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.email-kpi-box.kpi-skipped {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.email-kpi-box.kpi-failed {
+  background: #fef2f2;
+  border-color: #fecdd3;
+}
+
+.email-kpi-lbl {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.email-kpi-val {
+  font-size: 1.25rem;
+  font-weight: 900;
+  font-family: var(--font-mono, monospace);
+  line-height: 1.1;
+}
+
+/* Live Terminal / Activity Stream Console */
+.email-live-console {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-align: left;
+  margin-top: 14px;
+  max-height: 140px;
+  overflow-y: auto;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.email-console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.email-console-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.email-console-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.70rem;
+}
+
+.email-console-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.3;
+}
+
+.email-console-time {
+  color: #64748b;
+  font-size: 0.64rem;
+  flex-shrink: 0;
+}
+
+.email-console-pill {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.email-console-pill.pill-sent {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.email-console-pill.pill-skipped {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.email-console-pill.pill-failed {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.email-console-student {
+  color: #f1f5f9;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.email-console-detail {
+  color: #94a3b8;
+  font-size: 0.64rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
