@@ -1114,15 +1114,49 @@ const StudentsView = {
 
             <div style="padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
               ${photos.length > 0 ? `
+                <!-- Learning Status Meter -->
+                <div class="biometric-learning-status" style="margin-bottom: 12px; padding: 8px 12px; border-radius: 10px; background: ${photos.length >= 3 ? '#ecfdf5' : '#f0fdf4'}; border: 1px solid ${photos.length >= 3 ? '#a7f3d0' : '#bbf7d0'}; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 0.72rem;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                    <strong style="color: #065f46;">Continuous AI Training:</strong>
+                    <span style="color: #047857; font-weight: 600;">
+                      ${photos.length >= 4 ? `Optimal Multi-Angle Gallery (${photos.length}/7 Enrolled)` : (photos.length >= 2 ? `Multi-Sample Active (${photos.length}/7 Enrolled)` : `Baseline Photo (1/7 Enrolled)`)}
+                    </span>
+                  </div>
+                  <span style="font-size: 0.68rem; color: #047857; font-weight: 500;">Safe Auto-Enrichment Active (&ge;93% Conf)</span>
+                </div>
+
                 <div class="biometric-gallery">
-                  ${photos.map((p, idx) => `
-                    <div class="biometric-photo-card" onclick="App.showImageLightbox('${p}', '${student.full_name} (Angle ${idx + 1})')" title="Click to view Angle ${idx + 1}">
-                      <img src="${p}" alt="${student.full_name} Angle ${idx + 1}" />
-                      <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.75); color: #ffffff; font-size: 0.58rem; font-weight: 700; text-align: center; padding: 2px 0;">
-                        Angle ${idx + 1}
+                  ${photos.map((p, idx) => {
+                    let badgeLabel = `Angle ${idx + 1}`;
+                    let badgeBg = 'rgba(15, 23, 42, 0.75)';
+                    if (idx === 0) {
+                      badgeLabel = '⭐ Primary Photo';
+                      badgeBg = 'linear-gradient(135deg, #4f46e5, #3730a3)';
+                    } else if (p.includes('unknown_faces') || p.includes('unknown_')) {
+                      badgeLabel = '🎓 Faculty Verified';
+                      badgeBg = 'linear-gradient(135deg, #7c3aed, #6d28d9)';
+                    } else if (p.includes('auto_')) {
+                      badgeLabel = '⚡ Auto-Enriched';
+                      badgeBg = 'linear-gradient(135deg, #059669, #047857)';
+                    }
+
+                    return `
+                      <div class="biometric-photo-card" onclick="App.showImageLightbox('${p}', '${student.full_name.replace(/'/g, "\\'")} (${badgeLabel})')" title="${badgeLabel} - Click to enlarge">
+                        <img src="${p}" alt="${student.full_name} ${badgeLabel}" />
+                        
+                        ${canBiometrics && photos.length > 1 ? `
+                          <button type="button" class="delete-btn" title="Remove this angle from biometric gallery" onclick="event.stopPropagation(); StudentsView.deleteStudentPhotoAngle(${student.id}, ${idx}, '${student.full_name.replace(/'/g, "\\'")}')">
+                            &times;
+                          </button>
+                        ` : ''}
+
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: ${badgeBg}; color: #ffffff; font-size: 0.58rem; font-weight: 700; text-align: center; padding: 3px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          ${badgeLabel}
+                        </div>
                       </div>
-                    </div>
-                  `).join("")}
+                    `;
+                  }).join("")}
                 </div>
               ` : `
                 <div style="text-align: center; padding: 16px 0; color: #94a3b8; font-size: 0.76rem;">
@@ -1158,6 +1192,21 @@ const StudentsView = {
 
     App.showModal(html);
     if (window.lucide) window.lucide.createIcons();
+  },
+
+  async deleteStudentPhotoAngle(studentId, photoIndex, studentName) {
+    if (!confirm(`Are you sure you want to remove photo angle #${photoIndex + 1} from ${studentName}'s biometric gallery?`)) {
+      return;
+    }
+
+    try {
+      App.showToast("Removing photo angle from AI gallery...", "info");
+      const res = await API.delete(`/students/${studentId}/photos/${photoIndex}`);
+      App.showToast(res.message || "Photo removed from gallery.", "success");
+      this.openStudentProfileModal(studentId);
+    } catch (e) {
+      App.showToast(`Failed to remove photo: ${e.message || e}`, "error");
+    }
   },
 
   // ===================================================================

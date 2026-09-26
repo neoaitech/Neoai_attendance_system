@@ -1,3 +1,6 @@
+import os
+import uuid
+from PIL import Image
 from datetime import datetime, date
 from typing import List, Dict, Any, Optional
 import numpy as np
@@ -436,6 +439,83 @@ class AttendanceService:
                 db.add(record)
                 recorded_student_records[st_id] = record
 
+                # -----------------------------------------------------------
+                # Safe Continuous Learning: Ultra-High Confidence Auto-Enrichment
+                # Only for genuine, non-frozen, enrolled students with confidence >= 93%
+                # -----------------------------------------------------------
+                if not is_student_frozen and not is_spoof and rec.get("confidence", 0.0) >= 93.0 and target_st:
+                    try:
+                        raw_p_idx = rec.get("source_photo_index", 0)
+                        if 0 <= raw_p_idx < len(paths_to_process):
+                            source_image_path = paths_to_process[raw_p_idx]
+                            if os.path.exists(source_image_path):
+                                raw_img_rgb = face_engine.load_and_orient_image(source_image_path)
+                                bbox = rec.get("bbox")
+                                if bbox and raw_img_rgb is not None:
+                                    is_sharp, var_score, min_dim = face_engine.evaluate_face_crop_quality(raw_img_rgb, bbox)
+                                    if is_sharp:
+                                        st_photos = list(target_st.photo_urls) if target_st.photo_urls else []
+                                        if not st_photos and target_st.photo_url:
+                                            st_photos = [target_st.photo_url]
+
+                                        # Rate limit: Max 1 auto-enrichment per student per session/day
+                                        has_recent_auto = any(f"auto_{st_id}_" in p for p in st_photos[-2:])
+                                        if not has_recent_auto:
+                                            t, r, b, l = bbox
+                                            pad_h = int((b - t) * 0.08)
+                                            pad_w = int((r - l) * 0.08)
+                                            t_pad = max(0, t - pad_h)
+                                            b_pad = min(raw_img_rgb.shape[0], b + pad_h)
+                                            l_pad = max(0, l - pad_w)
+                                            r_pad = min(raw_img_rgb.shape[1], r + pad_w)
+                                            face_crop = raw_img_rgb[t_pad:b_pad, l_pad:r_pad]
+
+                                            if face_crop.size > 0:
+                                                auto_filename = f"auto_{st_id}_{uuid.uuid4().hex[:6]}.jpg"
+                                                auto_save_path = settings.STUDENT_PHOTOS_DIR / auto_filename
+                                                Image.fromarray(face_crop).save(str(auto_save_path), quality=92)
+
+                                                web_url = f"/uploads/students/{auto_filename}"
+                                                st_photos.append(web_url)
+
+                                                enc_to_add = rec.get("encoding")
+                                                if not enc_to_add:
+                                                    enc_to_add = face_engine.extract_single_face_encoding(str(auto_save_path))
+
+                                                if enc_to_add is not None:
+                                                    clean_enc = enc_to_add.tolist() if hasattr(enc_to_add, "tolist") else list(enc_to_add)
+
+                                                    current_embs = target_st.face_embedding
+                                                    embs_list = []
+                                                    if current_embs is not None:
+                                                        if isinstance(current_embs, list) and len(current_embs) > 0 and isinstance(current_embs[0], list):
+                                                            embs_list = [list(e) for e in current_embs]
+                                                        elif isinstance(current_embs, list):
+                                                            embs_list = [list(current_embs)]
+
+                                                    embs_list.append(clean_enc)
+
+                                                    # Enforce maximum gallery cap of 7 photos (preserve index 0 primary)
+                                                    while len(st_photos) > 7:
+                                                        st_photos.pop(1)
+                                                        if len(embs_list) > 1:
+                                                            embs_list.pop(1)
+
+                                                    target_st.photo_urls = st_photos
+                                                    target_st.face_embedding = embs_list
+
+                                                    auto_audit = AuditLog(
+                                                        user_id=teacher_id,
+                                                        action="AUTO_AI_ENRICHMENT",
+                                                        entity="Student",
+                                                        entity_id=st_id,
+                                                        details=f"Safe Auto-Enrichment: Added high-confidence crop ({rec['confidence']}%, Sharpness={var_score}) to '{target_st.full_name}' gallery (Total angles: {len(st_photos)})."
+                                                    )
+                                                    db.add(auto_audit)
+                    except Exception as ex:
+                        print(f"[AutoEnrichment] Non-fatal auto-enrichment error for student {st_id}: {ex}")
+
+
             else:
                 # Registered institutional student outside selected roster -> EXTRA LECTURE CANDIDATE
                 if st_id not in seen_extra_student_ids:
@@ -851,6 +931,55 @@ class AttendanceService:
                     notes=f"Tagged manually from unknown face queue (Face ID #{unknown_face.id})"
                 )
                 db.add(record)
+
+        # ===================================================================
+        # ACTIVE LEARNING: Auto-enrich student's gallery with verified face crop
+        # ===================================================================
+        try:
+            import os
+            crop_path = unknown_face.cropped_image_path
+            if crop_path and os.path.exists(crop_path):
+                enc = face_engine.extract_single_face_encoding(crop_path)
+                if enc is not None:
+                    enc_list = enc.tolist() if hasattr(enc, "tolist") else list(enc)
+                    norm_path = str(crop_path).replace("\\", "/")
+                    web_crop_url = f"/uploads/unknown_faces/{os.path.basename(norm_path)}"
+
+                    current_photos = list(student.photo_urls) if student.photo_urls else []
+                    if not current_photos and student.photo_url:
+                        current_photos = [student.photo_url]
+
+                    current_embs = student.face_embedding
+                    embs_list = []
+                    if current_embs is not None:
+                        if isinstance(current_embs, list) and len(current_embs) > 0 and isinstance(current_embs[0], list):
+                            embs_list = [list(e) for e in current_embs]
+                        elif isinstance(current_embs, list):
+                            embs_list = [list(current_embs)]
+
+                    if web_crop_url not in current_photos:
+                        current_photos.append(web_crop_url)
+                        embs_list.append(enc_list)
+
+                        # Enforce maximum gallery cap of 7 photos (keep index 0 primary)
+                        while len(current_photos) > 7:
+                            current_photos.pop(1)
+                            if len(embs_list) > 1:
+                                embs_list.pop(1)
+
+                        student.photo_urls = current_photos
+                        student.face_embedding = embs_list
+
+                        enrich_audit = AuditLog(
+                            user_id=user_id,
+                            action="ACTIVE_LEARNING_ENRICHMENT",
+                            entity="Student",
+                            entity_id=student.id,
+                            details=f"Active Learning: Added teacher-verified crop #{unknown_face.id} to '{student.full_name}' gallery (Total angles: {len(current_photos)})."
+                        )
+                        db.add(enrich_audit)
+        except Exception as ex:
+            print(f"[ActiveLearning] Non-fatal gallery enrichment error: {ex}")
 
         audit = AuditLog(
             user_id=user_id,

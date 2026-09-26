@@ -1117,3 +1117,79 @@ def promote_batch(
         "errors": errors
     }
 
+
+@router.delete("/{student_id}/photos/{photo_index}")
+def delete_student_photo_angle(
+    student_id: int,
+    photo_index: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from backend.app.services.permission_service import permission_service
+    can_manage = (
+        current_user.role in ["super_admin", "admin"] or
+        permission_service.has_permission(db, current_user, "student.edit_biometric") or
+        permission_service.has_permission(db, current_user, "student.edit")
+    )
+    if not can_manage:
+        raise HTTPException(status_code=403, detail="Access Denied: You lack authority to prune student biometric photos.")
+
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found.")
+
+    photos = list(student.photo_urls) if student.photo_urls else []
+    if not photos and student.photo_url:
+        photos = [student.photo_url]
+
+    if photo_index < 0 or photo_index >= len(photos):
+        raise HTTPException(status_code=400, detail=f"Invalid photo index {photo_index}. Total photos: {len(photos)}.")
+
+    if len(photos) <= 1:
+        raise HTTPException(status_code=400, detail="Cannot delete the only registered biometric photo. Please upload a replacement instead.")
+
+    removed_url = photos.pop(photo_index)
+
+    # Remove corresponding embedding vector if available
+    current_embs = student.face_embedding
+    if current_embs and isinstance(current_embs, list):
+        if len(current_embs) > 0 and isinstance(current_embs[0], list):
+            if photo_index < len(current_embs):
+                current_embs.pop(photo_index)
+        elif photo_index == 0:
+            current_embs = None
+
+    student.photo_urls = photos
+    student.face_embedding = current_embs
+    student.photo_url = photos[0] if photos else None
+
+    # Delete physical disk file if auto-enriched
+    try:
+        import os
+        base_name = os.path.basename(removed_url)
+        disk_target = settings.STUDENT_PHOTOS_DIR / base_name
+        if disk_target.exists():
+            disk_target.unlink(missing_ok=True)
+    except Exception:
+        pass
+
+    audit = AuditLog(
+        user_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role,
+        action="BIOMETRIC_PHOTO_PRUNED",
+        entity="Student",
+        entity_id=student.id,
+        target_name=student.full_name,
+        details=f"Removed biometric photo angle #{photo_index} ({removed_url}) from student '{student.full_name}' ({student.roll_number}). Remaining photos: {len(photos)}."
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(student)
+
+    return {
+        "success": True,
+        "message": f"Biometric photo removed successfully. {len(photos)} angles remaining in student gallery.",
+        "student": student.to_dict()
+    }
+

@@ -322,13 +322,15 @@ class StandardFaceAIEngine(FaceAIEngine):
             if s is not None and sim >= tolerance and s["id"] not in assigned_students:
                 assigned_students.add(s["id"])
                 confidence = self.calculate_confidence_score(sim, threshold=tolerance)
+                face_vec_enc = detected_encodings[idx]
                 recognized.append({
                     "student_id": s["id"],
                     "student_name": s["name"],
                     "roll_number": s["roll_number"],
                     "bbox": list(loc),
                     "similarity": round(float(sim), 4),
-                    "confidence": round(float(confidence), 1)
+                    "confidence": round(float(confidence), 1),
+                    "encoding": face_vec_enc.tolist() if hasattr(face_vec_enc, "tolist") else list(face_vec_enc)
                 })
             else:
                 conf = self.calculate_confidence_score(sim, threshold=tolerance) if sim > 0.30 else 0.0

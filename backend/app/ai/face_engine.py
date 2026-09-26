@@ -249,6 +249,41 @@ class FaceEngine:
             return vec / norm
         return vec
 
+    def evaluate_face_crop_quality(
+        self,
+        image_rgb: np.ndarray,
+        bbox: Any
+    ) -> Tuple[bool, float, int]:
+        """
+        Evaluates face crop sharpness, resolution, and quality for safe continuous learning.
+        Returns: (is_sharp: bool, laplacian_variance: float, min_dimension: int)
+        """
+        try:
+            top, right, bottom, left = [int(v) for v in bbox]
+            h_img, w_img, _ = image_rgb.shape
+            top = max(0, min(top, h_img - 1))
+            bottom = max(0, min(bottom, h_img))
+            left = max(0, min(left, w_img - 1))
+            right = max(0, min(right, w_img))
+
+            crop = image_rgb[top:bottom, left:right]
+            if crop.size == 0:
+                return False, 0.0, 0
+
+            h, w = crop.shape[:2]
+            min_dim = min(h, w)
+            if min_dim < 100:  # Minimum 100px resolution
+                return False, 0.0, min_dim
+
+            gray = cv2.cvtColor(crop, cv2.COLOR_RGB2GRAY)
+            variance = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+
+            # Variance >= 90.0 ensures crisp edges (no motion blur or defocus)
+            is_sharp = variance >= 90.0
+            return is_sharp, round(variance, 2), min_dim
+        except Exception:
+            return False, 0.0, 0
+
     def compute_face_encodings(self, image_rgb: np.ndarray, face_locations: List[Tuple[int, int, int, int]]) -> List[np.ndarray]:
         """
         3. ArcFace ResNet-50 Feature Representation:
@@ -460,7 +495,8 @@ class FaceEngine:
                     "confidence": confidence,
                     "bbox": list(detected_locations[f_idx]),
                     "detection_index": f_idx,
-                    "is_live": True
+                    "is_live": True,
+                    "encoding": detected_encodings[f_idx].tolist() if hasattr(detected_encodings[f_idx], "tolist") else list(detected_encodings[f_idx])
                 })
 
         # 3. Any unassigned detected face is labeled Unknown

@@ -184,7 +184,7 @@ const UnknownFacesView = {
         update_attendance: true
       });
       App.closeModal();
-      App.showToast("Unknown face resolved and attendance verified!", "success");
+      App.showToast("Face linked to student & added to AI Biometric Gallery! 🧠", "success");
       await this.loadUnknownFaces();
     } catch (e) {
       App.showToast(e.message || "Failed to tag face", "error");
