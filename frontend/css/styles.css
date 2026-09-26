@@ -20,7 +20,7 @@
 /* 3. Page-Specific Styles */
 @import url("./pages/auth.css");
 @import url("./pages/dashboard.css");
-@import url("./pages/capture.css?v=26.0");
+@import url("./pages/capture.css?v=27.0");
 @import url("./pages/review.css");
 @import url("./pages/students.css");
 @import url("./pages/classes.css");
@@ -41,8 +41,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  position: sticky;
-  top: 0;
+  position: relative !important;
+  top: auto !important;
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
   z-index: 40;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);

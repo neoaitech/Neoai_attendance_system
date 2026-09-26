@@ -401,11 +401,39 @@ const App = {
     }, { passive: true });
   },
 
+  initViewportScrollGuard() {
+    // 1. Prevent rogue outer window scroll on mobile (ensures window.scrollY is permanently 0)
+    window.addEventListener("scroll", () => {
+      if (window.scrollY !== 0 || window.scrollX !== 0) {
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      }
+    }, { passive: true });
+
+    // 2. Prevent virtual keyboard closing from leaving viewport offset
+    window.addEventListener("focusout", () => {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      const container = document.getElementById("view-container");
+      if (container && container.scrollTop < 0) {
+        container.scrollTop = 0;
+      }
+    }, { passive: true });
+
+    // 3. Ensure document scrollingElement is locked
+    if (document.scrollingElement) {
+      document.scrollingElement.scrollTop = 0;
+    }
+  },
+
   init() {
     this.bindEvents();
     this.initGlobalSearch();
     this.initPwa();
     this.initPrefetching();
+    this.initViewportScrollGuard();
     if (window.lucide) window.lucide.createIcons();
     Auth.init().then(authenticated => {
       if (authenticated) {
@@ -1348,10 +1376,14 @@ const App = {
     if (container) {
       container.scrollTop = 0;
       window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
       try {
         await this.views[viewName].render(container, params);
         container.scrollTop = 0;
         window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
       } catch (err) {
         container.innerHTML = `
           <div class="glass-panel text-center py-12" style="border-color: var(--rose-border);">
