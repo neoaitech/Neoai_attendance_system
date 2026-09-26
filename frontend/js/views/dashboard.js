@@ -243,18 +243,38 @@ const DashboardView = {
     const uEl = document.getElementById("kpi-unknown-count");
     const uCap = document.getElementById("kpi-unknown-caption");
 
-    if (sEl) sEl.textContent = data.total_students ?? 0;
-    if (cEl) cEl.textContent = data.total_classes ?? 0;
+    if (sEl) {
+      if (window.App && window.App.animateCounter) {
+        window.App.animateCounter(sEl, data.total_students ?? 0, 700);
+      } else {
+        sEl.textContent = data.total_students ?? 0;
+      }
+    }
+    if (cEl) {
+      if (window.App && window.App.animateCounter) {
+        window.App.animateCounter(cEl, data.total_classes ?? 0, 700);
+      } else {
+        cEl.textContent = data.total_classes ?? 0;
+      }
+    }
     
     if (rEl) {
       const rate = data.overall_attendance_rate ?? 0;
-      rEl.textContent = `${rate}%`;
+      if (window.App && window.App.animateCounter) {
+        window.App.animateCounter(rEl, rate, 700, "%");
+      } else {
+        rEl.textContent = `${rate}%`;
+      }
       rEl.style.color = rate >= 75 ? "#10b981" : "#ef4444";
     }
 
     if (uEl) {
       const unk = data.pending_unknown_faces_count ?? 0;
-      uEl.textContent = unk;
+      if (window.App && window.App.animateCounter) {
+        window.App.animateCounter(uEl, unk, 700);
+      } else {
+        uEl.textContent = unk;
+      }
       uEl.style.color = unk > 0 ? "#d97706" : "#10b981";
       if (uCap) {
         uCap.textContent = unk > 0 ? "Requires verification" : "Queue is clear";
@@ -538,6 +558,10 @@ const DashboardView = {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: {
+          duration: (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? 0 : 850,
+          easing: 'easeOutQuart'
+        },
         interaction: {
           mode: 'index',
           intersect: false

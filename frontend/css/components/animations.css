@@ -1,0 +1,291 @@
+/* ===================================================================
+   VisionAttend - Subtle Enterprise Micro-Animations System
+   File: frontend/css/components/animations.css
+   Version: 29.0
+   Design Guidelines:
+   - Fast (120ms - 280ms)
+   - Professional & non-intrusive
+   - Smooth cubic-bezier easings
+   - Zero layout shifts or dimension changes
+   - Full prefers-reduced-motion support
+   =================================================================== */
+
+/* ================= 1. Smooth Page / View Transitions ================= */
+@keyframes viewFadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#view-container > * {
+  animation: viewFadeSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+/* Modal dialog smooth entrance */
+@keyframes modalScaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-card {
+  animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  will-change: opacity, transform;
+}
+
+/* ================= 2. Card Subtle Hover & Lift Effects ================= */
+.glass-panel,
+.panel-card,
+.kpi-card,
+.dashboard-analytics-card,
+.camera-viewport-card,
+.report-semester-card,
+.report-division-block,
+.data-table-container,
+.capture-config-panel {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease !important;
+}
+
+.glass-panel:hover,
+.panel-card:hover,
+.dashboard-analytics-card:hover,
+.report-semester-card:hover,
+.report-division-block:hover {
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07) !important;
+}
+
+/* ================= 3. Button Micro-Interactions ================= */
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-icon,
+.btn-sm,
+.capture-finalize-big-btn,
+.ingest-method-btn,
+.nav-tab-btn {
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.15s ease,
+              border-color 0.15s ease,
+              box-shadow 0.15s ease,
+              color 0.15s ease !important;
+}
+
+.btn-primary:hover:not(:disabled),
+.capture-finalize-big-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
+}
+
+.btn-secondary:hover:not(:disabled),
+.btn-danger:hover:not(:disabled),
+.btn-icon:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Click/Touch active tactile press */
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled),
+.btn-danger:active:not(:disabled),
+.btn-icon:active:not(:disabled),
+.btn-sm:active:not(:disabled),
+.capture-finalize-big-btn:active:not(:disabled),
+.ingest-method-btn:active:not(:disabled),
+.nav-tab-btn:active:not(:disabled) {
+  transform: scale(0.97) !important;
+}
+
+/* ================= 4. Sidebar & Nav Menu Micro-Transitions ================= */
+.sidebar {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.nav-item {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.15s ease,
+              color 0.15s ease,
+              box-shadow 0.15s ease !important;
+}
+
+.nav-item:hover {
+  transform: translateX(3px) !important;
+}
+
+.nav-item:active {
+  transform: scale(0.98) !important;
+}
+
+.nav-item.active {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ================= 5. Progress Bars & Metric Animations ================= */
+.progress-fill,
+.health-bar-fill,
+.attendance-progress-bar,
+.roster-bar-fill {
+  transition: width 0.75s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: width;
+}
+
+/* ================= 6. Universal Skeleton Shimmer ================= */
+.skeleton-shimmer {
+  display: inline-block;
+  height: 24px;
+  width: 60%;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%) !important;
+  background-size: 200% 100% !important;
+  border-radius: 6px;
+  animation: shimmer 1.5s infinite !important;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Smooth Spinner */
+.spinner-sm {
+  animation: spinSmooth 0.75s linear infinite !important;
+}
+
+@keyframes spinSmooth {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ================= 7. Success & Error Micro-Animations ================= */
+@keyframes iconSuccessPulse {
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.toast-success i,
+.badge-present i {
+  animation: iconSuccessPulse 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-3px);
+  }
+  40%, 80% {
+    transform: translateX(3px);
+  }
+}
+
+.toast-error {
+  animation: toastSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+             errorShake 0.35s ease 0.15s !important;
+}
+
+/* ================= 8. AI Attendance & Scan Laser Feedback ================= */
+.camera-viewport-card.is-scanning {
+  position: relative;
+  overflow: hidden;
+}
+
+.camera-viewport-card.is-scanning::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #6366f1, #a855f7, #6366f1, transparent);
+  box-shadow: 0 0 14px 2px rgba(99, 102, 241, 0.65);
+  animation: scanLaser 1.8s ease-in-out infinite alternate;
+  z-index: 30;
+  pointer-events: none;
+}
+
+@keyframes scanLaser {
+  0% {
+    top: 2%;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    top: 96%;
+    opacity: 0.3;
+  }
+}
+
+/* ================= 9. Accessibility (prefers-reduced-motion) ================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  #view-container > * {
+    animation: none !important;
+  }
+
+  .modal-card {
+    animation: none !important;
+  }
+
+  .skeleton-shimmer {
+    animation: none !important;
+    background: #f1f5f9 !important;
+  }
+
+  .camera-viewport-card.is-scanning::after {
+    animation: none !important;
+    display: none !important;
+  }
+
+  .kpi-card:hover,
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .btn-danger:hover,
+  .btn-icon:hover {
+    transform: none !important;
+  }
+}

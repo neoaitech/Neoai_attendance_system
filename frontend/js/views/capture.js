@@ -1900,6 +1900,9 @@ const CaptureView = {
       scanBtn.disabled = true;
       scanBtn.innerHTML = `<span class="spinner-sm mr-2"></span> Detecting Faces & Matching...`;
 
+      const cameraViewport = document.querySelector(".camera-viewport-card");
+      if (cameraViewport) cameraViewport.classList.add("is-scanning");
+
       const statusText = document.getElementById("session-status-text");
       if (statusText) statusText.textContent = "Processing Multi-Face Biometrics...";
 
@@ -2038,6 +2041,7 @@ const CaptureView = {
       } catch (err) {
         App.showToast(err.message || "Failed to process attendance", "error");
       } finally {
+        if (cameraViewport) cameraViewport.classList.remove("is-scanning");
         scanBtn.disabled = false;
         scanBtn.innerHTML = `<i data-lucide="scan" class="w-4 h-4"></i><span>Scan & Aggregate Attendance</span>`;
         if (window.lucide) window.lucide.createIcons();

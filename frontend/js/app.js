@@ -428,6 +428,37 @@ const App = {
     }
   },
 
+  animateCounter(el, target, duration = 600, suffix = "") {
+    if (!el) return;
+    const num = parseFloat(target);
+    if (isNaN(num)) {
+      el.textContent = `${target}${suffix}`;
+      return;
+    }
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.textContent = `${num}${suffix}`;
+      return;
+    }
+    const startTime = performance.now();
+    const startVal = 0;
+    const isFloat = String(target).includes(".");
+    const step = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const current = isFloat
+        ? (startVal + (num - startVal) * ease).toFixed(1)
+        : Math.round(startVal + (num - startVal) * ease);
+      el.textContent = `${current}${suffix}`;
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = `${target}${suffix}`;
+      }
+    };
+    requestAnimationFrame(step);
+  },
+
   init() {
     this.bindEvents();
     this.initGlobalSearch();
