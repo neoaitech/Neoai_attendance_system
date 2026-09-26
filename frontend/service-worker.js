@@ -1,11 +1,12 @@
-const CACHE_NAME = 'neoai-tech-v30.0';
+const CACHE_NAME = 'neoai-tech-v31.0';
 const STATIC_ASSETS = [
   '/',
   'index.html',
   'manifest.json',
-  'css/styles.css?v=30.0',
-  'css/pages/dashboard.css?v=30.0',
-  'css/pages/review.css?v=30.0',
+  'css/styles.css?v=31.0',
+  'css/pages/dashboard.css?v=31.0',
+  'css/pages/review.css?v=31.0',
+  'css/pages/reports.css?v=31.0',
   'images/icon-192.png',
   'images/icon-512.png',
   'images/visionattend_logo.png'

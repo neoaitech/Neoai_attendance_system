@@ -57,27 +57,27 @@ const ReportsView = {
 
     container.innerHTML = `
       <!-- Page Header -->
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <div class="reports-header-wrapper">
         <div>
           <div class="flex items-center gap-2 mb-0.5">
-            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Attendance Reports & Analytics</h2>
-            <span class="badge badge-ai" style="font-size: 0.65rem; padding: 2px 8px;">Academic Matrix</span>
+            <h2 class="reports-page-title">Attendance Reports & Analytics</h2>
+            <span class="badge badge-ai reports-page-badge">Academic Matrix</span>
           </div>
-          <p class="text-xs text-slate-500">
-            Comprehensive attendance matrix, student bunk logs, and academic compliance dossiers.
+          <p class="reports-page-subtitle">
+            Attendance matrix, student bunk logs & compliance dossiers
           </p>
         </div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <button type="button" class="btn-secondary text-xs flex items-center gap-1.5 py-1.5 px-3" onclick="ReportsView.applyFilters()" title="Refresh Attendance Matrix & Analytics" id="report-refresh-btn">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-600"></i>
+        <div class="reports-header-actions">
+          <button type="button" class="btn-secondary reports-header-btn" onclick="ReportsView.applyFilters()" title="Refresh Attendance Matrix" id="report-refresh-btn">
+            <i data-lucide="refresh-cw"></i>
             <span>Refresh</span>
           </button>
-          <button type="button" class="btn-secondary text-xs flex items-center gap-1.5 py-1.5 px-3" onclick="ReportsView.openEmailLogsModal()" title="View Sent Email History & Logs">
-            <i data-lucide="history" class="w-3.5 h-3.5 text-slate-600"></i>
+          <button type="button" class="btn-secondary reports-header-btn" onclick="ReportsView.openEmailLogsModal()" title="View Sent Email History & Logs">
+            <i data-lucide="history"></i>
             <span>Email Logs</span>
           </button>
-          <button type="button" class="btn-primary text-xs flex items-center gap-1.5 py-1.5 px-3.5" onclick="ReportsView.openEmailDispatchModal()" style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);">
-            <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+          <button type="button" class="reports-header-btn reports-btn-email" onclick="ReportsView.openEmailDispatchModal()" title="Email Attendance Reports to HOD/Dean">
+            <i data-lucide="mail"></i>
             <span>Email Reports</span>
           </button>
         </div>
@@ -86,162 +86,187 @@ const ReportsView = {
       <!-- Unified Reports Control & Filter Panel -->
       <div class="reports-control-panel" id="reports-filter-panel">
         
-        <!-- Top Toolbar: Quick Student Deep-Dive Search -->
-        <div class="reports-search-toolbar">
+        <!-- Top Toolbar: Quick Student Search & Collapse Toggle -->
+        <div class="reports-panel-topbar">
           <div class="reports-search-wrap">
-            <i data-lucide="search" class="w-4 h-4 text-indigo-600 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <i data-lucide="search" class="reports-search-icon"></i>
             <input 
               type="text" 
               id="student-search-input" 
-              class="form-input" 
+              class="reports-search-input" 
               placeholder="Quick Student Search (Name or Roll No)..."
               oninput="ReportsView.handleStudentSearch(this.value)"
+              autocomplete="off"
             />
-            <div id="student-search-results" class="hidden absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-slate-200 max-h-60 overflow-y-auto z-50"></div>
+            <button type="button" id="student-search-clear" class="reports-search-clear hidden" onclick="ReportsView.clearStudentSearch()" title="Clear search">
+              <i data-lucide="x"></i>
+            </button>
+            <div id="student-search-results" class="reports-search-results hidden"></div>
           </div>
-          <div class="flex items-center gap-2 text-[11px] text-indigo-700 font-semibold">
-            <i data-lucide="info" class="w-3.5 h-3.5 flex-shrink-0"></i>
-            <span>Click any student in tables or search to inspect bunk timeline</span>
+
+          <div class="reports-panel-topbar-right">
+            <div class="reports-search-hint">
+              <i data-lucide="info"></i>
+              <span>Click student in table to inspect timeline</span>
+            </div>
+            <button type="button" id="reports-collapse-toggle-btn" class="reports-toggle-collapse-btn" onclick="ReportsView.toggleFilterCollapse()" title="Toggle Filter Panel Visibility">
+              <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+              <span>Collapse</span>
+            </button>
           </div>
         </div>
 
-        <!-- Section 1: Academic Scope -->
-        <div class="reports-filter-card-section">
-          <div class="reports-group-title">
-            <i data-lucide="graduation-cap"></i>
-            <span>1. Academic Scope</span>
+        <!-- Filter Summary Bar (Shown when collapsed) -->
+        <div id="reports-filter-summary-bar" class="reports-filter-summary-bar hidden">
+          <div class="flex items-center gap-2">
+            <i data-lucide="filter" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <span id="reports-filter-summary-text" class="font-medium text-slate-700">Filters: All Departments &bull; All Programs &bull; Full Term</span>
           </div>
-          <div class="reports-filter-grid">
-            <!-- 1. Department -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-semibold">Department</label>
-              <select id="report-dept-select" class="form-select text-xs" onchange="ReportsView.onDeptChange(this.value)">
-                <option value="" selected>Select Department...</option>
-                <option value="ALL">All Departments</option>
-              </select>
-            </div>
+          <button type="button" class="text-indigo-600 font-bold hover:underline" onclick="ReportsView.toggleFilterCollapse()">
+            Edit Filters
+          </button>
+        </div>
 
-            <!-- 2. Program -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-semibold">Program / Degree</label>
-              <div class="multi-select-container" id="report-prog-container">
-                <div class="multi-select-box" id="report-prog-trigger" onclick="ReportsView.toggleDropdown('prog')">
-                  <div class="multi-select-chips" id="report-prog-chips"></div>
-                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+        <!-- Collapsible Filter Body -->
+        <div id="reports-filters-collapsible">
+          <!-- Section 1: Academic Scope -->
+          <div class="reports-filter-card-section">
+            <div class="reports-group-title">
+              <i data-lucide="graduation-cap"></i>
+              <span>1. Academic Scope</span>
+            </div>
+            <div class="reports-filter-grid">
+              <!-- 1. Department -->
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold">Department</label>
+                <select id="report-dept-select" class="form-select text-xs" onchange="ReportsView.onDeptChange(this.value)">
+                  <option value="" selected>Select Department...</option>
+                  <option value="ALL">All Departments</option>
+                </select>
+              </div>
+
+              <!-- 2. Program -->
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold">Program / Degree</label>
+                <div class="multi-select-container" id="report-prog-container">
+                  <div class="multi-select-box" id="report-prog-trigger" onclick="ReportsView.toggleDropdown('prog')">
+                    <div class="multi-select-chips" id="report-prog-chips"></div>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                  </div>
+                  <div class="multi-select-dropdown hidden" id="report-prog-menu">
+                    <div id="report-prog-items" class="space-y-1"></div>
+                    <div class="multi-select-actions">
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('prog')">Select All</button>
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('prog')">Clear All</button>
+                    </div>
+                  </div>
                 </div>
-                <div class="multi-select-dropdown hidden" id="report-prog-menu">
-                  <div id="report-prog-items" class="space-y-1"></div>
-                  <div class="multi-select-actions">
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('prog')">Select All</button>
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('prog')">Clear All</button>
+              </div>
+
+              <!-- 3. Semester -->
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold">Semester</label>
+                <div class="multi-select-container" id="report-sem-container">
+                  <div class="multi-select-box" id="report-sem-trigger" onclick="ReportsView.toggleDropdown('sem')">
+                    <div class="multi-select-chips" id="report-sem-chips"></div>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                  </div>
+                  <div class="multi-select-dropdown hidden" id="report-sem-menu">
+                    <div id="report-sem-items" class="space-y-1"></div>
+                    <div class="multi-select-actions">
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('sem')">Select All</button>
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('sem')">Clear All</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. Division -->
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold">Division / Section</label>
+                <div class="multi-select-container" id="report-div-container">
+                  <div class="multi-select-box" id="report-div-trigger" onclick="ReportsView.toggleDropdown('div')">
+                    <div class="multi-select-chips" id="report-div-chips"></div>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                  </div>
+                  <div class="multi-select-dropdown hidden" id="report-div-menu">
+                    <div id="report-div-items" class="space-y-1"></div>
+                    <div class="multi-select-actions">
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('div')">Select All</button>
+                      <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('div')">Clear All</button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- 3. Semester -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-semibold">Semester</label>
-              <div class="multi-select-container" id="report-sem-container">
-                <div class="multi-select-box" id="report-sem-trigger" onclick="ReportsView.toggleDropdown('sem')">
-                  <div class="multi-select-chips" id="report-sem-chips"></div>
-                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-                </div>
-                <div class="multi-select-dropdown hidden" id="report-sem-menu">
-                  <div id="report-sem-items" class="space-y-1"></div>
-                  <div class="multi-select-actions">
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('sem')">Select All</button>
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('sem')">Clear All</button>
-                  </div>
-                </div>
+          <!-- Section 2: Subject & Timeframe Refinements -->
+          <div class="reports-filter-card-section">
+            <div class="reports-group-title">
+              <i data-lucide="calendar"></i>
+              <span>2. Subject & Timeframe</span>
+            </div>
+            <div class="reports-filter-grid">
+              <!-- Course / Subject -->
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold">Course / Subject</label>
+                <select id="report-course-select" class="form-select text-xs" onchange="ReportsView.onCourseChange(this.value)">
+                  <option value="" selected>All Courses in Scope</option>
+                </select>
+              </div>
+
+              <!-- Attendance Type -->
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold">Attendance Type</label>
+                <select id="report-att-type-select" class="form-select text-xs" onchange="ReportsView.onAttendanceTypeChange(this.value)">
+                  <option value="ALL" selected>All Attendance Records</option>
+                  <option value="REGULAR">Normal Course Attendance</option>
+                  <option value="EXTRA_LECTURE">🟠 Extra Lecture Attendance</option>
+                </select>
+              </div>
+
+              <!-- From Date -->
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold">From Date</label>
+                <input type="date" id="report-start-date" class="form-input text-xs" onchange="ReportsView.state.startDate = this.value; ReportsView.clearPresetActive();" />
+              </div>
+
+              <!-- To Date -->
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold">To Date</label>
+                <input type="date" id="report-end-date" class="form-input text-xs" onchange="ReportsView.state.endDate = this.value; ReportsView.clearPresetActive();" />
               </div>
             </div>
-
-            <!-- 4. Division -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-semibold">Division / Section</label>
-              <div class="multi-select-container" id="report-div-container">
-                <div class="multi-select-box" id="report-div-trigger" onclick="ReportsView.toggleDropdown('div')">
-                  <div class="multi-select-chips" id="report-div-chips"></div>
-                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-                </div>
-                <div class="multi-select-dropdown hidden" id="report-div-menu">
-                  <div id="report-div-items" class="space-y-1"></div>
-                  <div class="multi-select-actions">
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5" onclick="event.stopPropagation(); ReportsView.selectAll('div')">Select All</button>
-                    <button type="button" class="btn-secondary text-[11px] py-1 px-2.5 text-rose-600" onclick="event.stopPropagation(); ReportsView.clearAll('div')">Clear All</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 2: Subject & Timeframe Refinements -->
-        <div class="reports-filter-card-section">
-          <div class="reports-group-title">
-            <i data-lucide="calendar"></i>
-            <span>2. Subject & Timeframe</span>
-          </div>
-          <div class="reports-filter-grid">
-            <!-- Course / Subject -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-semibold">Course / Subject</label>
-              <select id="report-course-select" class="form-select text-xs" onchange="ReportsView.onCourseChange(this.value)">
-                <option value="" selected>All Courses in Scope</option>
-              </select>
-            </div>
-
-            <!-- Attendance Type -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-semibold">Attendance Type</label>
-              <select id="report-att-type-select" class="form-select text-xs" onchange="ReportsView.onAttendanceTypeChange(this.value)">
-                <option value="ALL" selected>All Attendance Records</option>
-                <option value="REGULAR">Normal Course Attendance</option>
-                <option value="EXTRA_LECTURE">🟠 Extra Lecture Attendance</option>
-              </select>
-            </div>
-
-            <!-- From Date -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-semibold">From Date</label>
-              <input type="date" id="report-start-date" class="form-input text-xs" onchange="ReportsView.state.startDate = this.value;" />
-            </div>
-
-            <!-- To Date -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-semibold">To Date</label>
-              <input type="date" id="report-end-date" class="form-input text-xs" onchange="ReportsView.state.endDate = this.value;" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Bottom Action Bar: Presets & Filter Buttons -->
-        <div class="reports-bottom-bar">
-          <!-- Quick Presets -->
-          <div class="reports-presets-row">
-            <span class="text-[11px] font-bold text-slate-500 mr-1 uppercase">Presets:</span>
-            <button type="button" class="preset-chip-btn" onclick="ReportsView.setPreset('today')">Today</button>
-            <button type="button" class="preset-chip-btn" onclick="ReportsView.setPreset('this_week')">This Week</button>
-            <button type="button" class="preset-chip-btn" onclick="ReportsView.setPreset('this_month')">This Month</button>
-            <button type="button" class="preset-chip-btn" onclick="ReportsView.setPreset('all_time')">Full Term</button>
-            <button type="button" class="preset-chip-btn text-rose-600 hover:bg-rose-50 border-rose-200" onclick="ReportsView.resetFilters()">Reset All</button>
           </div>
 
-          <!-- Main Actions -->
-          <div class="reports-export-actions">
-            <button type="button" class="btn-primary btn-sm flex items-center gap-1.5" onclick="ReportsView.applyFilters()">
-              <i data-lucide="filter" class="w-3.5 h-3.5"></i>
-              <span>Apply Filter</span>
-            </button>
-            <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5 text-emerald-700 hover:bg-emerald-50 border-emerald-300" onclick="ReportsView.downloadExcel()" title="Export data as Excel spreadsheet">
-              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
-              <span>Excel</span>
-            </button>
-            <button type="button" class="btn-secondary btn-sm flex items-center gap-1.5 text-indigo-700 hover:bg-indigo-50 border-indigo-200" onclick="ReportsView.downloadPdf()" title="Export official printable PDF dossier">
-              <i data-lucide="file-text" class="w-3.5 h-3.5 text-indigo-600"></i>
-              <span>PDF</span>
-            </button>
+          <!-- Bottom Action Bar: Presets & Filter Buttons -->
+          <div class="reports-bottom-bar">
+            <!-- Quick Presets -->
+            <div class="reports-presets-row">
+              <span class="reports-preset-label">Presets:</span>
+              <button type="button" class="preset-chip-btn" data-preset="today" onclick="ReportsView.setPreset('today')">Today</button>
+              <button type="button" class="preset-chip-btn" data-preset="this_week" onclick="ReportsView.setPreset('this_week')">This Week</button>
+              <button type="button" class="preset-chip-btn" data-preset="this_month" onclick="ReportsView.setPreset('this_month')">This Month</button>
+              <button type="button" class="preset-chip-btn active" data-preset="all_time" onclick="ReportsView.setPreset('all_time')">Full Term</button>
+              <button type="button" class="preset-chip-btn text-rose-600 hover:bg-rose-50 border-rose-200" onclick="ReportsView.resetFilters()">Reset All</button>
+            </div>
+
+            <!-- Main Actions -->
+            <div class="reports-export-actions">
+              <button type="button" class="btn-primary reports-action-btn" id="report-apply-btn" onclick="ReportsView.applyFilters()">
+                <i data-lucide="filter"></i>
+                <span>Apply Filter</span>
+              </button>
+              <button type="button" class="btn-secondary reports-action-btn text-emerald-700 hover:bg-emerald-50 border-emerald-300" onclick="ReportsView.downloadExcel()" title="Export data as Excel spreadsheet">
+                <i data-lucide="file-spreadsheet" class="text-emerald-600"></i>
+                <span>Excel</span>
+              </button>
+              <button type="button" class="btn-secondary reports-action-btn text-indigo-700 hover:bg-indigo-50 border-indigo-200" onclick="ReportsView.downloadPdf()" title="Export official printable PDF dossier">
+                <i data-lucide="file-text" class="text-indigo-600"></i>
+                <span>PDF</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -482,6 +507,69 @@ const ReportsView = {
     `;
   },
 
+  isFilterCollapsed: false,
+
+  toggleFilterCollapse() {
+    this.isFilterCollapsed = !this.isFilterCollapsed;
+    const body = document.getElementById("reports-filters-collapsible");
+    const toggleBtn = document.getElementById("reports-collapse-toggle-btn");
+    const summaryBar = document.getElementById("reports-filter-summary-bar");
+
+    if (body) {
+      if (this.isFilterCollapsed) body.classList.add("hidden");
+      else body.classList.remove("hidden");
+    }
+    if (toggleBtn) {
+      toggleBtn.innerHTML = this.isFilterCollapsed
+        ? '<i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-indigo-600"></i><span>Edit Filters</span>'
+        : '<i data-lucide="chevron-up" class="w-3.5 h-3.5"></i><span>Collapse</span>';
+      if (window.lucide) window.lucide.createIcons();
+    }
+    if (summaryBar) {
+      if (this.isFilterCollapsed) {
+        summaryBar.classList.remove("hidden");
+        this.updateFilterSummaryText();
+      } else {
+        summaryBar.classList.add("hidden");
+      }
+    }
+  },
+
+  updateFilterSummaryText() {
+    const textEl = document.getElementById("reports-filter-summary-text");
+    if (!textEl) return;
+    const parts = [];
+    parts.push(this.state.department && this.state.department !== 'ALL' ? `Dept: ${this.state.department}` : 'All Depts');
+    if (this.state.selectedPrograms.size > 0) parts.push(`Prog: ${Array.from(this.state.selectedPrograms).join(',')}`);
+    if (this.state.selectedSemesters.size > 0) parts.push(`Sem: ${Array.from(this.state.selectedSemesters).join(',')}`);
+    if (this.state.selectedDivisions.size > 0) parts.push(`Div: ${Array.from(this.state.selectedDivisions).join(',')}`);
+    if (this.state.startDate || this.state.endDate) {
+      parts.push(`Dates: ${this.state.startDate || 'Start'} to ${this.state.endDate || 'Now'}`);
+    } else {
+      parts.push('Full Term');
+    }
+    textEl.textContent = `Active Scope: ${parts.join(' • ')}`;
+  },
+
+  clearPresetActive() {
+    document.querySelectorAll(".preset-chip-btn[data-preset]").forEach(b => b.classList.remove("active"));
+  },
+
+  clearStudentSearch() {
+    const input = document.getElementById("student-search-input");
+    const clearBtn = document.getElementById("student-search-clear");
+    const resultsBox = document.getElementById("student-search-results");
+    if (input) {
+      input.value = "";
+      input.focus();
+    }
+    if (clearBtn) clearBtn.classList.add("hidden");
+    if (resultsBox) {
+      resultsBox.classList.add("hidden");
+      resultsBox.innerHTML = "";
+    }
+  },
+
   setPreset(preset) {
     const startInput = document.getElementById("report-start-date");
     const endInput = document.getElementById("report-end-date");
@@ -511,6 +599,11 @@ const ReportsView = {
 
     startInput.value = this.state.startDate;
     endInput.value = this.state.endDate;
+
+    document.querySelectorAll(".preset-chip-btn[data-preset]").forEach(b => {
+      b.classList.toggle("active", b.dataset.preset === preset);
+    });
+
     this.applyFilters();
   },
 
@@ -534,6 +627,10 @@ const ReportsView = {
     const endInput = document.getElementById("report-end-date");
     if (startInput) startInput.value = "";
     if (endInput) endInput.value = "";
+
+    this.clearPresetActive();
+    const allTimeBtn = document.querySelector('.preset-chip-btn[data-preset="all_time"]');
+    if (allTimeBtn) allTimeBtn.classList.add("active");
 
     this.renderMultiSelect("prog");
     this.renderMultiSelect("sem");
@@ -582,6 +679,18 @@ const ReportsView = {
     const container = document.getElementById("report-view-content");
     if (!container) return;
 
+    const applyBtn = document.getElementById("report-apply-btn");
+    const refreshBtn = document.getElementById("report-refresh-btn");
+
+    if (applyBtn) {
+      applyBtn.disabled = true;
+      applyBtn.innerHTML = '<span class="spinner-sm" style="width:12px;height:12px;border-width:2px;margin-right:4px;"></span><span>Applying...</span>';
+    }
+    if (refreshBtn) {
+      const icon = refreshBtn.querySelector("i, svg");
+      if (icon) icon.classList.add("animate-spin");
+    }
+
     container.innerHTML = `
       <div class="glass-panel text-center py-16 text-slate-500">
         <span class="spinner-sm mr-2"></span> Compiling Program & Division attendance analytics...
@@ -593,6 +702,7 @@ const ReportsView = {
       const data = await API.get(`/reports/advanced-data?${qs}`);
       this.currentReportData = data;
       this.renderReportResults(data);
+      this.updateFilterSummaryText();
 
     } catch (err) {
       container.innerHTML = `
@@ -603,12 +713,28 @@ const ReportsView = {
         </div>
       `;
       if (window.lucide) window.lucide.createIcons();
+    } finally {
+      if (applyBtn) {
+        applyBtn.disabled = false;
+        applyBtn.innerHTML = '<i data-lucide="filter" class="w-3.5 h-3.5"></i> <span>Apply Filter</span>';
+      }
+      if (refreshBtn) {
+        const icon = refreshBtn.querySelector("i, svg");
+        if (icon) icon.classList.remove("animate-spin");
+      }
+      if (window.lucide) window.lucide.createIcons();
     }
   },
 
   handleStudentSearch(query) {
     const resultsBox = document.getElementById("student-search-results");
+    const clearBtn = document.getElementById("student-search-clear");
     if (!resultsBox) return;
+
+    if (clearBtn) {
+      if (query && query.trim().length > 0) clearBtn.classList.remove("hidden");
+      else clearBtn.classList.add("hidden");
+    }
 
     if (!query || query.trim().length < 2) {
       resultsBox.classList.add("hidden");
