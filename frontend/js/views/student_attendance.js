@@ -228,6 +228,12 @@ const StudentAttendanceView = {
     const isFrozen = Boolean(d.is_frozen || d.attendance_status === "FROZEN");
     const frozenCount = Number(d.normal_frozen || d.total_frozen || 0);
 
+    const semPct = Number(d.semester_attendance_percentage !== undefined ? d.semester_attendance_percentage : finalPct);
+    const semPresent = Number(d.semester_total_present !== undefined ? d.semester_total_present : d.total_present);
+    const semTotal = Number(d.semester_total_sessions !== undefined ? d.semester_total_sessions : d.total_sessions);
+    const semIsDef = Boolean(d.semester_is_defaulter !== undefined ? d.semester_is_defaulter : isDef);
+    const semStatus = d.semester_eligibility_status || (semIsDef ? `DEFAULTER <${threshold}%` : `ELIGIBLE ≥${threshold}%`);
+
     const backLabel = this.referrer === "students" ? "← Back to Student Directory" : "← Back to Reports & Export";
     const initials = (d.full_name || "S").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
@@ -326,7 +332,7 @@ const StudentAttendanceView = {
                 ${d.photo_url ? `
                   <img src="${d.photo_url}" 
                        alt="${d.full_name}" 
-                       id="student-profile-photo-img"
+                       id="student-profile-photo-img" 
                        class="student-photo-img"
                        onerror="this.style.display='none'; document.getElementById('student-profile-avatar-fallback').style.display='flex';" />
                   <div class="student-avatar-initials-lg" id="student-profile-avatar-fallback" style="display: none;">
@@ -428,6 +434,33 @@ const StudentAttendanceView = {
                 </div>
               </div>
 
+              <!-- Current Semester Overall Attendance Audit Banner -->
+              <div class="student-sem-summary-banner">
+                <div class="student-sem-summary-left">
+                  <div class="student-sem-summary-tag">
+                    <i data-lucide="graduation-cap" style="width: 15px; height: 15px;"></i>
+                    <span>CURRENT SEMESTER ATTENDANCE AUDIT</span>
+                  </div>
+                  <div class="student-sem-summary-stats">
+                    <span class="sem-stat-badge"><b>${semPresent}</b> Attended</span>
+                    <span class="sem-stat-sep">/</span>
+                    <span class="sem-stat-badge"><b>${semTotal}</b> Total Lectures</span>
+                    <span class="sem-stat-sub">(${d.program || 'Degree'} &bull; ${d.semester || 'Current Sem'} &bull; Div ${d.division || 'A'})</span>
+                  </div>
+                </div>
+                <div class="student-sem-summary-right">
+                  <div class="student-sem-rate">
+                    <span class="sem-rate-num" style="color: ${semPct < threshold ? '#dc2626' : '#15803d'};">
+                      ${semPct}%
+                    </span>
+                    <span class="sem-rate-lbl">Semester Cumulative</span>
+                  </div>
+                  <span class="badge ${semIsDef ? 'badge-absent' : 'badge-present'}" style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; text-transform: uppercase;">
+                    ${semIsDef ? `DEFAULTER <${threshold}%` : `ELIGIBLE ≥${threshold}%`}
+                  </span>
+                </div>
+              </div>
+
             </div>
 
           </div>
@@ -493,12 +526,12 @@ const StudentAttendanceView = {
               <span class="transcript-kpi-caption" style="color: #92400e; font-weight: 700;">Approved Credits</span>
             </div>
 
-            <!-- Card 6: Final Attendance -->
+            <!-- Card 6: Current Sem Overall -->
             <div class="transcript-kpi-card ${isDef ? 'kpi-card-defaulter' : 'kpi-card-eligible'}">
-              <span class="transcript-kpi-title" style="color: ${isDef ? '#9f1239' : '#065f46'};">Final Attendance</span>
+              <span class="transcript-kpi-title" style="color: ${isDef ? '#9f1239' : '#065f46'};">Current Sem Overall</span>
               <span class="transcript-kpi-val" style="color: ${isDef ? '#e11d48' : '#059669'};">${finalPct}%</span>
               <span class="transcript-kpi-caption" style="color: ${isDef ? '#e11d48' : '#059669'}; font-weight: 800;">
-                ${isDef ? 'Defaulter (<75%)' : 'Eligible (≥75%)'}
+                ${isDef ? 'Defaulter (<75%)' : 'Eligible (≥75%)'} (${d.total_present}/${d.total_sessions})
               </span>
             </div>
 

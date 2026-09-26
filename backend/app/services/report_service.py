@@ -806,6 +806,62 @@ class ReportService:
         final_pct = round((total_present / total_sessions) * 100.0, 2) if total_sessions > 0 else 0.0
         is_overall_defaulter = final_pct < settings.DEFAULTER_THRESHOLD_PERCENT if total_sessions > 0 else False
 
+        # Current Semester Overall Cumulative Statistics (Always across the entire semester)
+        if start_date is None and end_date is None:
+            sem_total_sessions = total_sessions
+            sem_total_present = total_present
+            sem_total_absent = total_absent
+            sem_pct = final_pct
+            sem_is_def = is_overall_defaulter
+            sem_status = "DEFAULTER" if is_overall_defaulter else "ELIGIBLE"
+        else:
+            sem_norm_query = db.query(AttendanceSession).filter(AttendanceSession.finalized_at.isnot(None))
+            if enrolled_course_ids:
+                sem_norm_query = sem_norm_query.filter(AttendanceSession.class_id.in_(enrolled_course_ids))
+            else:
+                sem_norm_query = sem_norm_query.filter(AttendanceSession.id == -1)
+            sem_normal_sessions = sem_norm_query.all()
+            sem_normal_session_ids = [s.id for s in sem_normal_sessions]
+            sem_normal_total = len(sem_normal_sessions)
+
+            sem_rec_query = db.query(AttendanceRecord).join(AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id).filter(
+                AttendanceSession.finalized_at.isnot(None),
+                AttendanceRecord.student_id == student.id
+            )
+            sem_records = sem_rec_query.all()
+            sem_rec_map = {r.session_id: r for r in sem_records}
+
+            sem_normal_present = 0
+            sem_normal_frozen = 0
+            for s in sem_normal_sessions:
+                r = sem_rec_map.get(s.id)
+                st = r.status if r else "ABSENT"
+                is_ex = bool(r and (r.is_extra_lecture or r.attendance_type == "EXTRA_LECTURE" or getattr(r, "verification_type", None) == "EXTRA_LECTURE"))
+                if st == "FROZEN":
+                    sem_normal_frozen += 1
+                elif not is_ex and st in ["PRESENT", "LATE"]:
+                    sem_normal_present += 1
+
+            sem_extra_query = db.query(AttendanceRecord).join(AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id).filter(
+                AttendanceSession.finalized_at.isnot(None),
+                AttendanceRecord.student_id == student.id,
+                AttendanceRecord.status.in_(["PRESENT", "LATE"]),
+                (AttendanceRecord.is_extra_lecture == True) |
+                (AttendanceRecord.verification_type == "EXTRA_LECTURE") |
+                (AttendanceRecord.attendance_type == "EXTRA_LECTURE") |
+                (~AttendanceRecord.session_id.in_(sem_normal_session_ids) if sem_normal_session_ids else True)
+            )
+            sem_extra_session_ids = {rec.session_id for rec in sem_extra_query.all() if rec.session_id}
+            sem_extra_count = len(sem_extra_session_ids)
+
+            sem_normal_eligible = max(0, sem_normal_total - sem_normal_frozen)
+            sem_total_sessions = sem_normal_eligible + sem_extra_count
+            sem_total_present = sem_normal_present + sem_extra_count
+            sem_total_absent = max(0, sem_total_sessions - sem_total_present)
+            sem_pct = round((sem_total_present / sem_total_sessions) * 100.0, 2) if sem_total_sessions > 0 else 0.0
+            sem_is_def = sem_pct < settings.DEFAULTER_THRESHOLD_PERCENT if sem_total_sessions > 0 else False
+            sem_status = "DEFAULTER" if sem_is_def else "ELIGIBLE"
+
         photo_url = getattr(student, "photo_url", None)
         if not photo_url and getattr(student, "photo_urls", None) and len(student.photo_urls) > 0:
             photo_url = student.photo_urls[0]
@@ -859,7 +915,7 @@ class ReportService:
             "extra_lecture_count": extra_count,
             "extra_lectures_count": extra_count,
             
-            # Combined Total Sessions
+            # Combined Total Sessions (Period / Filtered Range)
             "total_sessions": total_sessions,
             "total_present": total_present,
             "total_absent": total_absent,
@@ -872,6 +928,14 @@ class ReportService:
             # Eligibility / Defaulter
             "is_defaulter": is_overall_defaulter,
             "eligibility_status": "DEFAULTER" if is_overall_defaulter else "ELIGIBLE",
+
+            # Full Current Semester Overall Cumulative Statistics
+            "semester_total_sessions": sem_total_sessions,
+            "semester_total_present": sem_total_present,
+            "semester_total_absent": sem_total_absent,
+            "semester_attendance_percentage": sem_pct,
+            "semester_is_defaulter": sem_is_def,
+            "semester_eligibility_status": sem_status,
             
             # Lists
             "subjects_breakdown": subjects_list,
@@ -1051,7 +1115,45 @@ class ReportService:
             ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
         ]))
         elements.append(kpi_tbl)
-        elements.append(Spacer(1, 6))
+        elements.append(Spacer(1, 4))
+
+        # Current Semester Overall Cumulative Standing Callout Strip
+        sem_pct_val = data.get("semester_attendance_percentage", data["final_percentage"])
+        sem_pres_val = data.get("semester_total_present", data["total_present"])
+        sem_tot_val = data.get("semester_total_sessions", data["total_sessions"])
+        sem_is_def = data.get("semester_is_defaulter", data["is_defaulter"])
+        sem_status_str = data.get("semester_eligibility_status", data["eligibility_status"])
+        sem_color = "#B91C1C" if sem_is_def else "#15803D"
+
+        sem_line = (
+            f"<b>ACADEMIC AUDIT CUMULATIVE:</b> Full Current Semester Cumulative: "
+            f"<font color='{sem_color}'><b>{sem_pct_val}%</b></font> "
+            f"({sem_pres_val} Attended / {sem_tot_val} Conducted Sessions across all semester subjects) &bull; "
+            f"Standing: <font color='{sem_color}'><b>{sem_status_str}</b></font>"
+        )
+        if start_date or end_date:
+            p_start = format_ist_date(start_date) if start_date else "Term Start"
+            p_end = format_ist_date(end_date) if end_date else "Present"
+            sem_line = f"<b>📅 Filtered Period ({p_start} to {p_end}):</b> Period Rate: <b>{data['final_percentage']}%</b> &bull; " + sem_line
+
+        sem_callout_style = ParagraphStyle(
+            "SemCallout",
+            parent=tbl_cell_l,
+            fontSize=7.2,
+            leading=9.5,
+            textColor=colors.HexColor("#0F172A")
+        )
+        sem_tbl = Table([[Paragraph(sem_line, sem_callout_style)]], colWidths=[7.49*inch])
+        sem_tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F0FDF4") if not sem_is_def else colors.HexColor("#FEF2F2")),
+            ("BOX", (0, 0), (-1, -1), 0.75, colors.HexColor("#86EFAC") if not sem_is_def else colors.HexColor("#FECACA")),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(sem_tbl)
+        elements.append(Spacer(1, 5))
 
         # Section 1: Subject-Wise Attendance Breakdown Table
         elements.append(Paragraph("<b>1. Subject-Wise Attendance Breakdown</b>", section_heading))

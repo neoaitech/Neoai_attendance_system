@@ -173,8 +173,8 @@ def send_raw_smtp_email(
         return False, str(e)
 
 
-def build_monthly_html_body(student_name: str, roll_number: str, program: str, division: str, summary: Dict[str, Any], month_label: str) -> str:
-    """Builds a beautiful responsive HTML email body for single monthly attendance report."""
+def build_monthly_html_body(student_name: str, roll_number: str, program: str, division: str, summary: Dict[str, Any], month_label: str, semester_summary: Optional[Dict[str, Any]] = None) -> str:
+    """Builds a beautiful responsive HTML email body for single monthly attendance report with both monthly and full semester statistics."""
     if not summary:
         summary = {}
 
@@ -184,25 +184,52 @@ def build_monthly_html_body(student_name: str, roll_number: str, program: str, d
     absent = summary.get("total_absent") if summary.get("total_absent") is not None else summary.get("overall_stats", {}).get("total_absent", 0)
     frozen = summary.get("normal_frozen") if summary.get("normal_frozen") is not None else (summary.get("total_frozen") if summary.get("total_frozen") is not None else summary.get("overall_stats", {}).get("total_frozen", 0))
 
-    # Color tokens
+    # Full Current Semester Cumulative Stats
+    if semester_summary:
+        sem_pct = semester_summary.get("final_percentage", 0.0)
+        sem_conducted = semester_summary.get("total_sessions", 0)
+        sem_attended = semester_summary.get("total_present", 0)
+        sem_absent = semester_summary.get("total_absent", 0)
+        sem_is_def = semester_summary.get("is_defaulter", (sem_pct < 75.0 if sem_conducted > 0 else False))
+    elif summary.get("semester_attendance_percentage") is not None:
+        sem_pct = summary.get("semester_attendance_percentage", 0.0)
+        sem_conducted = summary.get("semester_total_sessions", 0)
+        sem_attended = summary.get("semester_total_present", 0)
+        sem_absent = summary.get("semester_total_absent", 0)
+        sem_is_def = summary.get("semester_is_defaulter", (sem_pct < 75.0 if sem_conducted > 0 else False))
+    else:
+        sem_pct = pct
+        sem_conducted = conducted
+        sem_attended = attended
+        sem_absent = absent
+        sem_is_def = (pct < 75.0 if conducted > 0 else False)
+
+    sem_status_text = "DEFAULTER (<75%)" if sem_is_def else "ELIGIBLE (≥75%)"
+    sem_badge_bg = "#fef2f2" if sem_is_def else "#ecfdf5"
+    sem_badge_border = "#fecaca" if sem_is_def else "#a7f3d0"
+    sem_badge_text = "#991b1b" if sem_is_def else "#065f46"
+    sem_color = "#dc2626" if sem_is_def else "#15803d"
+    sem_name = summary.get("semester") or (semester_summary.get("semester") if semester_summary else "Current Semester")
+
+    # Color tokens for Monthly Status
     if pct >= 75.0:
         status_badge_bg = "#ecfdf5"
         status_badge_border = "#a7f3d0"
         status_badge_text = "#065f46"
-        status_title = "GOOD STANDING (>=75%)"
-        status_desc = "Congratulations! Your attendance meets the institutional criteria. Keep up the regular attendance!"
+        status_title = f"{month_label.upper()} GOOD STANDING (>=75%)"
+        status_desc = f"Congratulations! Your {month_label} attendance meets the institutional criteria. Keep up the regular attendance!"
     elif pct >= 65.0:
         status_badge_bg = "#fffbeb"
         status_badge_border = "#fde68a"
         status_badge_text = "#92400e"
-        status_title = "WARNING ZONE (65% - 74.9%)"
-        status_desc = "Notice: Your attendance is slightly below the mandatory 75% threshold. Please attend upcoming lectures to avoid defaulter penalty."
+        status_title = f"{month_label.upper()} WARNING ZONE (65% - 74.9%)"
+        status_desc = f"Notice: Your {month_label} attendance is slightly below the mandatory 75% threshold. Please attend upcoming lectures to maintain semester eligibility."
     else:
         status_badge_bg = "#fef2f2"
         status_badge_border = "#fecaca"
         status_badge_text = "#991b1b"
-        status_title = "CRITICAL DEFAULTER (<65%)"
-        status_desc = "Urgent: Your attendance is severely low. Please meet your Class Coordinator / HOD immediately to resolve your attendance shortage."
+        status_title = f"{month_label.upper()} CRITICAL DEFAULTER (<65%)"
+        status_desc = f"Urgent: Your {month_label} attendance is severely low. Please meet your Class Coordinator / HOD immediately to resolve your attendance shortage."
 
     # Subject breakdown table rows
     subjects = summary.get("subjects_breakdown") or summary.get("subject_breakdown", [])
@@ -245,43 +272,83 @@ def build_monthly_html_body(student_name: str, roll_number: str, program: str, d
                         
                         <!-- Header Banner -->
                         <tr>
-                            <td style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 28px 30px; text-align: left;">
+                            <td style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 26px 30px; text-align: left;">
                                 <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #c7d2fe; margin-bottom: 6px;">Neo AI Attendance Portal &bull; Monthly Attendance Report</div>
                                 <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 800;">{month_label} Academic Attendance Summary</h1>
                             </td>
                         </tr>
 
-                        <!-- Student Meta Strip -->
+                        <!-- Student Meta Strip with Dual Scorecard -->
                         <tr>
-                            <td style="padding: 20px 30px; background-color: #f1f5f9; border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 18px 24px; background-color: #f1f5f9; border-bottom: 1px solid #e2e8f0;">
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td>
                                             <div style="font-size: 15px; font-weight: 700; color: #0f172a;">{student_name}</div>
-                                            <div style="font-size: 12px; color: #475569; margin-top: 2px;">Roll Number: <b>{roll_number}</b> &bull; Program: <b>{program}</b> &bull; Div: <b>{division}</b></div>
+                                            <div style="font-size: 12px; color: #475569; margin-top: 2px;">Roll Number: <b>{roll_number}</b> &bull; Program: <b>{program}</b> &bull; {sem_name} &bull; Div: <b>{division}</b></div>
                                         </td>
                                         <td align="right">
-                                            <div style="font-size: 28px; font-weight: 900; color: {'#15803d' if pct >= 75.0 else ('#b45309' if pct >= 65.0 else '#dc2626')}; font-family: monospace;">{pct}%</div>
-                                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b;">Monthly Aggregate</div>
+                                            <table cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                                <tr>
+                                                    <td style="padding: 0 14px; text-align: right; border-right: 1.5px solid #cbd5e1;">
+                                                        <div style="font-size: 24px; font-weight: 900; color: {'#15803d' if pct >= 75.0 else ('#b45309' if pct >= 65.0 else '#dc2626')}; font-family: monospace;">{pct}%</div>
+                                                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b;">{month_label} Rate</div>
+                                                    </td>
+                                                    <td style="padding-left: 14px; text-align: right;">
+                                                        <div style="font-size: 24px; font-weight: 900; color: {sem_color}; font-family: monospace;">{sem_pct}%</div>
+                                                        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #4338ca;">Current Sem Overall</div>
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </td>
                                     </tr>
                                 </table>
                             </td>
                         </tr>
 
-                        <!-- Advisory Status Card -->
+                        <!-- Full Current Semester Overall Progress Banner -->
                         <tr>
-                            <td style="padding: 24px 30px 10px;">
-                                <div style="background-color: {status_badge_bg}; border: 1px solid {status_badge_border}; border-radius: 10px; padding: 14px 18px;">
-                                    <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: {status_badge_text}; margin-bottom: 4px;">{status_title}</div>
-                                    <div style="font-size: 13px; color: {status_badge_text}; line-height: 1.4;">{status_desc}</div>
+                            <td style="padding: 14px 24px 8px;">
+                                <div style="background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%); border: 1.5px solid #c7d2fe; border-radius: 12px; padding: 14px 18px;">
+                                    <table width="100%" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td>
+                                                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #4338ca; margin-bottom: 3px;">
+                                                    🎓 Full Current Semester Progress Audit ({program} • {sem_name})
+                                                </div>
+                                                <div style="font-size: 13px; color: #1e293b; font-weight: 600;">
+                                                    Cumulative Attendance: <span style="font-size: 14px; font-weight: 800; color: {sem_color};">{sem_attended}</span> attended out of <span style="font-size: 14px; font-weight: 800; color: #0f172a;">{sem_conducted}</span> conducted lectures across all semester subjects.
+                                                </div>
+                                                <div style="font-size: 11.5px; color: #64748b; margin-top: 3px;">
+                                                    {'📈 Great progress! Your ' + month_label + ' attendance (' + str(pct) + '%) is higher than your semester average (' + str(sem_pct) + '%).' if pct >= sem_pct else '⚠️ Attention: Your ' + month_label + ' attendance (' + str(pct) + '%) is below your semester average (' + str(sem_pct) + '%). Ensure regular attendance.'}
+                                                </div>
+                                            </td>
+                                            <td align="right" style="vertical-align: middle; padding-left: 12px;">
+                                                <div style="background-color: {sem_badge_bg}; border: 1px solid {sem_badge_border}; border-radius: 8px; padding: 6px 10px; text-align: center; display: inline-block;">
+                                                    <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: {sem_badge_text};">{sem_status_text}</div>
+                                                    <div style="font-size: 9.5px; color: {sem_badge_text}; margin-top: 2px;">Overall Sem: <b>{sem_pct}%</b></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </td>
                         </tr>
 
-                        <!-- 4 Stat Metric Cards -->
+                        <!-- Advisory Status Card -->
                         <tr>
-                            <td style="padding: 15px 30px;">
+                            <td style="padding: 10px 24px 6px;">
+                                <div style="background-color: {status_badge_bg}; border: 1px solid {status_badge_border}; border-radius: 10px; padding: 12px 16px;">
+                                    <div style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: {status_badge_text}; margin-bottom: 3px;">{status_title}</div>
+                                    <div style="font-size: 12.5px; color: {status_badge_text}; line-height: 1.4;">{status_desc}</div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- 4 Stat Metric Cards (Selected Month) -->
+                        <tr>
+                            <td style="padding: 10px 24px 14px;">
+                                <div style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">{month_label} Monthly Lecture Metrics</div>
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td width="23%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
@@ -310,8 +377,8 @@ def build_monthly_html_body(student_name: str, roll_number: str, program: str, d
 
                         <!-- Subject-wise Breakdown Table -->
                         <tr>
-                            <td style="padding: 10px 30px 24px;">
-                                <div style="font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px;">Subject-wise Monthly Breakdown</div>
+                            <td style="padding: 10px 24px 22px;">
+                                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px;">Subject-wise Monthly Breakdown ({month_label})</div>
                                 <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; font-size: 12px;">
                                     <thead>
                                         <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
@@ -332,9 +399,9 @@ def build_monthly_html_body(student_name: str, roll_number: str, program: str, d
 
                         <!-- Attachment Notice & Disclaimer -->
                         <tr>
-                            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 30px;">
+                            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 24px;">
                                 <div style="font-size: 12px; color: #475569; margin-bottom: 6px;">
-                                    <b>📎 Attachment Included:</b> A complete official signed PDF report for <b>{month_label}</b> is attached to this email for your academic records.
+                                    <b>📎 Attachment Included:</b> A complete official signed PDF transcript showing both <b>{month_label}</b> and <b>Current Semester Cumulative Standing</b> is attached to this email.
                                 </div>
                                 <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
                                     This is an automated institutional notification generated by Neo AI Attendance Portal. For any discrepancies or medical leave exemption submissions, please contact your academic administrator.
@@ -351,12 +418,39 @@ def build_monthly_html_body(student_name: str, roll_number: str, program: str, d
     """
 
 
-def build_quarterly_html_body(student_name: str, roll_number: str, program: str, division: str, quarterly_summary: Dict[str, Any], quarter_label: str) -> str:
-    """Builds a comprehensive responsive HTML email body for 3-month (quarterly) cumulative attendance report."""
+def build_quarterly_html_body(student_name: str, roll_number: str, program: str, division: str, quarterly_summary: Dict[str, Any], quarter_label: str, semester_summary: Optional[Dict[str, Any]] = None) -> str:
+    """Builds a comprehensive responsive HTML email body for 3-month (quarterly) cumulative attendance report with current semester standing."""
     if not quarterly_summary:
         quarterly_summary = {}
 
     pct = quarterly_summary.get("final_percentage") if quarterly_summary.get("final_percentage") is not None else quarterly_summary.get("overall_stats", {}).get("attendance_percentage", 0.0)
+
+    # Full Current Semester Cumulative Stats
+    if semester_summary:
+        sem_pct = semester_summary.get("final_percentage", 0.0)
+        sem_conducted = semester_summary.get("total_sessions", 0)
+        sem_attended = semester_summary.get("total_present", 0)
+        sem_absent = semester_summary.get("total_absent", 0)
+        sem_is_def = semester_summary.get("is_defaulter", (sem_pct < 75.0 if sem_conducted > 0 else False))
+    elif quarterly_summary.get("semester_attendance_percentage") is not None:
+        sem_pct = quarterly_summary.get("semester_attendance_percentage", 0.0)
+        sem_conducted = quarterly_summary.get("semester_total_sessions", 0)
+        sem_attended = quarterly_summary.get("semester_total_present", 0)
+        sem_absent = quarterly_summary.get("semester_total_absent", 0)
+        sem_is_def = quarterly_summary.get("semester_is_defaulter", (sem_pct < 75.0 if sem_conducted > 0 else False))
+    else:
+        sem_pct = pct
+        sem_conducted = quarterly_summary.get("total_sessions", 0)
+        sem_attended = quarterly_summary.get("total_present", 0)
+        sem_absent = quarterly_summary.get("total_absent", 0)
+        sem_is_def = (pct < 75.0 if sem_conducted > 0 else False)
+
+    sem_status_text = "DEFAULTER (<75%)" if sem_is_def else "ELIGIBLE (≥75%)"
+    sem_badge_bg = "#fef2f2" if sem_is_def else "#ecfdf5"
+    sem_badge_border = "#fecaca" if sem_is_def else "#a7f3d0"
+    sem_badge_text = "#991b1b" if sem_is_def else "#065f46"
+    sem_color = "#dc2626" if sem_is_def else "#15803d"
+    sem_name = quarterly_summary.get("semester") or (semester_summary.get("semester") if semester_summary else "Current Semester")
 
     # Monthly breakdown blocks
     months_list = quarterly_summary.get("months", [])
@@ -393,34 +487,73 @@ def build_quarterly_html_body(student_name: str, roll_number: str, program: str,
                         
                         <!-- Header Banner -->
                         <tr>
-                            <td style="background: linear-gradient(135deg, #7c3aed 0%, #4338ca 100%); padding: 28px 30px; text-align: left;">
+                            <td style="background: linear-gradient(135deg, #7c3aed 0%, #4338ca 100%); padding: 26px 30px; text-align: left;">
                                 <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #ddd6fe; margin-bottom: 6px;">Neo AI Attendance Portal &bull; 3-Month Cumulative Dossier</div>
                                 <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 800;">{quarter_label} Attendance Performance</h1>
                             </td>
                         </tr>
 
-                        <!-- Student Meta Strip -->
+                        <!-- Student Meta Strip with Dual Scorecards -->
                         <tr>
-                            <td style="padding: 20px 30px; background-color: #f5f3ff; border-bottom: 1px solid #ede9fe;">
+                            <td style="padding: 18px 24px; background-color: #f5f3ff; border-bottom: 1px solid #ede9fe;">
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td>
                                             <div style="font-size: 15px; font-weight: 700; color: #0f172a;">{student_name}</div>
-                                            <div style="font-size: 12px; color: #475569; margin-top: 2px;">Roll Number: <b>{roll_number}</b> &bull; Program: <b>{program}</b> &bull; Div: <b>{division}</b></div>
+                                            <div style="font-size: 12px; color: #475569; margin-top: 2px;">Roll Number: <b>{roll_number}</b> &bull; Program: <b>{program}</b> &bull; {sem_name} &bull; Div: <b>{division}</b></div>
                                         </td>
                                         <td align="right">
-                                            <div style="font-size: 28px; font-weight: 900; color: {'#15803d' if pct >= 75.0 else ('#b45309' if pct >= 65.0 else '#dc2626')}; font-family: monospace;">{pct}%</div>
-                                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #6d28d9;">3-Month Aggregate</div>
+                                            <table cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                                <tr>
+                                                    <td style="padding: 0 14px; text-align: right; border-right: 1.5px solid #ddd6fe;">
+                                                        <div style="font-size: 24px; font-weight: 900; color: {'#15803d' if pct >= 75.0 else ('#b45309' if pct >= 65.0 else '#dc2626')}; font-family: monospace;">{pct}%</div>
+                                                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #6d28d9;">3-Month Aggregate</div>
+                                                    </td>
+                                                    <td style="padding-left: 14px; text-align: right;">
+                                                        <div style="font-size: 24px; font-weight: 900; color: {sem_color}; font-family: monospace;">{sem_pct}%</div>
+                                                        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #4338ca;">Current Sem Overall</div>
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </td>
                                     </tr>
                                 </table>
                             </td>
                         </tr>
 
+                        <!-- Full Current Semester Overall Progress Banner -->
+                        <tr>
+                            <td style="padding: 14px 24px 8px;">
+                                <div style="background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%); border: 1.5px solid #c7d2fe; border-radius: 12px; padding: 14px 18px;">
+                                    <table width="100%" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td>
+                                                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #4338ca; margin-bottom: 3px;">
+                                                    🎓 Full Current Semester Progress Audit ({program} • {sem_name})
+                                                </div>
+                                                <div style="font-size: 13px; color: #1e293b; font-weight: 600;">
+                                                    Semester Cumulative: <span style="font-size: 14px; font-weight: 800; color: {sem_color};">{sem_attended}</span> attended out of <span style="font-size: 14px; font-weight: 800; color: #0f172a;">{sem_conducted}</span> conducted lectures across all semester subjects.
+                                                </div>
+                                                <div style="font-size: 11.5px; color: #64748b; margin-top: 3px;">
+                                                    {'📈 Overall Excellent! Your 3-month performance (' + str(pct) + '%) is maintaining strong semester eligibility (' + str(sem_pct) + '%).' if pct >= sem_pct else '⚠️ Notice: Your 3-month attendance (' + str(pct) + '%) is tracking below your overall semester pace (' + str(sem_pct) + '%).'}
+                                                </div>
+                                            </td>
+                                            <td align="right" style="vertical-align: middle; padding-left: 12px;">
+                                                <div style="background-color: {sem_badge_bg}; border: 1px solid {sem_badge_border}; border-radius: 8px; padding: 6px 10px; text-align: center; display: inline-block;">
+                                                    <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: {sem_badge_text};">{sem_status_text}</div>
+                                                    <div style="font-size: 9.5px; color: {sem_badge_text}; margin-top: 2px;">Overall Sem: <b>{sem_pct}%</b></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+
                         <!-- 3-Month Progress Cards -->
                         <tr>
-                            <td style="padding: 24px 30px 10px;">
-                                <div style="font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 12px;">Month-by-Month Progress Matrix</div>
+                            <td style="padding: 10px 24px 10px;">
+                                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 12px;">Month-by-Month Progress Matrix</div>
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
                                         {month_cards_html}
@@ -431,7 +564,7 @@ def build_quarterly_html_body(student_name: str, roll_number: str, program: str,
 
                         <!-- Attachment Notice & Disclaimer -->
                         <tr>
-                            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 30px; margin-top: 15px;">
+                            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 24px; margin-top: 15px;">
                                 <div style="font-size: 12px; color: #475569; margin-bottom: 6px;">
                                     <b>📎 2 PDF Attachments Included:</b>
                                     <ul style="margin: 4px 0 0 16px; padding: 0;">
@@ -484,6 +617,14 @@ def send_single_student_report(
         student_id=student.id,
         start_date=start_date,
         end_date=end_date
+    )
+
+    # 1b. Fetch Full Current Semester Cumulative Data
+    semester_summary = ReportService.get_student_detailed_report(
+        db=db,
+        student_id=student.id,
+        start_date=None,
+        end_date=None
     )
 
     attachments = []
@@ -561,7 +702,8 @@ def send_single_student_report(
             program=getattr(student, "program", "B.Tech"),
             division=getattr(student, "section", "A"),
             quarterly_summary=quarterly_full_summary,
-            quarter_label=quarter_label
+            quarter_label=quarter_label,
+            semester_summary=semester_summary
         )
         period_str = quarter_label
     else:
@@ -572,7 +714,8 @@ def send_single_student_report(
             program=getattr(student, "program", "B.Tech"),
             division=getattr(student, "section", "A"),
             summary=month_summary,
-            month_label=month_label
+            month_label=month_label,
+            semester_summary=semester_summary
         )
         period_str = month_label
 
