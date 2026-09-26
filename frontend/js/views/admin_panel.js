@@ -20,6 +20,10 @@ const AdminPanelView = {
             <i data-lucide="user-plus" class="w-4 h-4"></i>
             <span>Add New Faculty</span>
           </button>
+          <button class="btn-secondary text-xs" onclick="StudentsView.openBatchPromotionModal()" style="font-weight: 700; color: #4338ca; border-color: #c7d2fe; background: #eef2ff;">
+            <i data-lucide="graduation-cap" class="w-4 h-4 text-indigo-600"></i>
+            <span>Batch Promotion / Rollover</span>
+          </button>
           <button class="btn-secondary text-xs" onclick="AdminPanelView.triggerBackup()">
             <i data-lucide="database" class="w-4 h-4 text-indigo-600"></i>
             <span>Database Backup</span>

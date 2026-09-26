@@ -155,18 +155,21 @@ def get_student_report(
     student_id: int,
     start_date: Optional[date] = Query(None),
     end_date: Optional[date] = Query(None),
+    semester: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
     Returns complete attendance audit for an individual student:
-    profile, overall attendance %, subject-by-subject metrics, and chronological lecture/bunk log.
+    profile, overall attendance %, subject-by-subject metrics, chronological lecture/bunk log,
+    and multi-semester separation/aggregation.
     """
     data = report_service.get_student_detailed_report(
         db=db,
         student_id=student_id,
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        semester=semester
     )
     if not data:
         raise HTTPException(status_code=404, detail="Student not found.")
@@ -177,6 +180,7 @@ def export_student_pdf_report(
     student_id: int,
     start_date: Optional[date] = Query(None),
     end_date: Optional[date] = Query(None),
+    semester: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -188,7 +192,8 @@ def export_student_pdf_report(
             db=db,
             student_id=student_id,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            semester=semester
         )
         filename = os.path.basename(filepath)
         return FileResponse(

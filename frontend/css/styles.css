@@ -1941,3 +1941,76 @@
   }
 }
 
+/* ================= Multi-Semester Navigation & Switcher ================= */
+.student-semester-tabs-container {
+  width: 100%;
+}
+
+.student-semester-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.semester-tab-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f8fafc;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.semester-tab-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-1px);
+}
+
+.semester-tab-btn.active {
+  background: #6366f1;
+  color: #ffffff;
+  border-color: #6366f1;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+.semester-tab-btn.semester-tab-all.active {
+  background: #4338ca;
+  border-color: #4338ca;
+  box-shadow: 0 2px 8px rgba(67, 56, 202, 0.35);
+}
+
+.semester-pill-current {
+  font-size: 0.62rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.semester-tab-btn.active .semester-pill-current {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.historical-record-alert, .cumulative-record-alert {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+

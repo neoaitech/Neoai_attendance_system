@@ -521,7 +521,8 @@ class ReportService:
         db: Session,
         student_id: int,
         start_date: Optional[date] = None,
-        end_date: Optional[date] = None
+        end_date: Optional[date] = None,
+        semester: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Gathers complete attendance audit transcript for an individual student:
@@ -530,14 +531,39 @@ class ReportService:
         - Extra Lecture Attendance (Outside course attendances separately tracked)
         - Subject-by-Subject Breakdown
         - Detailed Chronological Lecture-by-Lecture Log with Normal vs Extra Lecture tags
+        - Multi-Semester Separation (e.g. Sem 5 vs Sem 6 vs All Cumulative)
         """
         student = db.query(Student).filter(Student.id == student_id).first()
         if not student:
             return None
 
+        # Discover all available semesters this student has records or enrollments for
+        enrolled_sems = {c.semester for c in student.enrolled_classes if c.semester} if getattr(student, "enrolled_classes", None) else set()
+        past_record_sems = set()
+        sess_sems = db.query(ClassCourse.semester).join(
+            AttendanceSession, AttendanceSession.class_id == ClassCourse.id
+        ).join(
+            AttendanceRecord, AttendanceRecord.session_id == AttendanceSession.id
+        ).filter(AttendanceRecord.student_id == student.id, ClassCourse.semester.isnot(None)).distinct().all()
+        for s_row in sess_sems:
+            if s_row[0]:
+                past_record_sems.add(s_row[0])
+
+        all_discovered_sems = sorted(list(enrolled_sems | past_record_sems | ({student.semester} if student.semester else set())))
+        if not all_discovered_sems:
+            all_discovered_sems = [student.semester or "Semester 5"]
+
+        # Parse target semester
+        target_sem = None
+        if semester and semester.strip().upper() in ["ALL", "CUMULATIVE", "ANY", "*"]:
+            target_sem = "ALL"
+        elif semester and semester.strip():
+            target_sem = semester.strip()
+        else:
+            target_sem = student.semester or all_discovered_sems[-1]
+
         # 1. Determine Applicable Normal Courses for this Student (Academic Curriculum Scope)
         s_prog = (getattr(student, "program", None) or "").strip().upper()
-        s_sem = (student.semester or "").strip().upper()
         s_sec = (student.section or "").strip().upper()
 
         cq = db.query(ClassCourse)
@@ -545,18 +571,26 @@ class ReportService:
             cq = cq.filter(ClassCourse.department == student.department)
         if student.program:
             cq = cq.filter(ClassCourse.program == student.program)
-        if student.semester:
-            cq = cq.filter(ClassCourse.semester == student.semester)
-        if student.section:
+        if target_sem != "ALL":
+            cq = cq.filter(ClassCourse.semester == target_sem)
+        if student.section and target_sem != "ALL":
             cq = cq.filter(ClassCourse.section.in_([student.section, "ALL", "BOTH", "*"]))
         batch_courses = cq.all()
 
-        s_enrolled = [
-            c for c in student.enrolled_classes
-            if not s_prog 
-            or not getattr(c, "program", None) 
-            or c.program.strip().upper() in ["ALL", "*", "ANY", s_prog]
-        ] if getattr(student, "enrolled_classes", None) and len(student.enrolled_classes) > 0 else []
+        if getattr(student, "enrolled_classes", None) and len(student.enrolled_classes) > 0:
+            if target_sem == "ALL":
+                s_enrolled = list(student.enrolled_classes)
+            else:
+                s_enrolled = [
+                    c for c in student.enrolled_classes
+                    if c.semester == target_sem and (
+                        not s_prog 
+                        or not getattr(c, "program", None) 
+                        or c.program.strip().upper() in ["ALL", "*", "ANY", s_prog]
+                    )
+                ]
+        else:
+            s_enrolled = []
 
         enrolled_courses = s_enrolled if s_enrolled else batch_courses
         enrolled_course_ids = [c.id for c in enrolled_courses]
@@ -576,11 +610,17 @@ class ReportService:
         normal_sessions = normal_session_query.order_by(AttendanceSession.session_date.desc(), AttendanceSession.id.desc()).all()
         normal_session_ids = [s.id for s in normal_sessions]
 
-        # 3. Fetch ALL attendance records for this student across ALL sessions in DB (STRICTLY FINALIZED ONLY)
-        all_records_query = db.query(AttendanceRecord).join(AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id).filter(
+        # 3. Fetch attendance records for this student across sessions in scope (STRICTLY FINALIZED ONLY)
+        all_records_query = db.query(AttendanceRecord).join(
+            AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id
+        ).join(
+            ClassCourse, AttendanceSession.class_id == ClassCourse.id
+        ).filter(
             AttendanceSession.finalized_at.isnot(None),
             AttendanceRecord.student_id == student.id
         )
+        if target_sem != "ALL":
+            all_records_query = all_records_query.filter(ClassCourse.semester == target_sem)
         if start_date:
             all_records_query = all_records_query.filter(AttendanceSession.session_date >= start_date)
         if end_date:
@@ -591,7 +631,6 @@ class ReportService:
 
         # Build Map of Course ID to Course Object
         course_map: Dict[int, ClassCourse] = {c.id: c for c in enrolled_courses}
-        # Also include any course referenced in all sessions the student has records for
         for r in all_student_records:
             if r.session and r.session.class_id and r.session.class_id not in course_map:
                 c = db.query(ClassCourse).filter(ClassCourse.id == r.session.class_id).first()
@@ -862,6 +901,29 @@ class ReportService:
             sem_is_def = sem_pct < settings.DEFAULTER_THRESHOLD_PERCENT if sem_total_sessions > 0 else False
             sem_status = "DEFAULTER" if sem_is_def else "ELIGIBLE"
 
+        # Degree-wide Cumulative Statistics (Across ALL Semesters for Complete Academic History)
+        deg_records = db.query(AttendanceRecord).join(
+            AttendanceSession, AttendanceRecord.session_id == AttendanceSession.id
+        ).filter(
+            AttendanceSession.finalized_at.isnot(None),
+            AttendanceRecord.student_id == student.id
+        ).all()
+        deg_total_sessions = len(deg_records)
+        deg_present = sum(
+            1 for r in deg_records 
+            if r.status in ["PRESENT", "LATE"] or r.is_extra_lecture or r.attendance_type == "EXTRA_LECTURE" or getattr(r, "verification_type", None) == "EXTRA_LECTURE"
+        )
+        deg_absent = max(0, deg_total_sessions - deg_present)
+        deg_pct = round((deg_present / deg_total_sessions) * 100.0, 2) if deg_total_sessions > 0 else 0.0
+        degree_cumulative_stats = {
+            "total_sessions": deg_total_sessions,
+            "total_present": deg_present,
+            "total_absent": deg_absent,
+            "attendance_percentage": deg_pct,
+            "is_defaulter": deg_pct < settings.DEFAULTER_THRESHOLD_PERCENT if deg_total_sessions > 0 else False,
+            "eligibility_status": "DEFAULTER" if (deg_total_sessions > 0 and deg_pct < settings.DEFAULTER_THRESHOLD_PERCENT) else "ELIGIBLE"
+        }
+
         photo_url = getattr(student, "photo_url", None)
         if not photo_url and getattr(student, "photo_urls", None) and len(student.photo_urls) > 0:
             photo_url = student.photo_urls[0]
@@ -895,6 +957,14 @@ class ReportService:
             "photo_count": photo_count,
             "photo_url": photo_url,
             "defaulter_threshold": settings.DEFAULTER_THRESHOLD_PERCENT,
+
+            # Multi-Semester Tracking Scope
+            "selected_semester": target_sem,
+            "available_semesters": all_discovered_sems,
+            "current_semester": student.semester,
+            "is_current_semester": bool(target_sem == student.semester or target_sem == "ALL"),
+            "is_historical_semester": bool(target_sem != "ALL" and target_sem != student.semester),
+            "degree_cumulative_stats": degree_cumulative_stats,
             
             # Normal Sessions Breakdown
             "normal_sessions": normal_eligible,
@@ -947,7 +1017,8 @@ class ReportService:
         db: Session,
         student_id: int,
         start_date: Optional[date] = None,
-        end_date: Optional[date] = None
+        end_date: Optional[date] = None,
+        semester: Optional[str] = None
     ) -> str:
         """
         Exports official Student Attendance Transcript & Academic Audit Dossier PDF.
@@ -955,7 +1026,7 @@ class ReportService:
         Chronological Timeline with Actual Timestamps, Repeating Table Headers,
         and NumberedCanvas ('Page X of Y').
         """
-        data = ReportService.get_student_detailed_report(db, student_id, start_date, end_date)
+        data = ReportService.get_student_detailed_report(db, student_id, start_date, end_date, semester=semester)
         if not data:
             raise ValueError("Student not found")
 
@@ -1013,8 +1084,16 @@ class ReportService:
         elements = []
 
         # Title Banner
+        scope_title = data.get('selected_semester') or data['semester']
+        if scope_title == "ALL":
+            scope_desc = "All Semesters (Degree Cumulative)"
+        elif data.get("is_historical_semester"):
+            scope_desc = f"{scope_title} (Historical Record)"
+        else:
+            scope_desc = f"{scope_title}"
+
         elements.append(Paragraph("Neo AI Attendance Portal — Official Student Attendance Transcript", title_style))
-        elements.append(Paragraph(f"Academic Biometric Audit Record &bull; Session Year {data.get('academic_year', '2026-27')}", subtitle_style))
+        elements.append(Paragraph(f"Academic Biometric Audit Record &bull; Session Year {data.get('academic_year', '2026-27')} &bull; Academic Scope: <b>{scope_desc}</b>", subtitle_style))
 
         # Compact Photo Loader (~30mm)
         photo_element = None
@@ -1043,7 +1122,7 @@ class ReportService:
             Paragraph(f"<b>Student Name:</b> <font color='#0F172A'><b>{data['full_name']}</b></font>", tbl_cell_l),
             Paragraph(f"<b>Roll Number:</b> <font color='#4338CA'><b>{data['roll_number']}</b></font>", tbl_cell_l),
             Paragraph(f"<b>Program / Degree:</b> {data['program']}", tbl_cell_l),
-            Paragraph(f"<b>Semester & Div:</b> {data['semester']} • Div {data['division']}", tbl_cell_l)
+            Paragraph(f"<b>Semester & Div:</b> {scope_desc} • Div {data['division']}", tbl_cell_l)
         ]
         info_col2 = [
             Paragraph(f"<b>Department:</b> {data['department']}", tbl_cell_l),

@@ -31,6 +31,12 @@ const StudentsView = {
         </div>
         ${canCreate ? `
           <div class="flex items-center gap-2">
+            ${isAdmin ? `
+              <button class="btn-secondary btn-sm" style="font-weight: 700; color: #4338ca; border-color: #c7d2fe; background: #eef2ff;" onclick="StudentsView.openBatchPromotionModal()" title="Promote students to next semester, manage division transfers and student dropouts">
+                <i data-lucide="graduation-cap" class="w-4 h-4 text-indigo-600"></i>
+                <span>Batch Promotion / Rollover</span>
+              </button>
+            ` : ''}
             <button class="btn-primary btn-sm" onclick="App.navigate('student_new')">
               <i data-lucide="user-plus" class="w-4 h-4"></i>
               <span>Register New Student</span>
@@ -2022,6 +2028,355 @@ const StudentsView = {
       await this.loadStudents();
     } catch (err) {
       App.showToast(err.message || "Failed to unfreeze student attendance", "error");
+    }
+  },
+
+  async openBatchPromotionModal() {
+    if (!this.allStudents || this.allStudents.length === 0) {
+      try {
+        const res = await API.get('/students?limit=500');
+        this.allStudents = res || [];
+      } catch (err) {
+        console.error("Could not fetch students for promotion:", err);
+      }
+    }
+
+    const students = this.allStudents || [];
+    const depts = [...new Set(students.map(s => s.department).filter(Boolean))].sort();
+    const progs = [...new Set(students.map(s => s.program || s.course).filter(Boolean))].sort();
+    const sems = ["Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6", "Semester 7", "Semester 8"];
+
+    const html = `
+      <div class="modal-card" style="max-width: 900px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+        <div class="modal-header flex items-center justify-between pb-3 border-b border-slate-100 flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+              <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Academic Batch Promotion & Semester Rollover</h3>
+              <p class="text-xs text-slate-500">Advance students to next semester, change divisions, detain, or mark departed students without deleting past attendance.</p>
+            </div>
+          </div>
+          <button class="btn-icon text-slate-400 hover:text-slate-600" onclick="App.closeModal()">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="modal-body py-4 space-y-4 overflow-y-auto flex-1" style="max-height: calc(85vh - 130px);">
+          <!-- Scope Selection Grid -->
+          <div class="glass-panel p-3.5" style="background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 0;">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+              <div>
+                <label class="form-label text-[11px] font-bold text-slate-600 mb-1">From Current Semester *</label>
+                <select id="promote-from-sem" class="form-select text-xs" onchange="StudentsView.onFromSemesterChange()">
+                  ${sems.map(s => `<option value="${s}" ${s === 'Semester 5' ? 'selected' : ''}>${s}</option>`).join('')}
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label text-[11px] font-bold text-slate-600 mb-1">Target Next Semester *</label>
+                <select id="promote-to-sem" class="form-select text-xs">
+                  ${sems.map(s => `<option value="${s}" ${s === 'Semester 6' ? 'selected' : ''}>${s}</option>`).join('')}
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label text-[11px] font-bold text-slate-600 mb-1">Program / Degree Filter</label>
+                <select id="promote-prog-filter" class="form-select text-xs" onchange="StudentsView.refreshPromotionTable()">
+                  <option value="">All Programs</option>
+                  ${progs.map(p => `<option value="${p}">${p}</option>`).join('')}
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label text-[11px] font-bold text-slate-600 mb-1">Division Filter</label>
+                <select id="promote-div-filter" class="form-select text-xs" onchange="StudentsView.refreshPromotionTable()">
+                  <option value="">All Divisions</option>
+                  <option value="A">Division A</option>
+                  <option value="B">Division B</option>
+                  <option value="C">Division C</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                <input type="checkbox" id="promote-auto-enroll" checked class="rounded text-indigo-600 focus:ring-indigo-500" />
+                <span>Auto-enroll promoted students into active courses of target semester</span>
+              </label>
+
+              <div class="flex items-center gap-2">
+                <span class="text-slate-500 font-medium">Target Academic Year:</span>
+                <input type="text" id="promote-acad-year" value="2026-27" class="form-input text-xs w-24 py-1" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Controls & Counters -->
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-bold text-slate-600">Quick Actions:</span>
+              <button type="button" class="btn-secondary btn-sm text-[11px] py-1 px-2.5" onclick="StudentsView.setAllPromotionAction('PROMOTE')">
+                Set All to PROMOTE
+              </button>
+              <button type="button" class="btn-secondary btn-sm text-[11px] py-1 px-2.5" onclick="StudentsView.setAllPromotionAction('DETAIN')">
+                Set All to DETAIN
+              </button>
+              <div class="flex items-center gap-1.5 ml-2">
+                <span class="text-[11px] text-slate-500">Bulk Target Div:</span>
+                <select class="form-select text-xs py-1" style="width: auto;" onchange="StudentsView.setAllTargetDiv(this.value)">
+                  <option value="">Keep Existing</option>
+                  <option value="A">Div A</option>
+                  <option value="B">Div B</option>
+                  <option value="C">Div C</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="text-xs font-semibold flex items-center gap-3">
+              <span class="text-slate-500">Total: <strong id="cnt-total" class="text-slate-800">0</strong></span>
+              <span class="text-emerald-600">Promote: <strong id="cnt-promote">0</strong></span>
+              <span class="text-amber-600">Detain: <strong id="cnt-detain">0</strong></span>
+              <span class="text-rose-600">Left/Inactive: <strong id="cnt-left">0</strong></span>
+            </div>
+          </div>
+
+          <!-- Candidate Students Table -->
+          <div class="data-table-container" style="max-height: 320px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <table class="data-table text-xs">
+              <thead style="position: sticky; top: 0; z-index: 10; background: #f8fafc;">
+                <tr>
+                  <th style="width: 40px; text-align: center;">#</th>
+                  <th>Student Name & Roll No</th>
+                  <th>Program / Dept</th>
+                  <th>Current Sem & Div</th>
+                  <th style="width: 260px;">Action / Lifecycle Status</th>
+                  <th style="width: 140px;">Target Division</th>
+                </tr>
+              </thead>
+              <tbody id="promotion-table-body">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modal-footer flex items-center justify-between pt-3 border-t border-slate-100 flex-shrink-0">
+          <span class="text-xs text-slate-400">
+            Past attendance records remain permanently preserved and segregated by semester.
+          </span>
+          <div class="flex items-center gap-2">
+            <button type="button" class="btn-secondary btn-sm" onclick="App.closeModal()">Cancel</button>
+            <button type="button" class="btn-primary btn-sm" id="btn-execute-promotion" onclick="StudentsView.executeBatchPromotion()" style="background: linear-gradient(135deg, #4f46e5, #4338ca); box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+              <span>Execute Promotion & Rollover</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    App.showCustomModal(html);
+    if (window.lucide) window.lucide.createIcons();
+    this.refreshPromotionTable();
+  },
+
+  onFromSemesterChange() {
+    const fromSem = document.getElementById("promote-from-sem")?.value || "Semester 5";
+    const toSemSel = document.getElementById("promote-to-sem");
+    if (toSemSel) {
+      const m = fromSem.match(/\d+/);
+      if (m) {
+        const nextNum = parseInt(m[0], 10) + 1;
+        toSemSel.value = `Semester ${nextNum}`;
+      }
+    }
+    this.refreshPromotionTable();
+  },
+
+  refreshPromotionTable() {
+    const fromSem = document.getElementById("promote-from-sem")?.value || "";
+    const progFilter = document.getElementById("promote-prog-filter")?.value || "";
+    const divFilter = document.getElementById("promote-div-filter")?.value || "";
+
+    const candidates = (this.allStudents || []).filter(s => {
+      if (fromSem && s.semester !== fromSem) return false;
+      if (progFilter && (s.program || s.course) !== progFilter) return false;
+      if (divFilter && (s.section || "A").trim().toUpperCase() !== divFilter.toUpperCase()) return false;
+      return true;
+    });
+
+    const tbody = document.getElementById("promotion-table-body");
+    if (!tbody) return;
+
+    if (candidates.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 36px 12px; color: #94a3b8;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;">
+              <i data-lucide="users" style="width: 18px; height: 18px; color: #94a3b8;"></i>
+            </div>
+            <strong>No active students found matching the selected filters.</strong>
+            <p style="font-size: 0.72rem; margin-top: 4px;">Try changing the 'From Current Semester' or Program filters above.</p>
+          </td>
+        </tr>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+      this.updatePromotionCounters();
+      return;
+    }
+
+    tbody.innerHTML = candidates.map((s, idx) => {
+      const initials = (s.full_name || "S").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+      return `
+        <tr class="promotion-student-row" data-id="${s.id}">
+          <td style="text-align: center; color: #94a3b8; font-weight: 600;">${idx + 1}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-[10px] flex-shrink-0">
+                ${s.photo_url ? `<img src="${s.photo_url}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'" />` : initials}
+              </div>
+              <div>
+                <div class="font-bold text-slate-900">${s.full_name}</div>
+                <div class="text-[11px] font-mono text-indigo-600">${s.roll_number}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="font-medium text-slate-800">${s.program || s.course || 'B.Tech'}</div>
+            <div class="text-[10px] text-slate-400">${s.department || ''}</div>
+          </td>
+          <td>
+            <span class="badge badge-neutral text-[10px] font-bold">${s.semester || 'Sem ?'}</span>
+            <span class="text-slate-600 font-bold ml-1">Div ${s.section || 'A'}</span>
+          </td>
+          <td>
+            <select class="form-select text-xs student-action-sel py-1" data-id="${s.id}" onchange="StudentsView.updatePromotionCounters()">
+              <option value="PROMOTE" selected>✅ PROMOTE to Target Sem</option>
+              <option value="DETAIN">⏸️ DETAIN (Remain in Current Sem)</option>
+              <option value="LEFT_COLLEGE">🚪 LEFT COLLEGE / DROPOUT (Archive & Deactivate)</option>
+              <option value="TRANSFERRED">🔄 TRANSFERRED OUT (Archive & Deactivate)</option>
+            </select>
+          </td>
+          <td>
+            <select class="form-select text-xs student-div-sel py-1" data-id="${s.id}">
+              <option value="" selected>Same (Div ${s.section || 'A'})</option>
+              <option value="A">Division A</option>
+              <option value="B">Division B</option>
+              <option value="C">Division C</option>
+            </select>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    if (window.lucide) window.lucide.createIcons();
+    this.updatePromotionCounters();
+  },
+
+  updatePromotionCounters() {
+    const rows = document.querySelectorAll(".promotion-student-row");
+    let promoteCount = 0;
+    let detainCount = 0;
+    let leftCount = 0;
+
+    rows.forEach(r => {
+      const sel = r.querySelector(".student-action-sel");
+      if (!sel) return;
+      const val = sel.value;
+      if (val === "PROMOTE") promoteCount++;
+      else if (val === "DETAIN") detainCount++;
+      else if (val === "LEFT_COLLEGE" || val === "TRANSFERRED") leftCount++;
+    });
+
+    const totalEl = document.getElementById("cnt-total");
+    const promEl = document.getElementById("cnt-promote");
+    const detEl = document.getElementById("cnt-detain");
+    const leftEl = document.getElementById("cnt-left");
+
+    if (totalEl) totalEl.textContent = rows.length;
+    if (promEl) promEl.textContent = promoteCount;
+    if (detEl) detEl.textContent = detainCount;
+    if (leftEl) leftEl.textContent = leftCount;
+  },
+
+  setAllPromotionAction(action) {
+    const sels = document.querySelectorAll(".student-action-sel");
+    sels.forEach(s => s.value = action);
+    this.updatePromotionCounters();
+  },
+
+  setAllTargetDiv(div) {
+    const sels = document.querySelectorAll(".student-div-sel");
+    sels.forEach(s => s.value = div);
+  },
+
+  async executeBatchPromotion() {
+    const fromSem = document.getElementById("promote-from-sem")?.value || "";
+    const toSem = document.getElementById("promote-to-sem")?.value || "";
+    const acadYear = document.getElementById("promote-acad-year")?.value || "2026-27";
+    const autoEnroll = document.getElementById("promote-auto-enroll")?.checked ?? true;
+
+    if (!fromSem || !toSem) {
+      App.showToast("Please specify both current and target semesters.", "error");
+      return;
+    }
+
+    if (fromSem === toSem) {
+      if (!confirm(`Warning: Target semester (${toSem}) is identical to current semester (${fromSem}). Do you still want to proceed?`)) {
+        return;
+      }
+    }
+
+    const rows = document.querySelectorAll(".promotion-student-row");
+    if (rows.length === 0) {
+      App.showToast("No students to promote.", "info");
+      return;
+    }
+
+    const studentsPayload = [];
+    rows.forEach(r => {
+      const sId = parseInt(r.getAttribute("data-id"), 10);
+      const action = r.querySelector(".student-action-sel")?.value || "PROMOTE";
+      const targetDiv = r.querySelector(".student-div-sel")?.value || null;
+      studentsPayload.push({
+        student_id: sId,
+        action: action,
+        target_section: targetDiv
+      });
+    });
+
+    const btn = document.getElementById("btn-execute-promotion");
+    const origHtml = btn ? btn.innerHTML : "";
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Executing Batch Rollover...</span>`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    try {
+      const payload = {
+        from_semester: fromSem,
+        target_semester: toSem,
+        academic_year: acadYear,
+        students: studentsPayload,
+        auto_enroll_courses: autoEnroll
+      };
+
+      const res = await API.post("/students/promote-batch", payload);
+      App.showToast(res.message || `Successfully rolled over batch to ${toSem}!`, "success");
+      App.closeModal();
+      await this.loadStudents();
+    } catch (err) {
+      console.error("Batch promotion error:", err);
+      App.showToast(err.message || "Failed to execute batch promotion.", "error");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+        if (window.lucide) window.lucide.createIcons();
+      }
     }
   }
 };

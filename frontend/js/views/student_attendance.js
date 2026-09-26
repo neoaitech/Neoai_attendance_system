@@ -7,6 +7,7 @@ const StudentAttendanceView = {
   studentId: null,
   referrer: "reports",
   data: null,
+  selectedSemester: null,
   activeCameraStream: null,
   selectedPhotoFile: null,
   capturedPhotoBase64: null,
@@ -21,6 +22,7 @@ const StudentAttendanceView = {
   async render(container, params = {}) {
     this.studentId = params.studentId || params.id;
     this.referrer = params.from || (App.currentParams && App.currentParams.from) || "reports";
+    this.selectedSemester = params.semester || null;
     this.filters = {
       searchQuery: "",
       type: "NORMAL",
@@ -76,7 +78,22 @@ const StudentAttendanceView = {
 
   async loadStudentData(container) {
     try {
-      const data = await API.get(`/reports/student/${this.studentId}`);
+      let url = `/reports/student/${this.studentId}`;
+      const qParams = [];
+      if (this.selectedSemester) {
+        qParams.push(`semester=${encodeURIComponent(this.selectedSemester)}`);
+      }
+      if (this.filters.dateFrom) {
+        qParams.push(`start_date=${encodeURIComponent(this.filters.dateFrom)}`);
+      }
+      if (this.filters.dateTo) {
+        qParams.push(`end_date=${encodeURIComponent(this.filters.dateTo)}`);
+      }
+      if (qParams.length > 0) {
+        url += `?${qParams.join('&')}`;
+      }
+
+      const data = await API.get(url);
       if (!data) {
         throw new Error("Student record could not be found.");
       }
@@ -102,6 +119,14 @@ const StudentAttendanceView = {
         </div>
       `;
       if (window.lucide) window.lucide.createIcons();
+    }
+  },
+
+  switchSemester(sem) {
+    this.selectedSemester = sem;
+    const container = document.getElementById("view-container");
+    if (container) {
+      this.loadStudentData(container);
     }
   },
 
@@ -234,6 +259,11 @@ const StudentAttendanceView = {
     const semIsDef = Boolean(d.semester_is_defaulter !== undefined ? d.semester_is_defaulter : isDef);
     const semStatus = d.semester_eligibility_status || (semIsDef ? `DEFAULTER <${threshold}%` : `ELIGIBLE ≥${threshold}%`);
 
+    const availSems = Array.isArray(d.available_semesters) && d.available_semesters.length > 0 ? d.available_semesters : [d.semester || 'Semester 5'];
+    const currentSelectedSem = d.selected_semester || d.semester;
+    const isHistorical = Boolean(d.is_historical_semester);
+    const isCumulativeAll = (currentSelectedSem === 'ALL');
+
     const backLabel = this.referrer === "students" ? "← Back to Student Directory" : "← Back to Reports & Export";
     const initials = (d.full_name || "S").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
@@ -300,6 +330,80 @@ const StudentAttendanceView = {
         })() : ''}
 
         <!-- ========================================================= -->
+        <!-- MULTI-SEMESTER ISOLATION & SWITCHING NAV TABS             -->
+        <!-- ========================================================= -->
+        <div class="student-semester-tabs-container not-printable" style="margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="layers" style="width: 15px; height: 15px; color: #6366f1;"></i>
+              <span style="font-size: 0.76rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Academic Semester Navigation</span>
+            </div>
+            <div style="font-size: 0.72rem; color: #64748b; font-weight: 600;">
+              Current Active Enrollment: <strong style="color: #4338ca; font-weight: 800;">${d.current_semester || d.semester}</strong>
+            </div>
+          </div>
+
+          <div class="student-semester-tabs" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #ffffff; padding: 6px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            ${availSems.map(s => {
+              const isActive = (currentSelectedSem === s);
+              const isCurrent = (s === (d.current_semester || d.semester));
+              return `
+                <button type="button" 
+                        class="semester-tab-btn ${isActive ? 'active' : ''}" 
+                        onclick="StudentAttendanceView.switchSemester('${s}')"
+                        title="View attendance exclusively for ${s}">
+                  <span>${s}</span>
+                  ${isCurrent ? `<span class="semester-pill-current">Current</span>` : ''}
+                </button>
+              `;
+            }).join('')}
+            
+            <button type="button" 
+                    class="semester-tab-btn semester-tab-all ${isCumulativeAll ? 'active' : ''}" 
+                    onclick="StudentAttendanceView.switchSemester('ALL')"
+                    title="Aggregate cumulative attendance across all degree semesters">
+              <i data-lucide="graduation-cap" style="width: 14px; height: 14px;"></i>
+              <span>All Semesters (Degree Cumulative)</span>
+            </button>
+          </div>
+        </div>
+
+        ${isHistorical ? `
+          <!-- Historical Semester Notice Banner -->
+          <div class="historical-record-alert not-printable" style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #fef3c7; color: #b45309; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i data-lucide="archive" style="width: 18px; height: 18px;"></i>
+              </div>
+              <div>
+                <div style="font-size: 0.84rem; font-weight: 800; color: #92400e;">ARCHIVED HISTORICAL RECORD &bull; ${currentSelectedSem}</div>
+                <div style="font-size: 0.74rem; color: #b45309;">
+                  Viewing finalized past records for <strong>${currentSelectedSem}</strong>. This data is strictly preserved and never overwritten. Student is currently enrolled in <strong>${d.current_semester || d.semester}</strong>.
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-secondary btn-sm" style="background: #ffffff; color: #92400e; border-color: #fde68a; font-weight: 700; flex-shrink: 0;" onclick="StudentAttendanceView.switchSemester('${d.current_semester || d.semester}')">
+              ⚡ Switch to Current Sem
+            </button>
+          </div>
+        ` : ''}
+
+        ${isCumulativeAll ? `
+          <!-- Cumulative All-Semesters Notice Banner -->
+          <div class="cumulative-record-alert not-printable" style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i data-lucide="graduation-cap" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div>
+              <div style="font-size: 0.84rem; font-weight: 800; color: #3730a3;">OVERALL DEGREE CUMULATIVE TRANSCRIPT (ALL SEMESTERS)</div>
+              <div style="font-size: 0.74rem; color: #4338ca;">
+                Aggregated across all completed and ongoing degree semesters. Total lectures conducted: <strong>${d.degree_cumulative_stats ? d.degree_cumulative_stats.total_sessions : d.total_sessions}</strong> &bull; Attended: <strong>${d.degree_cumulative_stats ? d.degree_cumulative_stats.total_present : d.total_present}</strong> &bull; Degree-wide rate: <strong>${d.degree_cumulative_stats ? d.degree_cumulative_stats.attendance_percentage : d.final_percentage}%</strong>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- ========================================================= -->
         <!-- 2. STUDENT PROFILE HEADER (COMPACT INSTITUTIONAL CARD)     -->
         <!-- ========================================================= -->
         <div class="transcript-card">
@@ -316,7 +420,7 @@ const StudentAttendanceView = {
           <!-- Main Title Box -->
           <div class="transcript-title-box">
             <h1 class="transcript-main-title">Neo AI Attendance Portal — Official Student Attendance Transcript</h1>
-            <p class="transcript-subtitle">Academic Biometric Audit Record &bull; Session Year ${d.academic_year || '2026-27'}</p>
+            <p class="transcript-subtitle">Academic Biometric Audit Record &bull; Session Year ${d.academic_year || '2026-27'} &bull; Scope: <strong>${isCumulativeAll ? 'All Semesters (Degree Cumulative)' : (isHistorical ? `${currentSelectedSem} (Historical Record)` : `${currentSelectedSem} (Current)`)}</strong></p>
           </div>
 
           <!-- Student Profile Identity Box (Side-by-Side Flex Layout) -->
@@ -383,7 +487,11 @@ const StudentAttendanceView = {
 
                 <div class="student-detail-item">
                   <span class="student-detail-label">SEMESTER & DIVISION</span>
-                  <span class="student-detail-val">${d.semester} &bull; Div ${d.division || 'A'}</span>
+                  <span class="student-detail-val">
+                    ${isCumulativeAll ? 'All Semesters' : currentSelectedSem} 
+                    ${isHistorical ? '<span class="badge" style="background:#fef3c7; color:#92400e; font-size:0.65rem; padding:1px 5px; font-weight:800; margin-left:4px;">Historical</span>' : ''} 
+                    &bull; Div ${d.division || 'A'}
+                  </span>
                 </div>
               </div>
 
@@ -434,29 +542,29 @@ const StudentAttendanceView = {
                 </div>
               </div>
 
-              <!-- Current Semester Overall Attendance Audit Banner -->
+              <!-- Scope Overall Attendance Audit Banner -->
               <div class="student-sem-summary-banner">
                 <div class="student-sem-summary-left">
                   <div class="student-sem-summary-tag">
                     <i data-lucide="graduation-cap" style="width: 15px; height: 15px;"></i>
-                    <span>CURRENT SEMESTER ATTENDANCE AUDIT</span>
+                    <span>${isCumulativeAll ? 'DEGREE-WIDE CUMULATIVE ATTENDANCE AUDIT' : (isHistorical ? `HISTORICAL ATTENDANCE AUDIT (${currentSelectedSem})` : 'CURRENT SEMESTER ATTENDANCE AUDIT')}</span>
                   </div>
                   <div class="student-sem-summary-stats">
-                    <span class="sem-stat-badge"><b>${semPresent}</b> Attended</span>
+                    <span class="sem-stat-badge"><b>${isCumulativeAll ? (d.degree_cumulative_stats ? d.degree_cumulative_stats.total_present : d.total_present) : semPresent}</b> Attended</span>
                     <span class="sem-stat-sep">/</span>
-                    <span class="sem-stat-badge"><b>${semTotal}</b> Total Lectures</span>
-                    <span class="sem-stat-sub">(${d.program || 'Degree'} &bull; ${d.semester || 'Current Sem'} &bull; Div ${d.division || 'A'})</span>
+                    <span class="sem-stat-badge"><b>${isCumulativeAll ? (d.degree_cumulative_stats ? d.degree_cumulative_stats.total_sessions : d.total_sessions) : semTotal}</b> Total Lectures</span>
+                    <span class="sem-stat-sub">(${d.program || 'Degree'} &bull; ${isCumulativeAll ? 'All Semesters' : currentSelectedSem} &bull; Div ${d.division || 'A'})</span>
                   </div>
                 </div>
                 <div class="student-sem-summary-right">
                   <div class="student-sem-rate">
-                    <span class="sem-rate-num" style="color: ${semPct < threshold ? '#dc2626' : '#15803d'};">
-                      ${semPct}%
+                    <span class="sem-rate-num" style="color: ${(isCumulativeAll ? (d.degree_cumulative_stats ? d.degree_cumulative_stats.attendance_percentage : d.final_percentage) : semPct) < threshold ? '#dc2626' : '#15803d'};">
+                      ${isCumulativeAll ? (d.degree_cumulative_stats ? d.degree_cumulative_stats.attendance_percentage : d.final_percentage) : semPct}%
                     </span>
-                    <span class="sem-rate-lbl">Semester Cumulative</span>
+                    <span class="sem-rate-lbl">${isCumulativeAll ? 'Degree Cumulative' : (isHistorical ? `${currentSelectedSem} Total` : 'Semester Cumulative')}</span>
                   </div>
-                  <span class="badge ${semIsDef ? 'badge-absent' : 'badge-present'}" style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; text-transform: uppercase;">
-                    ${semIsDef ? `DEFAULTER <${threshold}%` : `ELIGIBLE ≥${threshold}%`}
+                  <span class="badge ${(isCumulativeAll ? (d.degree_cumulative_stats ? d.degree_cumulative_stats.is_defaulter : isDef) : semIsDef) ? 'badge-absent' : 'badge-present'}" style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; text-transform: uppercase;">
+                    ${(isCumulativeAll ? (d.degree_cumulative_stats ? d.degree_cumulative_stats.is_defaulter : isDef) : semIsDef) ? `DEFAULTER <${threshold}%` : `ELIGIBLE ≥${threshold}%`}
                   </span>
                 </div>
               </div>
@@ -526,9 +634,11 @@ const StudentAttendanceView = {
               <span class="transcript-kpi-caption" style="color: #92400e; font-weight: 700;">Approved Credits</span>
             </div>
 
-            <!-- Card 6: Current Sem Overall -->
+            <!-- Card 6: Scope Rate -->
             <div class="transcript-kpi-card ${isDef ? 'kpi-card-defaulter' : 'kpi-card-eligible'}">
-              <span class="transcript-kpi-title" style="color: ${isDef ? '#9f1239' : '#065f46'};">Current Sem Overall</span>
+              <span class="transcript-kpi-title" style="color: ${isDef ? '#9f1239' : '#065f46'};">
+                ${isCumulativeAll ? 'Degree Overall' : (isHistorical ? `${currentSelectedSem} Overall` : 'Current Sem Overall')}
+              </span>
               <span class="transcript-kpi-val" style="color: ${isDef ? '#e11d48' : '#059669'};">${finalPct}%</span>
               <span class="transcript-kpi-caption" style="color: ${isDef ? '#e11d48' : '#059669'}; font-weight: 800;">
                 ${isDef ? 'Defaulter (<75%)' : 'Eligible (≥75%)'} (${d.total_present}/${d.total_sessions})
@@ -908,7 +1018,22 @@ const StudentAttendanceView = {
     }
 
     try {
-      const blob = await API.get(`/reports/student/${this.studentId}/export/pdf`);
+      let pdfUrl = `/reports/student/${this.studentId}/export/pdf`;
+      const qParams = [];
+      if (this.selectedSemester) {
+        qParams.push(`semester=${encodeURIComponent(this.selectedSemester)}`);
+      }
+      if (this.filters.dateFrom) {
+        qParams.push(`start_date=${encodeURIComponent(this.filters.dateFrom)}`);
+      }
+      if (this.filters.dateTo) {
+        qParams.push(`end_date=${encodeURIComponent(this.filters.dateTo)}`);
+      }
+      if (qParams.length > 0) {
+        pdfUrl += `?${qParams.join('&')}`;
+      }
+
+      const blob = await API.get(pdfUrl);
       if (!(blob instanceof Blob)) {
         throw new Error("Invalid PDF response received from server.");
       }
@@ -916,7 +1041,8 @@ const StudentAttendanceView = {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Student_Attendance_${(this.data && this.data.roll_number) ? this.data.roll_number : this.studentId}.pdf`;
+      const semTag = this.selectedSemester ? `_${this.selectedSemester.replace(/\s+/g, '_')}` : '';
+      a.download = `Student_Attendance_${(this.data && this.data.roll_number) ? this.data.roll_number : this.studentId}${semTag}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

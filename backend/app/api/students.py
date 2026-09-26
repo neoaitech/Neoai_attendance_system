@@ -12,7 +12,7 @@ from backend.app.core.config import settings
 from backend.app.api.auth import get_current_user, require_admin
 from backend.app.db.session import get_db
 from backend.app.db.models import Student, ClassCourse, User, AuditLog, AcademicDepartment, AcademicProgram, StudentFreezeLog, EmailLog, AttendanceRecord
-from backend.app.schemas.student import StudentCreate, StudentUpdate, StudentResponse, StudentFreezeRequest
+from backend.app.schemas.student import StudentCreate, StudentUpdate, StudentResponse, StudentFreezeRequest, StudentPromotionItem, BatchPromotionPayload
 from backend.app.services.face_engine import face_engine
 from backend.app.services.storage_service import storage_service
 from backend.app.api.staging import get_staged_photo_info
@@ -1018,4 +1018,102 @@ def get_student_freeze_history(
         raise HTTPException(status_code=404, detail="Student not found.")
     logs = db.query(StudentFreezeLog).filter(StudentFreezeLog.student_id == student_id).order_by(StudentFreezeLog.id.desc()).all()
     return [l.to_dict() for l in logs]
+
+
+@router.post("/promote-batch")
+def promote_batch(
+    payload: BatchPromotionPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Executes batch semester rollover and promotion for students.
+    Supports:
+    - Advancing semester (e.g. Sem 5 -> Sem 6)
+    - Division / section reassignment (e.g. Div A -> Div B)
+    - Auto-enrolling students in target semester courses
+    - Marking dropouts / left college (is_active=False) without deleting historical records
+    - Detaining students in current semester
+    """
+    if current_user.role not in ["admin", "super_admin", "superadmin"]:
+        raise HTTPException(status_code=403, detail="Admin authorization required for batch student promotion.")
+
+    if not payload.students:
+        raise HTTPException(status_code=400, detail="No students provided for promotion.")
+
+    promoted_count = 0
+    detained_count = 0
+    left_count = 0
+    errors = []
+
+    # Cache courses for target semester if auto-enrolling
+    target_courses = []
+    if payload.auto_enroll_courses and payload.target_semester:
+        cq = db.query(ClassCourse).filter(ClassCourse.semester == payload.target_semester, ClassCourse.status == "Active")
+        if payload.department:
+            cq = cq.filter(ClassCourse.department == payload.department)
+        if payload.program:
+            cq = cq.filter(ClassCourse.program == payload.program)
+        target_courses = cq.all()
+
+    for item in payload.students:
+        student = db.query(Student).filter(Student.id == item.student_id).first()
+        if not student:
+            errors.append(f"Student ID {item.student_id} not found.")
+            continue
+
+        action = (item.action or "PROMOTE").upper()
+
+        if action == "PROMOTE":
+            student.semester = payload.target_semester
+            if item.target_section:
+                student.section = item.target_section.strip().upper()
+            if payload.academic_year:
+                student.academic_year = payload.academic_year
+
+            # Auto-enroll in target semester courses matching student's section
+            if payload.auto_enroll_courses and target_courses:
+                for tc in target_courses:
+                    s_sec = (student.section or "A").strip().upper()
+                    c_sec = (tc.section or "A").strip().upper()
+                    if c_sec in [s_sec, "ALL", "BOTH", "*"]:
+                        if tc not in student.enrolled_classes:
+                            student.enrolled_classes.append(tc)
+
+            promoted_count += 1
+
+        elif action in ["LEFT_COLLEGE", "DROPOUT", "INACTIVE", "TRANSFERRED"]:
+            student.is_active = False
+            student.status = "Transferred" if action == "TRANSFERRED" else "Inactive"
+            student.attendance_status = "INACTIVE"
+            left_count += 1
+
+        elif action == "DETAIN":
+            if item.target_section:
+                student.section = item.target_section.strip().upper()
+            detained_count += 1
+
+    # Log to AuditLog
+    audit = AuditLog(
+        user_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role,
+        action="BATCH_STUDENT_PROMOTION",
+        entity="Student",
+        entity_id=None,
+        target_name=f"{payload.from_semester} -> {payload.target_semester}",
+        details=f"Batch promotion from {payload.from_semester} to {payload.target_semester}. Promoted: {promoted_count}, Detained: {detained_count}, Left/Inactive: {left_count}."
+    )
+    db.add(audit)
+
+    db.commit()
+
+    return {
+        "success": True,
+        "message": f"Successfully processed batch: {promoted_count} promoted to {payload.target_semester}, {detained_count} detained, {left_count} marked inactive.",
+        "promoted_count": promoted_count,
+        "detained_count": detained_count,
+        "left_count": left_count,
+        "errors": errors
+    }
 

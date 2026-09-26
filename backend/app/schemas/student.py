@@ -75,3 +75,17 @@ class StudentResponse(StudentBase):
     classes: Optional[List[dict]] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+class StudentPromotionItem(BaseModel):
+    student_id: int
+    action: str = "PROMOTE"  # "PROMOTE", "DETAIN", "LEFT_COLLEGE"
+    target_section: Optional[str] = None
+
+class BatchPromotionPayload(BaseModel):
+    program: Optional[str] = None
+    department: Optional[str] = None
+    from_semester: str
+    target_semester: str
+    academic_year: Optional[str] = None
+    students: List[StudentPromotionItem]
+    auto_enroll_courses: bool = True

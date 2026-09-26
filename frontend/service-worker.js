@@ -1,9 +1,9 @@
-const CACHE_NAME = 'neoai-tech-v33.0';
+const CACHE_NAME = 'neoai-tech-v34.0';
 const STATIC_ASSETS = [
   '/',
   'index.html',
   'manifest.json',
-  'css/styles.css?v=33.0',
+  'css/styles.css?v=34.0',
   'css/pages/dashboard.css?v=31.0',
   'css/pages/review.css?v=31.0',
   'css/pages/reports.css?v=31.0',
