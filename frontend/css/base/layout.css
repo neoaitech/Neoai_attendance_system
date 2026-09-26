@@ -515,12 +515,16 @@
   .report-semester-card,
   .report-division-block,
   .capture-config-panel,
-  .camera-viewport-card,
-  .live-summary-card {
+  .camera-viewport-card {
     max-width: 100% !important;
     width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+  }
+
+  /* Exclusively hide Attendance Telemetry panel on mobile devices */
+  .live-summary-card {
+    display: none !important;
   }
 
   /* Clean up topbar on mobile */

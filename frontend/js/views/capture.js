@@ -2921,6 +2921,8 @@ const CaptureView = {
     const regularRecords = records.filter(r => !r.is_extra_lecture && r.verification_type !== "EXTRA_LECTURE" && r.attendance_type !== "EXTRA_LECTURE");
     const presentCount = regularRecords.filter(r => r.status === "PRESENT" || r.status === "LATE").length;
     const absentCount = regularRecords.filter(r => r.status === "ABSENT").length;
+    const totalEnrolled = regularRecords.length;
+    const attendanceRate = totalEnrolled > 0 ? Math.round((presentCount / totalEnrolled) * 100) : 0;
     
     const extraCandidates = this.processedResult.extra_candidates || [];
     const approvedExtraCount = extraCandidates.filter(c => c.is_approved || c.status === "APPROVED").length;
@@ -2928,83 +2930,143 @@ const CaptureView = {
 
     const unknownCount = (this.processedResult.unknown_faces || []).length;
     const spoofCount = (this.processedResult.spoof_faces || []).concat(records.filter(r => r.verification_type === 'SPOOF_REJECTED')).length;
+    const className = this.processedResult.course_name || this.processedResult.session_name || 'Academic Class';
+
+    const extraSectionHtml = extraCandidates.length > 0 ? `
+      <div style="background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="user-plus" style="width: 14px; height: 14px; color: #d97706;"></i>
+            <span style="font-size: 0.72rem; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.04em;">Guest / Extra Lecture</span>
+          </div>
+          <span style="font-size: 0.68rem; color: #64748b; font-weight: 600;">Outside Selected Roster</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
+          <div style="background: #f8fafc; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 6px 4px;">
+            <span style="font-size: 0.65rem; color: #64748b; display: block; font-weight: 600;">Candidates</span>
+            <span style="font-weight: 800; font-family: monospace; color: #0f172a; font-size: 0.95rem;">${extraCandidates.length}</span>
+          </div>
+          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 6px 4px;">
+            <span style="font-size: 0.65rem; color: #059669; display: block; font-weight: 700;">Approved</span>
+            <span style="font-weight: 800; font-family: monospace; color: #047857; font-size: 0.95rem;">${approvedExtraCount}</span>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 6px 4px;">
+            <span style="font-size: 0.65rem; color: #94a3b8; display: block; font-weight: 600;">Ignored</span>
+            <span style="font-weight: 800; font-family: monospace; color: #64748b; font-size: 0.95rem;">${ignoredExtraCount}</span>
+          </div>
+        </div>
+      </div>
+    ` : `
+      <div style="background: #f8fafc; border: 1px dashed rgba(0,0,0,0.08); border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 0.72rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
+          <i data-lucide="user-check" style="width: 14px; height: 14px; color: #10b981;"></i> Extra Lecture Candidates
+        </span>
+        <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8;">None Detected (0)</span>
+      </div>
+    `;
 
     const html = `
-      <div class="modal-card" style="max-width: 520px;">
-        <div class="modal-header">
-          <div class="flex items-center gap-2">
-            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>
-            <span class="modal-title">Finalize Attendance Session</span>
-          </div>
-          <button class="btn-icon" onclick="App.closeModal()"><i data-lucide="x"></i></button>
-        </div>
-        <div class="modal-body space-y-4">
-          <p class="text-xs text-slate-600">
-            Please review the attendance breakdown before permanently saving this attendance session:
-          </p>
-
-          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3 text-xs">
-            <!-- Selected Class Section -->
-            <div class="pb-2 border-b border-slate-200">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">SELECTED CLASS</span>
-                <span class="badge text-[10px] bg-indigo-100 text-indigo-800 font-bold">${this.processedResult.course_name || this.processedResult.session_name || 'Academic Class'}</span>
-              </div>
-              <div class="grid grid-cols-3 gap-2 text-center">
-                <div class="p-2 bg-white rounded-lg border border-slate-200">
-                  <span class="text-[10px] text-slate-500 block">Enrolled</span>
-                  <span class="font-mono font-bold text-slate-800 text-sm">${regularRecords.length}</span>
-                </div>
-                <div class="p-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                  <span class="text-[10px] text-emerald-700 block">Present</span>
-                  <span class="font-mono font-bold text-emerald-700 text-sm">${presentCount}</span>
-                </div>
-                <div class="p-2 bg-rose-50 rounded-lg border border-rose-200">
-                  <span class="text-[10px] text-rose-700 block">Absent</span>
-                  <span class="font-mono font-bold text-rose-700 text-sm">${absentCount}</span>
-                </div>
-              </div>
+      <div class="modal-card modal-finalize-card">
+        <div class="modal-finalize-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%); display: flex; align-items: center; justify-content: center; color: #059669; flex-shrink: 0; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);">
+              <i data-lucide="check-check" style="width: 20px; height: 20px;"></i>
             </div>
-
-            <!-- Extra Lecture Section -->
-            <div class="pb-2 border-b border-slate-200">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="font-bold text-amber-950 uppercase tracking-wider text-[11px]">EXTRA LECTURE</span>
-                <span class="text-[10px] text-amber-800">Outside Selected Roster</span>
-              </div>
-              <div class="grid grid-cols-3 gap-2 text-center">
-                <div class="p-2 bg-amber-50/80 rounded-lg border border-amber-200">
-                  <span class="text-[10px] text-amber-800 block">Candidates</span>
-                  <span class="font-mono font-bold text-amber-900 text-sm">${extraCandidates.length}</span>
-                </div>
-                <div class="p-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                  <span class="text-[10px] text-emerald-700 block">Approved</span>
-                  <span class="font-mono font-bold text-emerald-700 text-sm">${approvedExtraCount}</span>
-                </div>
-                <div class="p-2 bg-slate-100 rounded-lg border border-slate-200">
-                  <span class="text-[10px] text-slate-500 block">Ignored</span>
-                  <span class="font-mono font-bold text-slate-700 text-sm">${ignoredExtraCount}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Unknown & Spoof Section -->
-            <div class="grid grid-cols-2 gap-2 text-center">
-              <div class="p-2 bg-indigo-50/60 rounded-lg border border-indigo-200">
-                <span class="text-[10px] text-indigo-700 block font-semibold">UNKNOWN FACES</span>
-                <span class="font-mono font-bold text-indigo-900 text-sm">${unknownCount}</span>
-              </div>
-              <div class="p-2 bg-rose-50/60 rounded-lg border border-rose-200">
-                <span class="text-[10px] text-rose-700 block font-semibold">SPOOF REJECTED</span>
-                <span class="font-mono font-bold text-rose-900 text-sm">${spoofCount}</span>
-              </div>
+            <div>
+              <h3 style="font-size: 1.02rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.25;">Finalize Attendance</h3>
+              <p style="font-size: 0.72rem; color: #64748b; margin: 2px 0 0 0;">Review attendance breakdown before saving</p>
             </div>
           </div>
+          <button class="btn-icon" onclick="App.closeModal()" style="border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.04); color: #64748b; border: 1px solid rgba(0,0,0,0.06); cursor: pointer;">
+            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+          </button>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary text-xs" onclick="App.closeModal()">Continue Reviewing</button>
-          <button type="button" class="btn-primary text-xs" id="btn-confirm-finalize" onclick="CaptureView.confirmFinalize(${sessionId})">
-            <i data-lucide="check" class="w-3.5 h-3.5"></i> Save & Finalize Attendance
+
+        <div class="modal-finalize-body">
+          <!-- Class & Turnout Banner -->
+          <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(99, 102, 241, 0.12); display: flex; align-items: center; justify-content: center; color: #6366f1; flex-shrink: 0;">
+                <i data-lucide="graduation-cap" style="width: 17px; height: 17px;"></i>
+              </div>
+              <div style="min-width: 0;">
+                <span style="font-size: 0.65rem; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 0.05em; display: block;">Selected Class</span>
+                <span style="font-size: 0.85rem; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 250px;" title="${className}">
+                  ${className}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; background: ${attendanceRate >= 75 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)'}; color: ${attendanceRate >= 75 ? '#059669' : '#d97706'}; border: 1px solid ${attendanceRate >= 75 ? 'rgba(16, 185, 129, 0.25)' : 'rgba(245, 158, 11, 0.25)'};">
+                <i data-lucide="trending-up" style="width: 13px; height: 13px;"></i> ${attendanceRate}% Turnout
+              </span>
+            </div>
+          </div>
+
+          <!-- Main 3-Column Metric Grid -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px;">
+            <!-- Enrolled -->
+            <div style="background: #ffffff; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 12px 6px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span style="font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 3px;">Enrolled</span>
+              <span style="font-size: 1.4rem; font-weight: 900; font-family: monospace; color: #0f172a; line-height: 1.1;">${totalEnrolled}</span>
+              <span style="font-size: 0.62rem; color: #94a3b8; font-weight: 600; margin-top: 3px;">Total Roster</span>
+            </div>
+
+            <!-- Present -->
+            <div style="background: linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; border-radius: 12px; padding: 12px 6px; text-align: center; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.08); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span style="font-size: 0.68rem; font-weight: 800; color: #15803d; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 3px; display: inline-flex; align-items: center; gap: 3px;">
+                <i data-lucide="check" style="width: 12px; height: 12px;"></i> Present
+              </span>
+              <span style="font-size: 1.4rem; font-weight: 900; font-family: monospace; color: #166534; line-height: 1.1;">${presentCount}</span>
+              <span style="font-size: 0.62rem; font-weight: 700; color: #15803d; margin-top: 3px;">${attendanceRate}% Verified</span>
+            </div>
+
+            <!-- Absent -->
+            <div style="background: linear-gradient(145deg, #fff1f2 0%, #ffe4e6 100%); border: 1px solid #fda4af; border-radius: 12px; padding: 12px 6px; text-align: center; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span style="font-size: 0.68rem; font-weight: 800; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 3px; display: inline-flex; align-items: center; gap: 3px;">
+                <i data-lucide="x" style="width: 12px; height: 12px;"></i> Absent
+              </span>
+              <span style="font-size: 1.4rem; font-weight: 900; font-family: monospace; color: #991b1b; line-height: 1.1;">${absentCount}</span>
+              <span style="font-size: 0.62rem; font-weight: 700; color: #b91c1c; margin-top: 3px;">${100 - attendanceRate}% Missing</span>
+            </div>
+          </div>
+
+          <!-- Extra Lecture Section -->
+          ${extraSectionHtml}
+
+          <!-- Unknown & Spoof Section -->
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <!-- Unknown Faces -->
+            <div style="background: ${unknownCount > 0 ? '#f5f3ff' : '#f8fafc'}; border: 1px solid ${unknownCount > 0 ? '#ddd6fe' : 'rgba(0,0,0,0.06)'}; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: ${unknownCount > 0 ? 'rgba(139,92,246,0.15)' : 'rgba(0,0,0,0.04)'}; display: flex; align-items: center; justify-content: center; color: ${unknownCount > 0 ? '#7c3aed' : '#94a3b8'}; flex-shrink: 0;">
+                <i data-lucide="help-circle" style="width: 17px; height: 17px;"></i>
+              </div>
+              <div style="min-width: 0;">
+                <span style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em; display: block;">Unknown Faces</span>
+                <span style="font-size: 1.05rem; font-weight: 800; font-family: monospace; color: ${unknownCount > 0 ? '#5b21b6' : '#64748b'}; line-height: 1.1;">${unknownCount}</span>
+              </div>
+            </div>
+
+            <!-- Spoof Check -->
+            <div style="background: ${spoofCount > 0 ? '#fff1f2' : '#f8fafc'}; border: 1px solid ${spoofCount > 0 ? '#fecdd3' : 'rgba(0,0,0,0.06)'}; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: ${spoofCount > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.1)'}; display: flex; align-items: center; justify-content: center; color: ${spoofCount > 0 ? '#e11d48' : '#059669'}; flex-shrink: 0;">
+                <i data-lucide="${spoofCount > 0 ? 'shield-alert' : 'shield-check'}" style="width: 17px; height: 17px;"></i>
+              </div>
+              <div style="min-width: 0;">
+                <span style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em; display: block;">Spoof Check</span>
+                <span style="font-size: 1.05rem; font-weight: 800; font-family: monospace; color: ${spoofCount > 0 ? '#991b1b' : '#059669'}; line-height: 1.1;">${spoofCount > 0 ? spoofCount + ' Blocked' : '0 Passed'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-finalize-footer">
+          <button type="button" class="btn-secondary" onclick="App.closeModal()" style="font-size: 0.8rem; font-weight: 600; padding: 10px 16px; border-radius: 10px;">
+            Continue Reviewing
+          </button>
+          <button type="button" class="btn-primary" id="btn-confirm-finalize" onclick="CaptureView.confirmFinalize(${sessionId})" style="font-size: 0.82rem; font-weight: 700; padding: 10px 20px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);">
+            <i data-lucide="check" style="width: 15px; height: 15px;"></i>
+            <span>Save & Finalize Attendance</span>
           </button>
         </div>
       </div>

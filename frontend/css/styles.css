@@ -20,7 +20,7 @@
 /* 3. Page-Specific Styles */
 @import url("./pages/auth.css");
 @import url("./pages/dashboard.css");
-@import url("./pages/capture.css?v=27.0");
+@import url("./pages/capture.css?v=28.0");
 @import url("./pages/review.css");
 @import url("./pages/students.css");
 @import url("./pages/classes.css");

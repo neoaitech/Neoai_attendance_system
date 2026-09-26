@@ -2088,6 +2088,11 @@ body.camera-fullscreen-open #src-camera-box {
 
 /* ================= Mobile Breakpoints for Capture Scanner ================= */
 @media (max-width: 768px) {
+  /* Exclusively hide Attendance Telemetry card on mobile devices */
+  .live-summary-card {
+    display: none !important;
+  }
+
   /* Prevent horizontal screen expansion */
   .capture-workspace-grid {
     grid-template-columns: 1fr !important;
@@ -2412,3 +2417,63 @@ body.camera-fullscreen-open #src-camera-box {
     grid-column: span 1 !important;
   }
 }
+
+/* ================= Finalize Attendance Modal Styling ================= */
+.modal-finalize-card {
+  max-width: 500px !important;
+  width: 95vw !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22), 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden !important;
+}
+
+.modal-finalize-header {
+  padding: 18px 20px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.modal-finalize-body {
+  padding: 18px 20px !important;
+  max-height: calc(85vh - 140px) !important;
+  overflow-y: auto !important;
+}
+
+.modal-finalize-footer {
+  padding: 14px 20px !important;
+  background: #f8fafc !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+  display: flex !important;
+  gap: 10px !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+}
+
+@media (max-width: 640px) {
+  .modal-finalize-card {
+    width: 94vw !important;
+    margin: 8px auto !important;
+  }
+  .modal-finalize-header {
+    padding: 14px 16px !important;
+  }
+  .modal-finalize-body {
+    padding: 14px 16px !important;
+  }
+  .modal-finalize-footer {
+    padding: 12px 16px !important;
+    flex-direction: column-reverse !important;
+    gap: 8px !important;
+  }
+  .modal-finalize-footer button {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+  }
+}
+
