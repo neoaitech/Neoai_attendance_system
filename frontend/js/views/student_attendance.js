@@ -263,13 +263,9 @@ const StudentAttendanceView = {
                 <span>Freeze Attendance</span>
               </button>
             `}
-            <button type="button" class="btn-secondary btn-sm" style="font-weight: 700;" onclick="StudentAttendanceView.printRecord()" title="Print Official A4 Record">
-              <i data-lucide="printer" style="width: 14px; height: 14px; margin-right: 6px;"></i>
-              <span>Print</span>
-            </button>
-            <button type="button" class="btn-primary" style="font-size: 0.78rem; padding: 7px 16px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;" onclick="StudentAttendanceView.downloadPdf()" id="student-pdf-btn">
+            <button type="button" class="btn-primary btn-sm" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #6366f1, #4f46e5); box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);" onclick="StudentAttendanceView.downloadPdf()" id="student-pdf-btn" title="Download Official Student Attendance Dossier PDF">
               <i data-lucide="file-down" style="width: 15px; height: 15px;"></i>
-              <span>Download Report</span>
+              <span>Download PDF</span>
             </button>
           </div>
         </div>

@@ -863,6 +863,28 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .student-topbar-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .student-topbar-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .student-topbar-right button {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+    padding: 8px 8px !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap;
+  }
 }
 
 /* 2. Official Transcript Container & Header */
