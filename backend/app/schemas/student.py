@@ -83,6 +83,7 @@ class StudentResponse(StudentBase):
     created_at: Optional[str] = None
     enrolled_classes: Optional[List[dict]] = []
     classes: Optional[List[dict]] = []
+    parent_onboarding: Optional[dict] = None
 
     model_config = ConfigDict(from_attributes=True)
 

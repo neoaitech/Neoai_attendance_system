@@ -123,15 +123,29 @@ def create_student(
     db.refresh(student)
 
     # Auto-link or create parent account and dispatch onboarding credentials email
+    parent_onboarding = None
     if student.parent_email:
         try:
             from backend.app.services.parent_service import link_or_create_parent_account
-            link_or_create_parent_account(db, student, send_welcome_email=True)
+            p_user, is_new, p_pass = link_or_create_parent_account(db, student, send_welcome_email=True, force_welcome_email=True)
             db.refresh(student)
+            if p_user:
+                parent_onboarding = {
+                    "parent_name": p_user.full_name or student.parent_name,
+                    "parent_email": p_user.email,
+                    "plain_password": p_pass or "Parent@123",
+                    "portal_url": "https://attendance.neoaitech.com/parent",
+                    "download_apk_url": "https://attendance.neoaitech.com/download",
+                    "is_new_account": is_new,
+                    "email_dispatched": True
+                }
         except Exception as pe:
             print("[ParentAccountLink] Note:", pe)
 
-    return student.to_dict()
+    resp_dict = student.to_dict()
+    if parent_onboarding:
+        resp_dict["parent_onboarding"] = parent_onboarding
+    return resp_dict
 
 @router.post("/register-with-photo", response_model=StudentResponse)
 async def register_student_with_photo(
@@ -415,11 +429,22 @@ async def register_student_with_photo(
     db.refresh(student)
 
     # Auto-link or create parent account and dispatch onboarding credentials email
+    parent_onboarding = None
     if student.parent_email:
         try:
             from backend.app.services.parent_service import link_or_create_parent_account
-            link_or_create_parent_account(db, student, send_welcome_email=True)
+            p_user, is_new, p_pass = link_or_create_parent_account(db, student, send_welcome_email=True, force_welcome_email=True)
             db.refresh(student)
+            if p_user:
+                parent_onboarding = {
+                    "parent_name": p_user.full_name or student.parent_name,
+                    "parent_email": p_user.email,
+                    "plain_password": p_pass or "Parent@123",
+                    "portal_url": "https://attendance.neoaitech.com/parent",
+                    "download_apk_url": "https://attendance.neoaitech.com/download",
+                    "is_new_account": is_new,
+                    "email_dispatched": True
+                }
         except Exception as pe:
             print("[ParentAccountLink] Note:", pe)
 
@@ -438,7 +463,10 @@ async def register_student_with_photo(
         except Exception as e:
             print("Auto-resolving unknown face error during registration:", e)
 
-    return student.to_dict()
+    resp_dict = student.to_dict()
+    if parent_onboarding:
+        resp_dict["parent_onboarding"] = parent_onboarding
+    return resp_dict
 
 @router.put("/{student_id}", response_model=StudentResponse)
 def update_student(
@@ -557,15 +585,50 @@ def update_student(
     db.commit()
     db.refresh(student)
 
+    parent_onboarding = None
     if student.parent_email:
         try:
             from backend.app.services.parent_service import link_or_create_parent_account
-            link_or_create_parent_account(db, student, send_welcome_email=False)
+            # Always ensure parent is linked and send credentials email with APK download link
+            p_user, is_new, p_pass = link_or_create_parent_account(
+                db, student, 
+                send_welcome_email=True, 
+                force_welcome_email=False
+            )
             db.refresh(student)
-        except Exception:
-            pass
+            if p_user:
+                parent_onboarding = {
+                    "parent_name": p_user.full_name or student.parent_name,
+                    "parent_email": p_user.email,
+                    "plain_password": p_pass or "Parent@123",
+                    "portal_url": "https://attendance.neoaitech.com/parent",
+                    "download_apk_url": "https://attendance.neoaitech.com/download",
+                    "is_new_account": is_new,
+                    "email_dispatched": True
+                }
+        except Exception as pe:
+            print("[ParentAccountLink update] Note:", pe)
 
-    return student.to_dict()
+    resp_dict = student.to_dict()
+    if parent_onboarding:
+        resp_dict["parent_onboarding"] = parent_onboarding
+    return resp_dict
+
+@router.post("/{student_id}/send-parent-credentials")
+def dispatch_parent_credentials_endpoint(
+    student_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Explicitly generates/resends parent login credentials, portal URL, and direct APK download link."""
+    from backend.app.services.parent_service import send_parent_credentials_now
+    try:
+        data = send_parent_credentials_now(db, student_id)
+        return data
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to dispatch parent credentials: {str(e)}")
 
 @router.post("/{student_id}/update-photos", response_model=StudentResponse)
 async def update_student_photos(

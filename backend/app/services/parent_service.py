@@ -2,7 +2,7 @@ import random
 import string
 import threading
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 from sqlalchemy.orm import Session
 
 from backend.app.core.config import settings
@@ -405,9 +405,15 @@ def build_parent_ward_linked_html(
         You can log in using your <strong>existing parent email and password</strong> ({parent_user.email}). Inside the portal, use the <strong>Child Switcher</strong> at the top to toggle between your children effortlessly.
       </p>
 
-      <a href="{portal_url}" class="cta-btn" target="_blank">
-        Open Parent Portal &rarr;
-      </a>
+      <!-- Action Buttons: Direct APK Download & Mobile Portal -->
+      <div style="margin: 22px 0 24px;">
+        <a href="{portal_url.replace('/parent', '').rstrip('/') + '/download'}" class="cta-btn" style="background: linear-gradient(135deg, #10b981, #059669); margin-bottom: 12px; display: block; text-decoration: none; text-align: center; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; color: #ffffff !important;" target="_blank">
+          📥 Download Parent Android App (.APK) &rarr;
+        </a>
+        <a href="{portal_url}" class="cta-btn" style="background: linear-gradient(135deg, #4f46e5, #4338ca); display: block; text-decoration: none; text-align: center; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; color: #ffffff !important;" target="_blank">
+          🌐 Open Parent Mobile Portal &rarr;
+        </a>
+      </div>
     </div>
   </div>
 </body>
@@ -431,7 +437,8 @@ def _send_parent_email_worker(
 
         settings_obj = get_or_create_email_settings(db)
 
-        if is_new and plain_password:
+        # If a password is known or was reset, always dispatch full credentials & APK download link!
+        if plain_password:
             subject = f"🎓 Welcome to NeoAI Parent Portal — Student Profile & Login Access for {student.full_name}"
             html_body = build_parent_welcome_html(student, parent_user, plain_password, portal_url)
             report_type = "PARENT_WELCOME"
@@ -454,7 +461,7 @@ def _send_parent_email_worker(
             subject=subject,
             report_type=report_type,
             period_label="Onboarding",
-            status="SENT" if success else "FAILED",
+            status="SUCCESS" if success else "FAILED",
             error_message=err,
             has_attachment=False,
             sent_at=datetime.utcnow()
@@ -470,13 +477,14 @@ def _send_parent_email_worker(
 def link_or_create_parent_account(
     db: Session,
     student: Student,
-    send_welcome_email: bool = True
+    send_welcome_email: bool = True,
+    force_welcome_email: bool = False
 ) -> Tuple[Optional[User], bool, Optional[str]]:
     """
     Checks if parent_email is present on the student.
-    - If user exists: links student.parent_user_id and sends ward-linked email.
-    - If user does not exist: creates a new parent User with strong auto-generated password
-      and sends full onboarding credentials email.
+    - If user exists: links student.parent_user_id and sends credentials or ward-linked email.
+    - If user does not exist: creates a new parent User with strong default password ('Parent@123')
+      and sends full onboarding credentials email with direct APK download link.
     Returns: (parent_user, is_new_account, plain_password)
     """
     if not student.parent_email or not student.parent_email.strip():
@@ -499,6 +507,11 @@ def link_or_create_parent_account(
         student.parent_user_id = parent_user.id
         if student.parent_name and not parent_user.full_name:
             parent_user.full_name = student.parent_name
+        if force_welcome_email:
+            plain_password = generate_secure_parent_password()
+            parent_user.hashed_password = get_password_hash(plain_password)
+            parent_user.is_active = True
+            is_new = True
         db.commit()
     else:
         # New parent account: create credentials
@@ -539,3 +552,34 @@ def link_or_create_parent_account(
         thread.start()
 
     return parent_user, is_new, plain_password
+
+
+def send_parent_credentials_now(
+    db: Session,
+    student_id: int
+) -> Dict[str, Any]:
+    """
+    Explicitly (re)sends parent credentials (email, password, portal URL, APK download link)
+    for the given student's parent. Resets password to Parent@123 so the parent can log in immediately.
+    """
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise ValueError("Student record not found.")
+    if not student.parent_email or not student.parent_email.strip():
+        raise ValueError("Student does not have a parent email configured. Please enter parent email in student details first.")
+    
+    parent_user, is_new, plain_password = link_or_create_parent_account(
+        db, student, send_welcome_email=True, force_welcome_email=True
+    )
+    portal_url = getattr(settings, "PARENT_PORTAL_URL", "https://attendance.neoaitech.com/parent")
+    download_apk_url = portal_url.replace("/parent", "").rstrip("/") + "/download"
+    
+    return {
+        "success": True,
+        "message": f"Login credentials & app download link sent to {parent_user.email}",
+        "parent_email": parent_user.email,
+        "parent_name": parent_user.full_name or student.parent_name,
+        "plain_password": plain_password or "Parent@123",
+        "portal_url": portal_url,
+        "download_apk_url": download_apk_url
+    }

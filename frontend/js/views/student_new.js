@@ -921,14 +921,23 @@ const StudentNewView = {
     }
 
     try {
-      await API.post("/students/register-with-photo", fd);
+      const res = await API.post("/students/register-with-photo", fd);
       this.stopWebcam();
-      if (this.resolvingUnknownFaceId) {
-        App.showToast(`Student ${name} registered & attendance verified from unknown face!`, "success");
-        App.navigate("unknown_faces");
+      
+      const onFinished = () => {
+        if (this.resolvingUnknownFaceId) {
+          App.showToast(`Student ${name} registered & attendance verified from unknown face!`, "success");
+          App.navigate("unknown_faces");
+        } else {
+          App.showToast(`Student ${name} registered successfully!`, "success");
+          App.navigate("students");
+        }
+      };
+
+      if (res && res.parent_onboarding && res.parent_onboarding.parent_email) {
+        this.showParentCredentialsModal(res.parent_onboarding, onFinished);
       } else {
-        App.showToast(`Student ${name} registered successfully!`, "success");
-        App.navigate("students");
+        onFinished();
       }
     } catch (err) {
       btn.disabled = false;
@@ -936,6 +945,73 @@ const StudentNewView = {
       if (window.lucide) window.lucide.createIcons();
       App.showToast(err.message || "Failed to register student", "error");
     }
+  },
+
+  showParentCredentialsModal(data, onDone) {
+    const parentEmail = data.parent_email || "";
+    const parentName = data.parent_name || "Parent / Guardian";
+    const password = data.plain_password || "Parent@123";
+    const portalUrl = data.portal_url || "https://attendance.neoaitech.com/parent";
+    const apkUrl = data.download_apk_url || "https://attendance.neoaitech.com/download";
+
+    const modalHtml = `
+      <div class="modal-card" style="max-width: 480px; width: 92%;">
+        <div class="modal-header bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4" style="border-radius: 12px 12px 0 0;">
+          <div class="flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-200"></i>
+            <h3 class="font-bold text-sm text-white" style="color: #ffffff !important;">Parent Portal Access Credentials</h3>
+          </div>
+          <button type="button" class="text-white hover:opacity-80" onclick="App.closeModal(); if (window._parentModalDone) { window._parentModalDone(); window._parentModalDone = null; }">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div class="modal-body p-4 space-y-3.5 text-xs text-slate-700">
+          <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900 text-xs">
+            <strong>✅ Login credentials & APK download link</strong> have been dispatched via email to <strong>${parentEmail}</strong>.
+          </div>
+
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 font-mono text-[11.5px]">
+            <div class="flex justify-between items-center py-1 border-b border-slate-200">
+              <span class="text-slate-500 font-sans">Parent Name:</span>
+              <strong class="font-sans text-slate-900">${parentName}</strong>
+            </div>
+            <div class="flex justify-between items-center py-1 border-b border-slate-200">
+              <span class="text-slate-500 font-sans">Login Email / ID:</span>
+              <strong class="text-indigo-600 select-all">${parentEmail}</strong>
+            </div>
+            <div class="flex justify-between items-center py-1 border-b border-slate-200">
+              <span class="text-slate-500 font-sans">Password:</span>
+              <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold select-all">${password}</span>
+            </div>
+            <div class="flex justify-between items-center py-1 border-b border-slate-200">
+              <span class="text-slate-500 font-sans">Direct APK Download:</span>
+              <a href="${apkUrl}" target="_blank" class="text-emerald-700 font-bold underline truncate max-w-[200px]">${apkUrl}</a>
+            </div>
+            <div class="flex justify-between items-center py-1">
+              <span class="text-slate-500 font-sans">Web Portal:</span>
+              <a href="${portalUrl}" target="_blank" class="text-indigo-600 font-bold underline truncate max-w-[200px]">${portalUrl}</a>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 pt-2">
+            <button type="button" class="btn-primary btn-sm flex-1 flex items-center justify-center gap-1.5" onclick="navigator.clipboard.writeText('Parent Portal Login Access\\nEmail: ${parentEmail}\\nPassword: ${password}\\nAndroid App Download: ${apkUrl}\\nWeb Portal: ${portalUrl}'); App.showToast('Credentials copied to clipboard!', 'success');">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copy Details</span>
+            </button>
+            <a href="https://wa.me/?text=${encodeURIComponent(`🎓 *NeoAI Parent Portal Access*\nHello ${parentName},\nHere are your access details to track live attendance:\n\n📱 *Download Android App:* ${apkUrl}\n🌐 *Web Portal:* ${portalUrl}\n👤 *Login ID:* ${parentEmail}\n🔑 *Password:* ${password}`)}" target="_blank" class="btn-secondary btn-sm flex items-center justify-center gap-1.5" style="background: #25D366; color: #ffffff; border-color: #25D366; font-weight: 700;">
+              <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+              <span>WhatsApp</span>
+            </a>
+            <button type="button" class="btn-secondary btn-sm" onclick="App.closeModal(); if (window._parentModalDone) { window._parentModalDone(); window._parentModalDone = null; }">
+              <span>Done</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    window._parentModalDone = onDone;
+    App.showModal(modalHtml);
+    if (window.lucide) window.lucide.createIcons();
   }
 };
 

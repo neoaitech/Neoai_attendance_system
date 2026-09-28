@@ -374,9 +374,11 @@ const CaptureView = {
                   </div>
 
                   <!-- Central Native Shutter Button -->
-                  <button type="button" class="native-shutter-button" id="native-shutter-btn" onclick="CaptureView.takeClassroomSnap()" title="Snap Angle" aria-label="Capture Angle">
+                  <button type="button" class="native-shutter-button" id="native-shutter-btn" onclick="CaptureView.takeClassroomSnap()" title="Snap Angle (Click to Capture)" aria-label="Capture Angle">
                     <span class="shutter-ring"></span>
-                    <span class="shutter-inner"></span>
+                    <span class="shutter-inner">
+                      <i data-lucide="camera" class="w-6 h-6 text-indigo-600"></i>
+                    </span>
                   </button>
 
                   <!-- Right Action: Done Button -->
@@ -1436,24 +1438,11 @@ const CaptureView = {
         await this.applyFlashTorch(true);
       }
 
-      // Auto fullscreen on mobile ONLY for initial launch (not when user switches camera)
-      if (options.autoFullscreen !== false && window.innerWidth <= 768) {
-        const container = document.getElementById("camera-feed-container");
-        if (container && !container.classList.contains("is-fullscreen")) {
-          this.enterFullscreenCamera();
-        }
-      }
     } catch (e) {
       console.warn("Webcam access error with ideal constraints, trying fallback:", e);
       try {
         this.webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = this.webcamStream;
-        if (options.autoFullscreen !== false && window.innerWidth <= 768) {
-          const container = document.getElementById("camera-feed-container");
-          if (container && !container.classList.contains("is-fullscreen")) {
-            this.enterFullscreenCamera();
-          }
-        }
       } catch (err) {
         App.showToast("Camera streaming unavailable. Please use 'Upload / Take Photo' button.", "warning");
         this.setSourceMode("upload");
@@ -1492,6 +1481,11 @@ const CaptureView = {
     const toggleBtn = document.getElementById("cam-fullscreen-toggle-btn");
     if (toggleBtn) toggleBtn.classList.add("hidden");
     if (window.lucide) window.lucide.createIcons();
+    try {
+      if (container.requestFullscreen && !document.fullscreenElement) {
+        container.requestFullscreen().catch(() => {});
+      }
+    } catch (_) {}
   },
 
   exitFullscreenCamera(e) {
@@ -1508,6 +1502,11 @@ const CaptureView = {
     const toggleBtn = document.getElementById("cam-fullscreen-toggle-btn");
     if (toggleBtn) toggleBtn.classList.remove("hidden");
     if (window.lucide) window.lucide.createIcons();
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    } catch (_) {}
   },
 
   finishCameraAngles() {
