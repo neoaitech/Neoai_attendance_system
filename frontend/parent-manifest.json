@@ -1,0 +1,28 @@
+{
+  "name": "NeoAI Attend for Parents",
+  "short_name": "NeoAI Parents",
+  "description": "Live student attendance, daily lectures & verification photo proof portal for parents",
+  "start_url": "/parent",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "categories": [
+    "education",
+    "parenting"
+  ],
+  "icons": [
+    {
+      "src": "/images/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

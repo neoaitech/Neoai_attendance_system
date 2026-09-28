@@ -260,6 +260,52 @@ const StudentNewView = {
             </div>
           </div>
 
+          <!-- SECTION: Parent / Guardian Information & Portal Onboarding -->
+          <div class="form-section-card border-emerald-200/70 bg-gradient-to-br from-white to-emerald-50/20">
+            <div class="form-section-header">
+              <div>
+                <span class="form-section-title text-emerald-800">
+                  <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                  Parent &amp; Guardian Information &bull; NeoAI Parent Portal Onboarding
+                </span>
+                <p class="form-section-desc">Details for automated welcome email, parent login credentials, and real-time attendance alerts.</p>
+              </div>
+              <span class="badge badge-present text-[11px] font-bold">Auto-Onboarding Active</span>
+            </div>
+
+            <div class="form-grid-2 mb-3">
+              <div class="form-group mb-0">
+                <label class="form-label">Parent / Guardian Full Name</label>
+                <input type="text" id="sn-parent-name" class="form-input text-xs" placeholder="e.g. Ramesh Sharma" />
+              </div>
+              <div class="form-group mb-0">
+                <label class="form-label">Parent Email Address <span class="text-indigo-600 font-semibold">(For App Login &amp; Daily Updates)</span></label>
+                <input type="email" id="sn-parent-email" class="form-input text-xs" placeholder="e.g. ramesh.sharma@example.com" />
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group mb-0">
+                <label class="form-label">Parent Mobile Number</label>
+                <input type="tel" id="sn-parent-phone" class="form-input text-xs" placeholder="e.g. +91 98220 12345" />
+              </div>
+              <div class="form-group mb-0">
+                <label class="form-label">Relationship to Student</label>
+                <select id="sn-parent-relation" class="form-select text-xs">
+                  <option value="Father" selected>Father</option>
+                  <option value="Mother">Mother</option>
+                  <option value="Guardian">Legal Guardian</option>
+                  <option value="Parent">Parent</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mt-3 text-[11px] text-emerald-800 bg-emerald-50/90 border border-emerald-200 p-2.5 rounded-xl flex items-center gap-2.5">
+              <i data-lucide="mail-check" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+              <span>Upon saving, a welcome email with student profile and <strong>NeoAI Parent Portal</strong> login credentials will be dispatched automatically to the parent.</span>
+            </div>
+          </div>
+
           <!-- SECTION 3: Course Enrollment -->
           <div class="form-section-card">
             <div class="form-section-header">
@@ -811,6 +857,11 @@ const StudentNewView = {
       }
     }
 
+    const parentName = document.getElementById("sn-parent-name")?.value.trim() || "";
+    const parentEmail = document.getElementById("sn-parent-email")?.value.trim() || "";
+    const parentPhone = document.getElementById("sn-parent-phone")?.value.trim() || "";
+    const parentRelation = document.getElementById("sn-parent-relation")?.value || "Parent";
+
     const fd = new FormData();
     fd.append("full_name", name);
     fd.append("roll_number", roll);
@@ -829,6 +880,11 @@ const StudentNewView = {
     fd.append("academic_year", ay);
     fd.append("admission_year", admissionYear);
     fd.append("batch", `${admissionYear}-${admissionYear+4}`);
+
+    if (parentName) fd.append("parent_name", parentName);
+    if (parentEmail) fd.append("parent_email", parentEmail);
+    if (parentPhone) fd.append("parent_phone", parentPhone);
+    if (parentRelation) fd.append("parent_relation", parentRelation);
 
     if (this.selectedClassIds.size > 0) {
       fd.append("class_ids", Array.from(this.selectedClassIds).join(","));

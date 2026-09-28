@@ -45,3 +45,7 @@ database/backups/*
 # Heavy Model Weights (>100MB, download via scripts/download_models.py)
 models/arcface/*.onnx
 !models/arcface/README.md
+
+parent_android_app/**/build/
+parent_android_app/.gradle/
+

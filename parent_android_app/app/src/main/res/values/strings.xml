@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NeoAI Attend Parents</string>
+    <string name="server_url">http://192.168.0.107:8000</string>
+</resources>

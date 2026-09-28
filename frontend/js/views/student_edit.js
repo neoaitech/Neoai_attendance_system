@@ -214,6 +214,49 @@ const StudentEditView = {
               </div>
             </div>
 
+            <!-- SECTION: Parent / Guardian Information & Portal Onboarding -->
+            <div class="form-section-card border-emerald-200/70 bg-gradient-to-br from-white to-emerald-50/20">
+              <div class="form-section-header">
+                <div>
+                  <span class="form-section-title text-emerald-800">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                    Parent &amp; Guardian Information &bull; NeoAI Parent Portal
+                  </span>
+                  <p class="form-section-desc">Details for parent mobile app login, daily lecture alerts, and photo proof access.</p>
+                </div>
+                <span class="badge ${student.parent_email ? 'badge-present' : 'badge-neutral'} text-[11px] font-bold">
+                  ${student.parent_email ? 'Parent Linked' : 'Not Linked'}
+                </span>
+              </div>
+
+              <div class="form-grid-2 mb-3">
+                <div class="form-group mb-0">
+                  <label class="form-label">Parent / Guardian Full Name</label>
+                  <input type="text" id="se-parent-name" class="form-input text-xs" value="${student.parent_name || ''}" placeholder="e.g. Ramesh Sharma" />
+                </div>
+                <div class="form-group mb-0">
+                  <label class="form-label">Parent Email Address <span class="text-indigo-600 font-semibold">(App Login ID)</span></label>
+                  <input type="email" id="se-parent-email" class="form-input text-xs" value="${student.parent_email || ''}" placeholder="e.g. ramesh.sharma@example.com" />
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group mb-0">
+                  <label class="form-label">Parent Mobile Number</label>
+                  <input type="tel" id="se-parent-phone" class="form-input text-xs" value="${student.parent_phone || ''}" placeholder="e.g. +91 98220 12345" />
+                </div>
+                <div class="form-group mb-0">
+                  <label class="form-label">Relationship to Student</label>
+                  <select id="se-parent-relation" class="form-select text-xs">
+                    <option value="Father" ${(student.parent_relation || 'Father') === 'Father' ? 'selected' : ''}>Father</option>
+                    <option value="Mother" ${student.parent_relation === 'Mother' ? 'selected' : ''}>Mother</option>
+                    <option value="Guardian" ${student.parent_relation === 'Guardian' ? 'selected' : ''}>Legal Guardian</option>
+                    <option value="Parent" ${student.parent_relation === 'Parent' ? 'selected' : ''}>Parent</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <!-- SECTION 3: Course Offerings Enrollment -->
             <div class="form-section-card">
               <div class="form-section-header">
@@ -484,6 +527,10 @@ const StudentEditView = {
         academic_year: ay,
         admission_year: admissionYear,
         batch: `${admissionYear}-${admissionYear+4}`,
+        parent_name: document.getElementById("se-parent-name")?.value.trim() || null,
+        parent_email: document.getElementById("se-parent-email")?.value.trim().toLowerCase() || null,
+        parent_phone: document.getElementById("se-parent-phone")?.value.trim() || null,
+        parent_relation: document.getElementById("se-parent-relation")?.value || "Parent",
         class_ids: Array.from(this.selectedClassIds)
       };
 

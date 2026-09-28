@@ -22,6 +22,11 @@ class StudentBase(BaseModel):
     batch: Optional[str] = "2023-2027"
     year: int = 3
     section: str = "A"
+    parent_name: Optional[str] = None
+    parent_email: Optional[str] = None
+    parent_phone: Optional[str] = None
+    parent_relation: Optional[str] = "Parent"
+    parent_user_id: Optional[int] = None
 
 class StudentCreate(StudentBase):
     class_ids: Optional[List[int]] = []
@@ -47,6 +52,11 @@ class StudentUpdate(BaseModel):
     batch: Optional[str] = None
     year: Optional[int] = None
     section: Optional[str] = None
+    parent_name: Optional[str] = None
+    parent_email: Optional[str] = None
+    parent_phone: Optional[str] = None
+    parent_relation: Optional[str] = None
+    parent_user_id: Optional[int] = None
     is_active: Optional[bool] = None
     attendance_status: Optional[str] = None
     is_frozen: Optional[bool] = None

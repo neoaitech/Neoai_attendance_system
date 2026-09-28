@@ -33,6 +33,7 @@ from backend.app.api.notifications import router as notifications_router
 from backend.app.api.authority import router as authority_router
 from backend.app.api.email_reports import router as email_reports_router
 from backend.app.api.staging import router as staging_router, prune_expired_staging_files
+from backend.app.api.parent import router as parent_router
 from backend.app.services.permission_service import permission_service
 
 @asynccontextmanager
@@ -161,9 +162,9 @@ async def add_cache_headers(request: Request, call_next):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
-    elif path == "/" or path.endswith(".html"):
+    elif path == "/" or path.endswith((".html", ".js", ".css")):
         response.headers["Cache-Control"] = "no-cache, must-revalidate"
-    elif path.endswith((".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".ico", ".woff", ".woff2")):
+    elif path.endswith((".png", ".jpg", ".jpeg", ".svg", ".ico", ".woff", ".woff2")):
         response.headers["Cache-Control"] = "public, max-age=604800, stale-while-revalidate=86400"
     return response
 
@@ -198,6 +199,7 @@ app.include_router(notifications_router, prefix=settings.API_V1_STR)
 app.include_router(authority_router, prefix=settings.API_V1_STR)
 app.include_router(email_reports_router, prefix=settings.API_V1_STR)
 app.include_router(staging_router, prefix=settings.API_V1_STR)
+app.include_router(parent_router, prefix=settings.API_V1_STR)
 
 # Static File Mounts
 app.mount("/uploads", StaticFiles(directory=str(settings.UPLOAD_DIR)), name="uploads")
@@ -205,5 +207,37 @@ app.mount("/reports_cache", StaticFiles(directory=str(settings.REPORTS_DIR)), na
 
 # Mount Frontend
 frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"
+
+@app.get("/parent", include_in_schema=False)
+async def parent_app_route():
+    parent_file = frontend_dir / "parent.html"
+    if parent_file.exists():
+        from fastapi.responses import FileResponse
+        return FileResponse(parent_file)
+    return JSONResponse(status_code=404, content={"detail": "Parent portal file not found."})
+
+@app.get("/download", include_in_schema=False)
+@app.get("/apk", include_in_schema=False)
+async def download_parent_apk():
+    apk_file = frontend_dir / "NeoAIAttend_Parents.apk"
+    if apk_file.exists():
+        from fastapi.responses import FileResponse
+        return FileResponse(
+            apk_file,
+            filename="NeoAIAttend_Parents.apk",
+            media_type="application/vnd.android.package-archive"
+        )
+    return JSONResponse(status_code=404, content={"detail": "APK file not found."})
+
+@app.get("/app", include_in_schema=False)
+@app.get("/get", include_in_schema=False)
+@app.get("/download-app", include_in_schema=False)
+async def parent_app_landing():
+    download_file = frontend_dir / "download.html"
+    if download_file.exists():
+        from fastapi.responses import FileResponse
+        return FileResponse(download_file)
+    return JSONResponse(status_code=404, content={"detail": "Download page not found."})
+
 if frontend_dir.exists():
     app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")

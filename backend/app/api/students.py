@@ -98,6 +98,10 @@ def create_student(
         department=payload.department,
         year=payload.year,
         section=payload.section,
+        parent_name=payload.parent_name,
+        parent_email=payload.parent_email,
+        parent_phone=payload.parent_phone,
+        parent_relation=payload.parent_relation or "Parent",
         is_active=True
     )
 
@@ -117,6 +121,16 @@ def create_student(
     db.add(student)
     db.commit()
     db.refresh(student)
+
+    # Auto-link or create parent account and dispatch onboarding credentials email
+    if student.parent_email:
+        try:
+            from backend.app.services.parent_service import link_or_create_parent_account
+            link_or_create_parent_account(db, student, send_welcome_email=True)
+            db.refresh(student)
+        except Exception as pe:
+            print("[ParentAccountLink] Note:", pe)
+
     return student.to_dict()
 
 @router.post("/register-with-photo", response_model=StudentResponse)
@@ -139,6 +153,11 @@ async def register_student_with_photo(
     gender = str(form_data.get("gender") or "").strip() or None
     address = str(form_data.get("address") or "").strip() or None
     status_val = str(form_data.get("status") or "Active").strip()
+
+    parent_name = str(form_data.get("parent_name") or "").strip() or None
+    parent_email = str(form_data.get("parent_email") or "").strip().lower() or None
+    parent_phone = str(form_data.get("parent_phone") or "").strip() or None
+    parent_relation = str(form_data.get("parent_relation") or "Parent").strip() or "Parent"
     
     department = str(form_data.get("department") or "Computer").strip()
     other_department = str(form_data.get("other_department") or "").strip() or None
@@ -361,6 +380,10 @@ async def register_student_with_photo(
         batch=batch,
         year=year,
         section=section,
+        parent_name=parent_name,
+        parent_email=parent_email,
+        parent_phone=parent_phone,
+        parent_relation=parent_relation,
         photo_url=primary_photo,
         is_active=(status_val == "Active")
     )
@@ -390,6 +413,15 @@ async def register_student_with_photo(
     db.add(student)
     db.commit()
     db.refresh(student)
+
+    # Auto-link or create parent account and dispatch onboarding credentials email
+    if student.parent_email:
+        try:
+            from backend.app.services.parent_service import link_or_create_parent_account
+            link_or_create_parent_account(db, student, send_welcome_email=True)
+            db.refresh(student)
+        except Exception as pe:
+            print("[ParentAccountLink] Note:", pe)
 
     # 5. Check if this registration is resolving an unknown face detection
     unknown_face_id = form_data.get("unknown_face_id")
@@ -524,6 +556,15 @@ def update_student(
 
     db.commit()
     db.refresh(student)
+
+    if student.parent_email:
+        try:
+            from backend.app.services.parent_service import link_or_create_parent_account
+            link_or_create_parent_account(db, student, send_welcome_email=False)
+            db.refresh(student)
+        except Exception:
+            pass
+
     return student.to_dict()
 
 @router.post("/{student_id}/update-photos", response_model=StudentResponse)

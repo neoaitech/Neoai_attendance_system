@@ -137,6 +137,17 @@ def run_auto_migrations():
                     conn.execute(text("ALTER TABLE students ADD COLUMN freeze_reason TEXT"))
                 if "freeze_until" not in cols:
                     conn.execute(text("ALTER TABLE students ADD COLUMN freeze_until DATETIME"))
+                # Parent Portal Fields (v9.0)
+                if "parent_name" not in cols:
+                    conn.execute(text("ALTER TABLE students ADD COLUMN parent_name VARCHAR(100)"))
+                if "parent_email" not in cols:
+                    conn.execute(text("ALTER TABLE students ADD COLUMN parent_email VARCHAR(100)"))
+                if "parent_phone" not in cols:
+                    conn.execute(text("ALTER TABLE students ADD COLUMN parent_phone VARCHAR(20)"))
+                if "parent_relation" not in cols:
+                    conn.execute(text("ALTER TABLE students ADD COLUMN parent_relation VARCHAR(30) DEFAULT 'Parent'"))
+                if "parent_user_id" not in cols:
+                    conn.execute(text("ALTER TABLE students ADD COLUMN parent_user_id INTEGER"))
 
             # 4. Users table migration
             res_u = conn.execute(text("PRAGMA table_info(users)"))

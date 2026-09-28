@@ -272,7 +272,7 @@ class User(Base):
             "full_name": self.full_name,
             "role": self.role,
             "role_id": self.role_id,
-            "role_display": "Super Administrator" if self.role in ("super_admin", "superadmin") else ("Administrator" if self.role == "admin" else "Faculty"),
+            "role_display": "Super Administrator" if self.role in ("super_admin", "superadmin") else ("Administrator" if self.role == "admin" else ("Parent / Guardian" if self.role == "parent" else "Faculty")),
             "department": self.department or "Computer Science & Engineering",
             "status": self.status or ("Active" if self.is_active else "Deactivated"),
             "photo_url": self.photo_url,
@@ -281,6 +281,7 @@ class User(Base):
             "must_change_password": bool(self.must_change_password),
             "last_login_at": format_iso_utc(self.last_login_at) if self.last_login_at else None,
             "assigned_classes_count": len(self.assigned_classes) if self.assigned_classes else (len(self.classes) if self.classes else 0),
+            "children_count": len(self.children) if hasattr(self, "children") and self.children else 0,
             "permissions_count": len(self.permission_overrides) if self.permission_overrides else 0,
             "scopes_count": len(self.academic_scopes) if self.academic_scopes else 0,
             "created_at": format_iso_utc(self.created_at)
@@ -380,6 +381,11 @@ class Student(Base):
     photo_url = Column(Text, nullable=True)
     _photo_urls = Column("photo_urls", Text, nullable=True)  # JSON list of multiple angle photos
     _face_embedding = Column("face_embedding", Text, nullable=True)  # JSON list or list of lists (multi-angle 128D vectors)
+    parent_name = Column(String(100), nullable=True)
+    parent_email = Column(String(100), index=True, nullable=True)
+    parent_phone = Column(String(20), nullable=True)
+    parent_relation = Column(String(30), default="Parent", nullable=True)
+    parent_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     attendance_status = Column(String(20), default="ACTIVE")  # "ACTIVE", "FROZEN"
     is_frozen = Column(Boolean, default=False)
     frozen_at = Column(DateTime, nullable=True)
@@ -390,6 +396,7 @@ class Student(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
+    parent_user = relationship("User", foreign_keys=[parent_user_id], backref="children")
     enrolled_classes = relationship("ClassCourse", secondary=student_class_association, back_populates="students")
     attendance_records = relationship("AttendanceRecord", back_populates="student", cascade="all, delete-orphan")
     resolved_unknown_faces = relationship("UnknownFace", back_populates="assigned_student")
@@ -457,6 +464,11 @@ class Student(Base):
             "batch": self.batch or "2023-2027",
             "year": self.year,
             "section": self.section,
+            "parent_name": self.parent_name,
+            "parent_email": self.parent_email,
+            "parent_phone": self.parent_phone,
+            "parent_relation": self.parent_relation or "Parent",
+            "parent_user_id": self.parent_user_id,
             "photo_url": self.photo_url,
             "photo_urls": self.photo_urls,
             "photos_count": len(self.photo_urls),

@@ -180,6 +180,18 @@ class PermissionService:
             db.add(faculty_role)
             db.flush()
 
+        parent_role = db.query(Role).filter(Role.name == "parent").first()
+        if not parent_role:
+            parent_role = Role(
+                name="parent",
+                display_name="Parent / Guardian",
+                description="Parent and guardian portal access to view student profile, daily attendance, and verification photos.",
+                is_system=True,
+                is_active=True
+            )
+            db.add(parent_role)
+            db.flush()
+
         # 3. Associate Permissions with Roles
         # Super Admin & Admin get all permissions (Super Admin has supreme unconditional authority)
         admin_role.permissions = list(perm_map.values())
@@ -187,6 +199,9 @@ class PermissionService:
         # Faculty gets default faculty permissions
         faculty_perms = [p for k, p in perm_map.items() if k in FACULTY_DEFAULT_PERMISSIONS]
         faculty_role.permissions = faculty_perms
+        # Parent gets ward view permissions
+        parent_perms = [p for k, p in perm_map.items() if k in {"dashboard.view", "attendance.view", "student.view", "report.view"}]
+        parent_role.permissions = parent_perms
 
         # 4. Map existing users to role objects
         users = db.query(User).all()
@@ -195,6 +210,8 @@ class PermissionService:
                 u.role_id = super_admin_role.id
             elif u.role == "admin":
                 u.role_id = admin_role.id
+            elif u.role == "parent":
+                u.role_id = parent_role.id
             else:
                 u.role_id = faculty_role.id
             

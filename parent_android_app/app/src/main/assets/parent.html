@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>NeoAI Attend for Parents | Live Attendance & Verification Portal</title>
+  
+  <!-- Favicon & PWA Icons -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+  
+  <!-- Standalone Mobile Web App & PWA Settings -->
+  <link rel="manifest" href="parent-manifest.json" />
+  <meta name="theme-color" content="#1e1b4b" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="NeoAI Parents" />
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@1.48.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Critical Head Styles -->
+  <style>
+    .hidden { display: none !important; }
+    .parent-auth-box { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 20px; }
+  </style>
+
+  <!-- Mobile App Styles -->
+  <link rel="stylesheet" href="css/parent.css?v=2.0" />
+</head>
+<body>
+
+  <!-- Main Mobile Shell Container (Max-width 520px) -->
+  <div class="parent-app-wrapper">
+
+    <!-- ============================================================== -->
+    <!-- AUTHENTICATION SCREEN: Dedicated Parent Login                 -->
+    <!-- ============================================================== -->
+    <div id="parent-auth-container" class="parent-auth-box hidden">
+      <div class="parent-login-card">
+        
+        <div class="parent-login-hero-logo" style="margin-bottom:14px; text-align:center;">
+          <img src="images/neoai_full_logo.png" alt="NeoAI Tech" style="height:62px; max-width:210px; object-fit:contain; filter:drop-shadow(0 4px 12px rgba(99,102,241,0.18));" />
+        </div>
+
+        <h2 class="parent-login-title">NeoAI Attend</h2>
+        <span style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#6366f1;">
+          Parent &amp; Guardian Portal
+        </span>
+        
+        <p class="parent-login-desc">
+          Sign in to monitor your ward's daily lecture attendance, live classroom scan proofs, and overall academic standing in real time.
+        </p>
+
+        <div id="p-login-error" class="hidden" style="background:#fee2e2; color:#991b1b; border:1px solid #fecaca; padding:10px 14px; border-radius:10px; font-size:12px; font-weight:700; margin-bottom:16px;"></div>
+
+        <form id="parent-login-form" onsubmit="ParentApp.handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label" for="p-login-email">Registered Parent Email</label>
+            <input type="email" id="p-login-email" class="form-input" placeholder="e.g. parent@example.com" required autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="p-login-password">Access Password</label>
+            <input type="password" id="p-login-password" class="form-input" placeholder="Enter password sent via email" required autocomplete="current-password" />
+          </div>
+
+          <button type="submit" id="p-login-btn" class="btn-parent-submit">
+            <i data-lucide="log-in" style="width:16px;height:16px;"></i>
+            <span>Sign In to Portal</span>
+          </button>
+        </form>
+
+        <p class="login-footer-note" style="margin-top:18px;">
+          <i data-lucide="info" style="width:13px;height:13px;display:inline-block;vertical-align:middle;color:#6366f1;"></i>
+          Your account was automatically created when your ward was registered. Check your email inbox for your password credentials.
+        </p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================== -->
+    <!-- AUTHENTICATED PORTAL: App Shell                              -->
+    <!-- ============================================================== -->
+    <div id="parent-main-shell" class="hidden">
+      
+      <!-- Live In-App Notification Dropdown Toast Banner -->
+      <div id="inapp-toast-banner" class="inapp-toast-banner hidden" onclick="ParentApp.handleToastClick()">
+        <div class="toast-banner-content">
+          <div class="toast-banner-icon-box">
+            <i data-lucide="bell-ring" id="toast-banner-icon" style="width:16px;height:16px;"></i>
+          </div>
+          <div class="toast-banner-text">
+            <div class="toast-banner-title" id="toast-banner-title">Live Attendance Alert</div>
+            <div class="toast-banner-desc" id="toast-banner-desc">Rohan Sharma was just verified in CS301.</div>
+          </div>
+          <button type="button" class="toast-banner-close" onclick="event.stopPropagation(); ParentApp.dismissToastBanner()" title="Close">
+            <i data-lucide="x" style="width:13px;height:13px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 1: Today's Live Lecture Timeline (Exclusive Campus Banner Header) -->
+      <main id="view-timeline" class="parent-view active" style="padding:0 0 95px 0;">
+        
+        <!-- Top Campus Illustrated Header Area (ONLY ON TODAY PAGE) -->
+        <header class="parent-header">
+          
+          <!-- Row 1: Brand & Top Action Buttons -->
+          <div class="parent-nav-top">
+            <div class="parent-brand">
+              <div class="parent-logo-badge">
+                <img src="images/neoai_icon_n.png" class="brand-logo-img" alt="NeoAI Tech" />
+              </div>
+              <div class="parent-brand-text">
+                <span class="brand-portal-label">PARENT PORTAL</span>
+                <h1 class="parent-portal-title">NeoAI <span class="title-accent">Attend</span></h1>
+                <span class="brand-tagline">Track &bull; Support &bull; Stay Connected</span>
+              </div>
+            </div>
+
+            <div class="parent-user-actions">
+              <!-- Notification Bell with Unread Badge Dot -->
+              <button type="button" class="header-action-btn notif-btn" onclick="event.stopPropagation(); ParentApp.showNotifications(event)" title="Notifications">
+                <i data-lucide="bell" style="width:18px;height:18px;"></i>
+                <span class="notif-badge-dot"></span>
+              </button>
+              <!-- Profile Quick Nav Button -->
+              <button type="button" class="header-action-btn" onclick="ParentApp.switchTab('profile')" title="Parent Profile">
+                <i data-lucide="user" style="width:18px;height:18px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Row 2: Greeting & Date Capsule Pill -->
+          <div class="header-greeting-row">
+            <div class="greeting-info">
+              <div class="greeting-time" id="greeting-time-text">Good Evening 👋</div>
+              <div class="greeting-parent-name" id="header-parent-name">Rajesh Sharma</div>
+              <div class="greeting-role" id="header-parent-role">Guardian</div>
+            </div>
+
+            <div class="greeting-date-pill" onclick="ParentApp.resetToToday()" title="View Today">
+              <i data-lucide="calendar" style="width:15px;height:15px;color:#2563eb;"></i>
+              <span id="header-date-pill-text">Mon, Sep 28, 2026</span>
+            </div>
+          </div>
+
+          <!-- Row 3: Multi-Child / Registered Wards Carousel Cards -->
+          <div id="child-switcher-wrapper" class="child-selector-container">
+            <div id="child-switcher-list" class="child-switcher-scroll"></div>
+            <div id="child-switcher-dots" class="wards-pagination-dots"></div>
+          </div>
+
+        </header>
+
+        <!-- 4 Quick Stat Cards (Attended, Missed, Upcoming, Attendance) -->
+        <section class="quick-stats-grid">
+          <div class="quick-stat-card attended">
+            <div class="quick-stat-icon-bubble">
+              <i data-lucide="graduation-cap" style="width:18px;height:18px;"></i>
+            </div>
+            <div class="quick-stat-val" id="qs-attended">0</div>
+            <div class="quick-stat-lbl">Attended</div>
+          </div>
+
+          <div class="quick-stat-card missed">
+            <div class="quick-stat-icon-bubble">
+              <i data-lucide="x" style="width:18px;height:18px;"></i>
+            </div>
+            <div class="quick-stat-val" id="qs-missed">0</div>
+            <div class="quick-stat-lbl">Missed</div>
+          </div>
+
+          <div class="quick-stat-card upcoming">
+            <div class="quick-stat-icon-bubble">
+              <i data-lucide="calendar" style="width:18px;height:18px;"></i>
+            </div>
+            <div class="quick-stat-val" id="qs-upcoming">0</div>
+            <div class="quick-stat-lbl">Upcoming</div>
+          </div>
+
+          <div class="quick-stat-card attendance">
+            <div class="quick-stat-icon-bubble">
+              <i data-lucide="bar-chart-2" style="width:18px;height:18px;"></i>
+            </div>
+            <div class="quick-stat-val" id="qs-attendance">100%</div>
+            <div class="quick-stat-lbl">Attendance</div>
+          </div>
+        </section>
+
+        <!-- Date Selector Ribbon (Inside 16px wrapper) -->
+        <div style="padding: 0 16px;">
+          <div class="date-selector-ribbon">
+            <button type="button" class="date-arrow-btn" onclick="ParentApp.changeDate(-1)" title="Previous Day">
+              <i data-lucide="chevron-left" style="width:18px;height:18px;"></i>
+            </button>
+            
+            <div class="date-display-box" onclick="ParentApp.resetToToday()" style="cursor:pointer;" title="Click to jump to Today">
+              <div id="timeline-date-display" class="date-main">Loading schedule...</div>
+              <div id="timeline-date-sub" class="date-sub">Live Updates Active</div>
+            </div>
+
+            <button type="button" class="date-arrow-btn" onclick="ParentApp.changeDate(1)" title="Next Day">
+              <i data-lucide="chevron-right" style="width:18px;height:18px;"></i>
+            </button>
+          </div>
+
+          <!-- Timeline Cards List -->
+          <div id="timeline-cards-list" class="timeline-list"></div>
+        </div>
+
+      </main>
+
+      <!-- VIEW 2: Attendance Overview & Gauge (Independent Modern Header) -->
+      <section id="view-summary" class="parent-view">
+        <div id="summary-content-wrapper"></div>
+      </section>
+
+      <!-- VIEW 3: Subject Breakdown (Independent Modern Header) -->
+      <section id="view-courses" class="parent-view">
+        <div id="courses-content-wrapper"></div>
+      </section>
+
+      <!-- VIEW 4: Attendance History & Biometric Audit (Independent Modern Header) -->
+      <section id="view-history" class="parent-view">
+        <div id="history-content-wrapper"></div>
+      </section>
+
+      <!-- VIEW 5: Parent Profile & Security Hub (Dedicated Independent Screen) -->
+      <section id="view-profile" class="parent-view">
+        <div id="profile-content-wrapper"></div>
+      </section>
+
+      <!-- Bottom Mobile Navigation Bar (5 Independent Tabs) -->
+      <nav class="bottom-nav-bar">
+        <button type="button" class="bottom-nav-item active" data-tab="timeline" onclick="ParentApp.switchTab('timeline')">
+          <i data-lucide="calendar"></i>
+          <span>Today</span>
+        </button>
+        <button type="button" class="bottom-nav-item" data-tab="summary" onclick="ParentApp.switchTab('summary')">
+          <i data-lucide="pie-chart"></i>
+          <span>Overview</span>
+        </button>
+        <button type="button" class="bottom-nav-item" data-tab="courses" onclick="ParentApp.switchTab('courses')">
+          <i data-lucide="book-open"></i>
+          <span>Subjects</span>
+        </button>
+        <button type="button" class="bottom-nav-item" data-tab="history" onclick="ParentApp.switchTab('history')">
+          <i data-lucide="clock"></i>
+          <span>History</span>
+        </button>
+        <button type="button" class="bottom-nav-item" data-tab="profile" onclick="ParentApp.switchTab('profile')">
+          <i data-lucide="user"></i>
+          <span>Profile</span>
+        </button>
+      </nav>
+
+    </div> <!-- End parent-main-shell -->
+
+  </div> <!-- End parent-app-wrapper -->
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: Verification Face Photo Proof                          -->
+  <!-- ============================================================== -->
+  <div id="parent-photo-modal" class="parent-modal-backdrop" onclick="if(event.target===this) ParentApp.closePhotoProof()">
+    <div class="parent-modal-card">
+      
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="width:26px; height:26px; border-radius:6px; background:#ecfdf5; color:#059669; display:flex; align-items:center; justify-content:center;">
+            <i data-lucide="camera" style="width:14px;height:14px;"></i>
+          </div>
+          <h3 class="modal-title">Attendance Photo Proof</h3>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="ParentApp.closePhotoProof()">
+          <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Cropped Face Photo Frame with Green Verification Boundary -->
+        <div class="photo-proof-frame">
+          <img id="modal-proof-img" src="" alt="Student Classroom Detection Proof" />
+          <div class="verified-stamp">
+            <i data-lucide="check-check" style="width:14px;height:14px;"></i>
+            <span>AI Verified Match</span>
+          </div>
+        </div>
+
+        <!-- Verification Metadata Ledger -->
+        <div class="proof-details-box">
+          <div class="proof-row">
+            <span class="proof-label">Student:</span>
+            <span id="modal-proof-student" class="proof-value">Student Name</span>
+          </div>
+          <div class="proof-row">
+            <span class="proof-label">Course / Lecture:</span>
+            <span id="modal-proof-course" class="proof-value">Course Title</span>
+          </div>
+          <div class="proof-row">
+            <span class="proof-label">Verification Time:</span>
+            <span id="modal-proof-time" class="proof-value">09:14 AM</span>
+          </div>
+          <div class="proof-row">
+            <span class="proof-label">Verification Engine:</span>
+            <span class="proof-value" style="color:#4f46e5;">NeoAI ArcFace 512-D</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn-parent-submit" style="margin-top:16px;" onclick="ParentApp.closePhotoProof()">
+          <span>Done</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: Notification Alerts Center                              -->
+  <!-- ============================================================== -->
+  <div id="parent-notif-modal" class="parent-modal-backdrop" onclick="if(event.target===this) ParentApp.closeNotifications(event)">
+    <div class="parent-modal-card" style="max-width: 400px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="width:28px; height:28px; border-radius:8px; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center;">
+            <i data-lucide="bell-ring" style="width:16px;height:16px;"></i>
+          </div>
+          <h3 class="modal-title">Parent Alerts &amp; Activity</h3>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button type="button" class="btn-link-action" onclick="ParentApp.markAllNotificationsRead()" style="background:none; border:none; color:#4f46e5; font-size:11.5px; font-weight:700; cursor:pointer;">
+            Clear All
+          </button>
+          <button type="button" class="modal-close-btn" onclick="ParentApp.closeNotifications()">
+            <i data-lucide="x" style="width:16px;height:16px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-body" style="padding: 14px 16px;">
+        <!-- Dynamic Notifications List Container -->
+        <div id="parent-notif-list" style="display:flex; flex-direction:column; gap:10px; max-height:360px; overflow-y:auto; padding-right:2px;">
+          <!-- Items inserted dynamically by ParentApp.renderNotificationCenter() -->
+        </div>
+
+        <!-- Action Row -->
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <button type="button" class="btn-parent-submit" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; flex:1;" onclick="ParentApp.triggerTestNotification()">
+            <i data-lucide="zap" style="width:14px;height:14px;color:#d97706;"></i>
+            <span>Test Live Alert</span>
+          </button>
+          <button type="button" class="btn-parent-submit" style="flex:1;" onclick="ParentApp.closeNotifications()">
+            <span>Dismiss</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ============================================================== -->
+  <!-- MODAL: Switch Ward Bottom Sheet                                -->
+  <!-- ============================================================== -->
+  <div id="parent-ward-modal" class="parent-modal-backdrop" onclick="if(event.target===this) ParentApp.closeWardSelectionModal()">
+    <div class="parent-modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="width:28px; height:28px; border-radius:8px; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center;">
+            <i data-lucide="users" style="width:16px;height:16px;"></i>
+          </div>
+          <h3 class="modal-title">Select Ward / Child</h3>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="ParentApp.closeWardSelectionModal()">
+          <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="padding:14px 16px;">
+        <div id="modal-ward-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: Change Account Password                                 -->
+  <!-- ============================================================== -->
+  <div id="parent-password-modal" class="parent-modal-backdrop" onclick="if(event.target===this) ParentApp.closePasswordModal()">
+    <div class="parent-modal-card" style="max-width: 400px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="width:28px; height:28px; border-radius:8px; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center;">
+            <i data-lucide="key-round" style="width:16px;height:16px;"></i>
+          </div>
+          <h3 class="modal-title">Change Password</h3>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="ParentApp.closePasswordModal()">
+          <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="padding:16px;">
+        <form onsubmit="ParentApp.handlePasswordChange(event)">
+          <div class="form-group" style="margin-bottom:12px;">
+            <label class="form-label" for="p-pwd-old">Current Password</label>
+            <input type="password" id="p-pwd-old" class="form-input" placeholder="Enter current password" required />
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label class="form-label" for="p-pwd-new">New Password</label>
+            <input type="password" id="p-pwd-new" class="form-input" placeholder="Min. 6 characters" required />
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label" for="p-pwd-confirm">Confirm New Password</label>
+            <input type="password" id="p-pwd-confirm" class="form-input" placeholder="Re-type new password" required />
+          </div>
+          <div id="p-pwd-error" class="hidden" style="background:#fee2e2; color:#991b1b; padding:8px 12px; border-radius:8px; font-size:12px; margin-bottom:12px;"></div>
+          <button type="submit" id="p-pwd-btn" class="btn-parent-submit">
+            <i data-lucide="shield-check" style="width:16px;height:16px;"></i>
+            <span>Update Password</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="js/parent.js?v=2.1"></script>
+</body>
+</html>

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from backend.app.core.config import settings
 from backend.app.core.security import verify_password, create_access_token, decode_access_token, oauth2_scheme
@@ -74,7 +75,10 @@ def require_permission(permission_key: str):
 
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == form_data.username).first()
+    clean_identifier = form_data.username.strip()
+    user = db.query(User).filter(
+        (User.username == clean_identifier) | (func.lower(User.email) == clean_identifier.lower())
+    ).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -103,7 +107,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 @router.post("/login-json", response_model=Token)
 def login_json(payload: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == payload.username).first()
+    clean_identifier = payload.username.strip()
+    user = db.query(User).filter(
+        (User.username == clean_identifier) | (func.lower(User.email) == clean_identifier.lower())
+    ).first()
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
